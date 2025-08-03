@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   creator: 'Aditya Choudhary',
   publisher: 'Auravo AI',
   metadataBase: new URL('https://www.auravo.ai'),
+  manifest: '/manifest.json',
   openGraph: {
     title: 'Auravo AI - Your Intelligent Chat Assistant',
     description: 'Engage in intelligent conversations, generate images, and get instant answers with Auravo AI.',
@@ -51,6 +52,8 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
   },
 };
 
@@ -77,6 +80,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <meta name="theme-color" content="#A020F0" />
         <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
