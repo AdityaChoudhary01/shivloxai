@@ -13,7 +13,7 @@ import type { ChatInput } from '@/ai/flows/chat';
 
 // Define the base URL of your deployed Next.js backend.
 // In a real React Native app, this should come from environment variables.
-const API_BASE_URL = 'http://localhost:9002'; // Or your deployed app's URL
+const API_BASE_URL = 'https://your-vercel-deployment-url.vercel.app'; // IMPORTANT: Replace with your actual Vercel URL
 
 /**
  * An example function that calls the 'chatFlow' on the backend.
@@ -54,11 +54,11 @@ export async function callChatApi(input: ChatInput) {
  *
  * 1. Copy this function (and the type import) into your React Native project.
  *
- * 2. Ensure your backend Next.js application is running or deployed.
+ * 2. Ensure your backend Next.js application is deployed to Vercel.
  *
- * 3. Update the `API_BASE_URL` to point to your backend's URL. For local
- *    development with an Android emulator, this might be 'http://10.0.2.2:9002'.
- *    For an iOS simulator, it would be 'http://localhost:9002'.
+ * 3. Update the `API_BASE_URL` with your production Vercel URL.
+ *    For better security and flexibility, manage this URL using a library
+ *    like `react-native-dotenv` to avoid hardcoding it.
  *
  * 4. Call this function from your React Native components:
  *
