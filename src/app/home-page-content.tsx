@@ -1,3 +1,4 @@
+
 'use client';
 
 import { chat, type ChatInput } from '@/ai/flows/chat';
@@ -10,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, SidebarFooter } from '@/components/ui/sidebar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -103,68 +104,105 @@ export function HomePageContent() {
       prev.map(c => (c.id === id ? { ...c, ...updates } : c))
     );
   };
-
-  const handleSendMessage = async (prompt?: string) => {
+  
+  const handleSendMessage = useCallback(async (prompt?: string) => {
     if (!user && sessionMessageCount >= 15) {
       setIsAuthModalOpen(true);
       return;
     }
-
+  
     const userMessageContent = prompt || input;
     if (!userMessageContent.trim()) return;
-
-    setIsLoading(true);
-    const newUserMessage: Message = { role: 'user', content: userMessageContent };
-    
-    let convId = currentConversationId;
-    if (!convId || currentMessages.length === 0) {
-        convId = startNewChat(false);
-    }
-
-    const conversation = conversations.find(c => c.id === convId)!;
-    const updatedMessages = [...conversation.messages, newUserMessage];
-    
-    let conversationUpdates: Partial<Conversation> = { messages: updatedMessages };
-
-    if (conversation.messages.length === 0) {
-        const newTitle = userMessageContent.split(' ').slice(0, 5).join(' ');
-        conversationUpdates.title = newTitle;
-    }
-
-    updateConversation(convId, conversationUpdates);
-
-
-    if (!user) {
-      setSessionMessageCount(prev => prev + 1);
-    }
-
+  
+    // Clear input field immediately for better UX
     if (!prompt) {
       setInput('');
     }
-
-    try {
-      const history = updatedMessages
-        .slice(0, -1)
-        .map((m) => ({ role: m.role, content: m.content }));
-        
-      const chatInput: ChatInput = { history, prompt: userMessageContent };
-      const result = await chat(chatInput);
-
-      const aiMessage: Message = { role: 'model', content: result.response };
-      const finalMessages = [...updatedMessages, aiMessage];
-      updateConversation(convId, { messages: finalMessages });
-
-    } catch (error) {
-      console.error('Error calling chat AI:', error);
-      const errorMessage: Message = {
-        role: 'model',
-        content: 'Sorry, I encountered an error. Please try again.',
+  
+    let isNewChat = false;
+    let effectiveConvId = currentConversationId;
+  
+    // If there's no active chat or the active chat is empty, create a new one.
+    if (!effectiveConvId || conversations.find(c => c.id === effectiveConvId)?.messages.length === 0) {
+      const newId = `chat-${Date.now()}`;
+      const newTitle = userMessageContent.split(' ').slice(0, 5).join(' ');
+      const newConversation: Conversation = {
+        id: newId,
+        title: newTitle,
+        messages: [],
       };
-      updateConversation(convId, { messages: [...updatedMessages, errorMessage] });
-    } finally {
-      setIsLoading(false);
+  
+      // Prepend the new conversation and set it as active
+      setConversations(prev => [newConversation, ...prev.filter(c => c.messages.length > 0)]);
+      setCurrentConversationId(newId);
+      
+      effectiveConvId = newId;
+      isNewChat = true;
     }
-  };
+  
+    const newUserMessage: Message = { role: 'user', content: userMessageContent };
+  
+    // Update state with the user's message
+    setConversations(prev =>
+      prev.map(c =>
+        c.id === effectiveConvId
+          ? { ...c, messages: [...c.messages, newUserMessage] }
+          : c
+      )
+    );
+  
+    setIsLoading(true);
+  
+    // Trigger AI response generation in a separate async flow
+    (async () => {
+      try {
+        if (!user) {
+          setSessionMessageCount(prev => prev + 1);
+        }
+  
+        // Wait for the state to update before getting history
+        const currentConversations = conversations;
+        const currentConv = currentConversations.find(c => c.id === effectiveConvId);
+        const history = (currentConv?.messages || []).map(m => ({
+          role: m.role as 'user' | 'model',
+          content: m.content,
+        }));
+  
+        const chatInput: ChatInput = { history, prompt: userMessageContent };
+        const result = await chat(chatInput);
+  
+        const aiMessage: Message = { role: 'model', content: result.response };
+  
+        // Update state with the AI's response
+        setConversations(prev =>
+          prev.map(c =>
+            c.id === effectiveConvId
+              ? { ...c, messages: [...c.messages, aiMessage] }
+              : c
+          )
+        );
+      } catch (error) {
+        console.error('Error calling chat AI:', error);
+        const errorMessage: Message = {
+          role: 'model',
+          content: 'Sorry, I encountered an error. Please try again.',
+        };
+        // Update state with an error message
+        setConversations(prev =>
+          prev.map(c =>
+            c.id === effectiveConvId
+              ? { ...c, messages: [...c.messages, errorMessage] }
+              : c
+          )
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  
+  // This is a workaround for the state batching issue
+  // We need to re-evaluate the conversations state to get the latest messages
+  }, [conversations, currentConversationId, input, user, sessionMessageCount]);
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
