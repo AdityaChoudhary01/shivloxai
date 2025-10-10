@@ -11,15 +11,15 @@ export const metadata: Metadata = {
   },
   description: 'Engage in intelligent conversations, generate images, and get instant answers with Shivlox AI, a modern chat application powered by Google\'s Gemini models.',
   keywords: ['AI Chat', 'Intelligent Assistant', 'Gemini AI', 'Next.js', 'Shivlox AI', 'Chatbot', 'Image Generation', 'AI assistant', 'Conversational AI'],
-  authors: [{ name: 'Aditya Choudhary', url: 'https://www.auravo.ai' }],
+  authors: [{ name: 'Aditya Choudhary', url: 'https://www.shivlox.ai' }],
   creator: 'Aditya Choudhary',
   publisher: 'Shivlox AI',
-  metadataBase: new URL('https://www.auravo.ai'),
+  metadataBase: new URL('https://www.shivlox.ai'),
   manifest: '/manifest.json',
   openGraph: {
     title: 'Shivlox AI - Your Intelligent Chat Assistant',
     description: 'Engage in intelligent conversations, generate images, and get instant answers with Shivlox AI.',
-    url: 'https://www.auravo.ai',
+    url: 'https://www.shivlox.ai',
     siteName: 'Shivlox AI',
     images: [
         {
@@ -66,10 +66,10 @@ export default function RootLayout({
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     'name': 'Shivlox AI',
-    'url': 'https://www.auravo.ai',
+    'url': 'https://www.shivlox.ai',
     'potentialAction': {
       '@type': 'SearchAction',
-      'target': 'https://www.auravo.ai/search?q={search_term_string}',
+      'target': 'https://www.shivlox.ai/search?q={search_term_string}',
       'query-input': 'required name=search_term_string',
     },
   };
