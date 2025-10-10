@@ -55,6 +55,9 @@ export const metadata: Metadata = {
     shortcut: '/favicon.png',
     apple: '/apple-touch-icon.png',
   },
+  alternates: {
+  canonical: 'https://shivloxai.netlify.app',
+   },
 };
 
 export default function RootLayout({
@@ -65,8 +68,8 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    'name': 'Shivlox AI',
-    'url': 'https://www.shivlox.ai',
+    'name': 'Shivlox AI'
+    'url': 'https://shivloxai.netlify.app',
     'potentialAction': {
       '@type': 'SearchAction',
       'target': 'https://www.shivlox.ai/search?q={search_term_string}',
