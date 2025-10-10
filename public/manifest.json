@@ -1,17 +1,26 @@
-
 {
-  "name": "Auravo AI",
-  "short_name": "AuravoAI",
-  "description": "An intelligent chat assistant powered by Gemini.",
+  "name": "Shivlox AI",
+  "short_name": "Shivlox AI",
+  "description": "Engage in intelligent conversations, generate images, and get instant answers with Shivlox AI, a modern chat application powered by Google's Gemini models.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F0E5F5",
-  "theme_color": "#A020F0",
+  "background_color": "#09011E",
+  "theme_color": "#09011E",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
     }
   ]
 }
