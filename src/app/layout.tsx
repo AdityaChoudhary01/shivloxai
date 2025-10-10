@@ -68,7 +68,7 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    'name': 'Shivlox AI'
+    'name': 'Shivlox AI',
     'url': 'https://shivloxai.netlify.app',
     'potentialAction': {
       '@type': 'SearchAction',
