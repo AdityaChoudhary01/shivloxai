@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Menu } from 'lucide-react';
@@ -9,6 +8,10 @@ import { ContactForm } from './contact-form';
 export const metadata: Metadata = {
     title: 'Contact Us - Shivlox AI',
     description: 'Get in touch with the Shivlox AI team. Send us your questions, feedback, or collaboration ideas through our contact form.',
+    // Add the canonical link using the alternates property
+    alternates: {
+        canonical: 'https://shivloxai.netlify.app/contact',
+    },
 };
 
 export default function ContactPage() {
