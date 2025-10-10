@@ -13,7 +13,7 @@ import { motion } from 'framer-motion';
 import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, SidebarFooter } from '@/components/ui/sidebar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/use-auth';
 import { AuthModal } from '@/components/auth-modal';
@@ -28,6 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import Link from 'next/link';
 
 type Message = ChatMessageProps['message'];
 
@@ -319,7 +320,12 @@ export default function Home() {
         <Sidebar>
             <SidebarHeader className="p-2">
                 <div className="flex items-center justify-between p-2">
-                    <h2 className="text-lg font-semibold">Conversations</h2>
+                    <div className="flex items-center gap-2">
+                      <Link href="/" className="flex items-center gap-2">
+                        <ShivloxIcon className="h-8 w-8" />
+                        <h2 className="text-lg font-semibold">Shivlox AI</h2>
+                      </Link>
+                    </div>
                     <SidebarTrigger className="md:hidden"/>
                 </div>
                 <Button variant="outline" className="w-full" onClick={() => startNewChat()}>
@@ -353,13 +359,25 @@ export default function Home() {
                     </SidebarMenu>
                 </SidebarContent>
             </ScrollArea>
+             <SidebarFooter className="p-4 border-t border-border">
+                  <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+                    <Link href="/about" className="hover:text-primary">About</Link>
+                    <Link href="/contact" className="hover:text-primary">Contact</Link>
+                    <Link href="/donate" className="hover:text-primary">Donate</Link>
+                    <Link href="/privacy" className="hover:text-primary">Privacy</Link>
+                    <Link href="/terms" className="hover:text-primary">Terms</Link>
+                  </div>
+                  <p className="mt-4 text-center text-xs text-muted-foreground">
+                    &copy; {new Date().getFullYear()} Shivlox AI. All rights reserved.
+                  </p>
+            </SidebarFooter>
         </Sidebar>
 
         <main className="flex flex-1 flex-col overflow-hidden">
           <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-lg backdrop-blur-lg">
             <div className="flex items-center gap-2">
                 <SidebarTrigger />
-                <div className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                 <div className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent md:hidden">
                     Shivlox AI
                 </div>
             </div>
@@ -484,5 +502,3 @@ export default function Home() {
     </SidebarProvider>
   );
 }
-
-    

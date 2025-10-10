@@ -3,11 +3,11 @@
 
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
-import { Menu } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetClose } from '@/components/ui/sheet';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
@@ -62,6 +62,8 @@ const SidebarProvider = React.forwardRef<
     const [_open, _setOpen] = React.useState(() => {
         if (typeof window !== 'undefined') {
             const cookieValue = document.cookie.split('; ').find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))?.split('=')[1];
+            // On mobile, default to closed
+            if(window.innerWidth < 768) return false;
             return cookieValue ? JSON.parse(cookieValue) : defaultOpen;
         }
         return defaultOpen;
@@ -156,21 +158,21 @@ const Sidebar = React.forwardRef<
       <Sheet open={openMobile} onOpenChange={setOpenMobile}>
         <SheetContent
           side={side}
-          className="w-full bg-background/80 backdrop-blur-lg p-0"
+          className="w-full bg-background/80 backdrop-blur-lg p-0 flex flex-col"
           style={
             {
               '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
             } as React.CSSProperties
           }
         >
-          <div className="flex h-full w-full flex-col">{children}</div>
+          {children}
         </SheetContent>
       </Sheet>
     );
   }
 
   return (
-    <div
+    <aside
       ref={ref}
       data-state={state}
       className={cn(
@@ -183,7 +185,7 @@ const Sidebar = React.forwardRef<
       <div className="flex h-full w-full flex-col overflow-hidden">
         {children}
       </div>
-    </div>
+    </aside>
   );
 });
 Sidebar.displayName = 'Sidebar';
@@ -238,6 +240,14 @@ const SidebarContent = React.forwardRef<
   );
 });
 SidebarContent.displayName = 'SidebarContent';
+
+const SidebarFooter = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn('shrink-0', className)} {...props} />
+));
+SidebarFooter.displayName = 'SidebarFooter';
 
 const SidebarMenu = React.forwardRef<
   HTMLUListElement,
@@ -294,7 +304,6 @@ export {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
+  SidebarFooter,
   useSidebar,
 };
-
-    
