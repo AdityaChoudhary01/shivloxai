@@ -1,15 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { ShivloxIcon } from './shivlox-icon';
 
 export function Footer() {
   return (
     <footer className="w-full border-t border-border/50 bg-background/50 backdrop-blur-sm">
       <div className="container mx-auto flex items-center justify-between py-6 md:flex-row flex-col gap-4">
         <div className="flex items-center gap-2">
-          <ShivloxIcon className="h-6 w-6" />
-          <p className="text-lg font-semibold">Shivlox AI</p>
+          <p className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Shivlox AI</p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
           <Link href="/" className="transition-colors hover:text-foreground">

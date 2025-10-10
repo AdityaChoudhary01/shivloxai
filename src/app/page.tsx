@@ -289,7 +289,9 @@ export default function Home() {
           <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-sm backdrop-blur-sm">
             <SidebarTrigger />
             <div className="flex flex-1 items-center justify-center">
-                <ShivloxIcon logoType="full" />
+               <div className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Shivlox AI
+              </div>
             </div>
              {user ? (
                 <UserNav />
