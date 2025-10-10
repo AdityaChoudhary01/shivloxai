@@ -365,7 +365,7 @@ export default function Home() {
                     <Link href="/contact" className="hover:text-primary">Contact</Link>
                     <Link href="/donate" className="hover:text-primary">Donate</Link>
                     <Link href="/privacy" className="hover:text-primary">Privacy</Link>
-                    <Link href="/terms" className="hover:text-primary">Terms</Link>
+                    <Link href="/terms" className="hovertext-primary">Terms</Link>
                   </div>
                   <p className="mt-4 text-center text-xs text-muted-foreground">
                     &copy; {new Date().getFullYear()} Shivlox AI. All rights reserved.
@@ -377,7 +377,7 @@ export default function Home() {
           <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-lg backdrop-blur-lg">
             <div className="flex items-center gap-2">
                 <SidebarTrigger />
-                 <div className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent md:hidden">
+                 <div className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                     Shivlox AI
                 </div>
             </div>
@@ -502,3 +502,5 @@ export default function Home() {
     </SidebarProvider>
   );
 }
+
+    
