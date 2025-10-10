@@ -64,7 +64,12 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
       setIsLoading(true);
       await signInWithGoogle();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
+      // Don't show an error toast if the user simply closes the popup
+      if (error.code === 'auth/popup-closed-by-user') {
+        console.log('Google Sign-In cancelled by user.');
+        return;
+      }
       console.error(error);
       toast({
         title: 'Error',
