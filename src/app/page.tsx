@@ -1,4 +1,3 @@
-
 'use client';
 
 import { chat, type ChatInput } from '@/ai/flows/chat';
@@ -111,7 +110,6 @@ export default function Home() {
     
     let conversationUpdates: Partial<Conversation> = { messages: updatedMessages };
 
-    // If it's a new chat, set the title from the first message.
     if (conversation.messages.length === 0 && conversation.title.startsWith('New Chat')) {
         const newTitle = userMessageContent.split(' ').slice(0, 5).join(' ');
         conversationUpdates.title = newTitle;
@@ -255,10 +253,10 @@ export default function Home() {
   return (
     <SidebarProvider>
       <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
-      <div className="flex h-dvh bg-background text-foreground">
+      <div className="flex h-dvh bg-transparent text-foreground">
         <Sidebar>
             <SidebarHeader className="p-2">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-2">
                     <h2 className="text-lg font-semibold">Conversations</h2>
                 </div>
                 <Button variant="outline" className="w-full" onClick={startNewChat}>
@@ -287,9 +285,9 @@ export default function Home() {
         </Sidebar>
 
         <main className="flex flex-1 flex-col overflow-hidden">
-          <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-sm backdrop-blur-sm">
-            <SidebarTrigger />
-            <div className="flex flex-1 items-center justify-center">
+          <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-lg backdrop-blur-lg">
+            <SidebarTrigger className="md:hidden" />
+            <div className="flex flex-1 items-center justify-center md:justify-start">
                <div className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Shivlox AI
               </div>
@@ -301,7 +299,7 @@ export default function Home() {
               )}
           </header>
 
-          <div className="flex-1 overflow-y-auto flex flex-col">
+          <div className="flex-1 overflow-y-auto flex flex-col relative">
             <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col">
               {currentMessages.length === 0 && !isLoading ? (
                 <div className="flex flex-1 flex-col items-center justify-center text-center">
@@ -309,7 +307,7 @@ export default function Home() {
                     initial={{ scale: 0, rotate: -45 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ duration: 0.5, type: 'spring', stiffness: 260, damping: 20 }}
-                    className="mb-4"
+                    className="mb-4 rounded-full p-2 bg-gradient-to-br from-primary/20 to-accent/20 shadow-lg"
                   >
                     <ShivloxIcon className="h-20 w-20" />
                   </motion.div>
@@ -317,10 +315,10 @@ export default function Home() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="text-2xl font-semibold text-foreground">
+                    className="text-3xl font-bold text-foreground tracking-tight">
                     How can I help you today?
                   </motion.h2>
-                  <div className="mt-8 grid w-full max-w-4xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="mt-8 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
                     {initialPrompts.map((prompt, i) => (
                       <motion.div
                         key={i}
@@ -331,7 +329,7 @@ export default function Home() {
                       >
                         <Button
                           variant="outline"
-                          className="h-auto min-h-14 w-full whitespace-normal rounded-lg border-dashed text-left text-sm transition-transform hover:scale-105 hover:border-primary hover:bg-primary/10"
+                          className="h-auto w-full whitespace-normal rounded-lg border-dashed p-4 text-left text-sm transition-all duration-300 hover:scale-105 hover:border-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20"
                           onClick={() => handleSendMessage(prompt)}
                         >
                           {prompt}
@@ -341,7 +339,7 @@ export default function Home() {
                   </div>
                 </div>
               ) : (
-                <div className="flex-1">
+                <div className="flex-1 space-y-4">
                   {currentMessages.map((msg, index) => (
                     <ChatMessage key={index} message={msg} />
                   ))}
@@ -350,19 +348,18 @@ export default function Home() {
               {isLoading && <ChatMessage isLoading />}
               <div ref={messagesEndRef} />
             </div>
-            <Footer />
           </div>
-
+            
           <motion.div
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
             className="shrink-0 bg-background/50 p-4 backdrop-blur-sm"
           >
-            <div className="container mx-auto">
+             <div className="mx-auto w-full max-w-3xl">
               <form
                 onSubmit={handleFormSubmit}
-                className="relative mx-auto flex w-full max-w-3xl items-end space-x-2 rounded-2xl border bg-secondary/50 p-2 shadow-lg"
+                className="relative flex w-full items-end space-x-2 rounded-2xl border bg-secondary/30 p-2 shadow-lg transition-all focus-within:border-primary/50 focus-within:shadow-primary/20"
               >
                 <Button
                   type="button"
@@ -388,7 +385,7 @@ export default function Home() {
                 <TextareaAutosize
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder={isRecording ? 'Recording...' : 'Type your message here...'}
+                  placeholder={isRecording ? 'Recording...' : 'Ask Shivlox AI anything...'}
                   className="flex-1 resize-none border-none bg-transparent py-1.5 text-base shadow-none focus-visible:ring-0 focus:outline-none"
                   onKeyDown={handleKeyDown}
                   disabled={isLoading || isRecording}
@@ -400,7 +397,7 @@ export default function Home() {
                   size="icon"
                   disabled={isLoading || !input.trim() || isRecording}
                   aria-label="Send message"
-                  className="h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground transition-transform hover:scale-110 active:scale-95 disabled:bg-primary/50"
+                  className="h-9 w-9 shrink-0 rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg transition-transform hover:scale-110 active:scale-95 disabled:opacity-50 disabled:shadow-none"
                 >
                   {isLoading && !isRecording ? (
                     <LoaderCircle className="h-5 w-5 animate-spin" />
@@ -410,6 +407,7 @@ export default function Home() {
                 </Button>
               </form>
             </div>
+            <Footer />
           </motion.div>
         </main>
       </div>

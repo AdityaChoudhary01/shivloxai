@@ -4,8 +4,8 @@ import Link from 'next/link';
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-border/50 bg-background/50 backdrop-blur-sm">
-      <div className="container mx-auto flex items-center justify-between py-6 md:flex-row flex-col gap-4">
+    <footer className="w-full bg-transparent pt-4">
+      <div className="container mx-auto flex items-center justify-between py-4 md:flex-row flex-col gap-4">
         <div className="flex items-center gap-2">
           <p className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Shivlox AI</p>
         </div>

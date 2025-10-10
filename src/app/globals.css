@@ -4,63 +4,63 @@
 
 @layer base {
   :root {
-    --background: 220 40% 5%; /* Dark Blue */
-    --foreground: 220 20% 95%; /* Light Grey/Blue */
-    
-    --card: 220 40% 10%; /* Slightly lighter Dark Blue */
-    --card-foreground: 220 20% 95%;
-    
-    --popover: 220 40% 8%;
-    --popover-foreground: 220 20% 95%;
-    
+    --background: 224 71% 4%; /* Deep, near-black blue */
+    --foreground: 210 40% 98%;
+
+    --card: 220 40% 8%;
+    --card-foreground: 210 40% 96%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
+
     --primary: 210 90% 60%; /* Vibrant Blue */
-    --primary-foreground: 210 100% 10%; /* Dark text for primary buttons */
+    --primary-foreground: 210 100% 10%;
 
-    --secondary: 220 30% 15%; /* Muted blue for secondary elements */
-    --secondary-foreground: 220 15% 90%;
-    
-    --muted: 220 30% 15%;
-    --muted-foreground: 220 10% 65%; /* Desaturated blue for muted text */
-    
-    --accent: 260 80% 65%; /* Vibrant Purple */
-    --accent-foreground: 260 95% 95%; /* Light text for accent elements */
+    --secondary: 220 30% 15%;
+    --secondary-foreground: 210 30% 90%;
 
-    --destructive: 0 72% 51%; /* Standard red for destructive actions */
+    --muted: 220 30% 12%;
+    --muted-foreground: 220 10% 65%;
+
+    --accent: 260 90% 65%; /* Vibrant Purple */
+    --accent-foreground: 260 95% 95%;
+
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 30% 20%; /* Blue-tinted border */
+    --border: 220 30% 20%;
     --input: 220 30% 20%;
-    --ring: 210 90% 65%; /* Ring color based on primary */
+    --ring: 210 90% 65%;
     
     --radius: 0.75rem;
 
-    --chart-1: 210 90% 60%; /* primary */
-    --chart-2: 260 80% 65%; /* accent */
-    --chart-3: 180 80% 50%; /* Cyan */
-    --chart-4: 300 85% 60%; /* Magenta */
-    --chart-5: 150 80% 55%; /* A sea green */
+    --chart-1: 210 90% 60%;
+    --chart-2: 260 80% 65%;
+    --chart-3: 180 80% 50%;
+    --chart-4: 300 85% 60%;
+    --chart-5: 150 80% 55%;
   }
 
   .dark {
-    --background: 220 40% 5%;
-    --foreground: 220 20% 95%;
-    
-    --card: 220 40% 10%;
-    --card-foreground: 220 20% 95%;
-    
-    --popover: 220 40% 8%;
-    --popover-foreground: 220 20% 95%;
-    
+    --background: 224 71% 4%;
+    --foreground: 210 40% 98%;
+
+    --card: 220 40% 8%;
+    --card-foreground: 210 40% 96%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
+
     --primary: 210 90% 60%;
     --primary-foreground: 210 100% 10%;
 
     --secondary: 220 30% 15%;
-    --secondary-foreground: 220 15% 90%;
-    
-    --muted: 220 30% 15%;
+    --secondary-foreground: 210 30% 90%;
+
+    --muted: 220 30% 12%;
     --muted-foreground: 220 10% 65%;
     
-    --accent: 260 80% 65%;
+    --accent: 260 90% 65%;
     --accent-foreground: 260 95% 95%;
 
     --destructive: 0 72% 51%;
@@ -84,5 +84,28 @@
   }
   body {
     @apply bg-background text-foreground;
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--primary) / 0.3), transparent),
+                radial-gradient(ellipse 80% 50% at 50% 120%, hsl(var(--accent) / 0.3), transparent),
+                hsl(var(--background));
+    background-attachment: fixed;
   }
+}
+
+.prose-invert {
+  --tw-prose-body: theme(colors.foreground / 0.9);
+  --tw-prose-headings: theme(colors.foreground);
+  --tw-prose-lead: theme(colors.muted.foreground);
+  --tw-prose-links: theme(colors.primary.DEFAULT);
+  --tw-prose-bold: theme(colors.foreground);
+  --tw-prose-counters: theme(colors.muted.foreground);
+  --tw-prose-bullets: theme(colors.border);
+  --tw-prose-hr: theme(colors.border);
+  --tw-prose-quotes: theme(colors.foreground);
+  --tw-prose-quote-borders: theme(colors.primary.DEFAULT);
+  --tw-prose-captions: theme(colors.muted.foreground);
+  --tw-prose-code: theme(colors.accent.foreground);
+  --tw-prose-pre-code: theme(colors.accent.foreground);
+  --tw-prose-pre-bg: hsl(var(--accent) / 0.1);
+  --tw-prose-th-borders: theme(colors.border);
+  --tw-prose-td-borders: theme(colors.border);
 }
