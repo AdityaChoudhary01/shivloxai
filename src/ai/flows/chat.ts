@@ -31,11 +31,6 @@ const chatFlow = ai.defineFlow(
       return { response: imageUrl };
     }
 
-    const history = input.history.map(msg => ({
-      role: msg.role,
-      content: [{ text: msg.content }]
-    }));
-
     const systemPrompt = `You are Shivlox AI, a helpful and modern AI assistant. Your main goal is to provide helpful, accurate, and engaging content to the user.
 
 RULES:
@@ -44,15 +39,18 @@ RULES:
 - Use emojis to make the conversation more lively and visually appealing. For example: ✨, 🚀, 👍.
 - Structure longer answers with clear headings and paragraphs to improve readability.`;
 
-    const fullHistory = [
-        { role: 'user' as const, content: [{ text: systemPrompt }] },
-        { role: 'model' as const, content: [{ text: "Okay, I'm ready to chat! How can I help you today? ✨" }] },
-        ...history,
+    const history = [
+      { role: 'user' as const, content: [{ text: systemPrompt }] },
+      { role: 'model' as const, content: [{ text: "Okay, I'm ready to chat! How can I help you today? ✨" }] },
+      ...input.history.map(msg => ({
+        role: msg.role as 'user' | 'model',
+        content: [{ text: msg.content }]
+      })),
     ];
 
     const resp = await ai.generate({
       prompt: input.prompt,
-      history: fullHistory,
+      history,
     });
 
     return { response: resp.text };
