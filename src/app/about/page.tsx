@@ -7,6 +7,12 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Menu, Lightbulb, Cpu, Users, Handshake } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'About Shivlox AI',
+  description: 'Learn about the mission, vision, and technology behind Shivlox AI, a modern and intelligent chat application.',
+};
 
 export default function AboutPage() {
   const cardVariants = {

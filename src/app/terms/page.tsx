@@ -7,6 +7,12 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Menu } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Terms of Service - Shivlox AI',
+    description: 'Review the Terms of Service for using the Shivlox AI application. Understand your rights and responsibilities when interacting with our platform.',
+};
 
 export default function TermsOfServicePage() {
   const cardVariants = {

@@ -11,6 +11,16 @@ import { useToast } from '@/hooks/use-toast';
 import { LoaderCircle } from 'lucide-react';
 import { updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Your Profile - Shivlox AI',
+    description: 'Manage your Shivlox AI user profile. Update your name, profile picture, and view your account details.',
+    robots: {
+        index: false,
+        follow: false,
+    }
+};
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();

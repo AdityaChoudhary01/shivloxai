@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +18,11 @@ import { submitContactForm } from './actions';
 import { LoaderCircle, Menu } from 'lucide-react';
 import { useState } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
+export const metadata: Metadata = {
+    title: 'Contact Us - Shivlox AI',
+    description: 'Get in touch with the Shivlox AI team. Send us your questions, feedback, or collaboration ideas through our contact form.',
+};
 
 const contactFormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),

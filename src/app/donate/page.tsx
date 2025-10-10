@@ -8,6 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Coffee, Heart, Server, Sparkles, Menu } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Donate to Shivlox AI',
+    description: 'Support the development of Shivlox AI. Your contributions help cover server costs, fund new features, and keep the platform ad-free.',
+};
 
 export default function DonatePage() {
     const upiQRCodeUrl = 'https://res.cloudinary.com/dmtnonxtt/image/upload/v1752488580/GooglePay_QR_xtgkh4.png';
