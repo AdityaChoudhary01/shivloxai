@@ -1,3 +1,4 @@
+
 'use client';
 
 import { chat, type ChatInput } from '@/ai/flows/chat';
@@ -9,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Info, FileText, Gift, Lock } from 'lucide-react';
+import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -17,7 +18,16 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/use-auth';
 import { AuthModal } from '@/components/auth-modal';
 import { UserNav } from '@/components/user-nav';
-import Link from 'next/link';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 type Message = ChatMessageProps['message'];
 
@@ -43,6 +53,10 @@ export default function Home() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [sessionMessageCount, setSessionMessageCount] = useState(0);
 
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
+
+
   useEffect(() => {
     const savedConversations = localStorage.getItem('chatHistory');
     if (savedConversations) {
@@ -61,6 +75,8 @@ export default function Home() {
   useEffect(() => {
     if (conversations.length > 0) {
       localStorage.setItem('chatHistory', JSON.stringify(conversations));
+    } else {
+      localStorage.removeItem('chatHistory');
     }
   }, [conversations]);
 
@@ -101,8 +117,8 @@ export default function Home() {
     const newUserMessage: Message = { role: 'user', content: userMessageContent };
     
     let convId = currentConversationId;
-    if (!convId) {
-        convId = startNewChat();
+    if (!convId || currentMessages.length === 0) {
+        convId = startNewChat(false);
     }
 
     const conversation = conversations.find(c => c.id === convId)!;
@@ -110,7 +126,7 @@ export default function Home() {
     
     let conversationUpdates: Partial<Conversation> = { messages: updatedMessages };
 
-    if (conversation.messages.length === 0 && conversation.title.startsWith('New Chat')) {
+    if (conversation.messages.length === 0) {
         const newTitle = userMessageContent.split(' ').slice(0, 5).join(' ');
         conversationUpdates.title = newTitle;
     }
@@ -130,6 +146,7 @@ export default function Home() {
       const history = updatedMessages
         .slice(0, -1)
         .map((m) => ({ role: m.role, content: m.content }));
+        
       const chatInput: ChatInput = { history, prompt: userMessageContent };
       const result = await chat(chatInput);
 
@@ -238,7 +255,7 @@ export default function Home() {
     handleSendMessage(`/imagine ${input.trim()}`);
   }
 
-  const startNewChat = () => {
+  const startNewChat = (setActive = true) => {
     const newId = `chat-${Date.now()}`;
     const newConversation: Conversation = {
       id: newId,
@@ -246,20 +263,66 @@ export default function Home() {
       messages: [],
     };
     setConversations(prev => [newConversation, ...prev]);
-    setCurrentConversationId(newId);
+    if (setActive) {
+        setCurrentConversationId(newId);
+    }
     return newId;
   }
+
+  const handleDeleteConversation = (id: string) => {
+    setConversationToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!conversationToDelete) return;
+
+    const newConversations = conversations.filter(c => c.id !== conversationToDelete);
+    setConversations(newConversations);
+
+    if (currentConversationId === conversationToDelete) {
+      if (newConversations.length > 0) {
+        setCurrentConversationId(newConversations[0].id);
+      } else {
+        startNewChat();
+      }
+    }
+    
+    setConversationToDelete(null);
+    setIsDeleteDialogOpen(false);
+    toast({
+        title: "Chat Deleted",
+        description: "The conversation has been removed.",
+    })
+  };
 
   return (
     <SidebarProvider>
       <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete your
+                chat history.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex h-dvh bg-transparent text-foreground">
         <Sidebar>
             <SidebarHeader className="p-2">
                 <div className="flex items-center justify-between p-2">
                     <h2 className="text-lg font-semibold">Conversations</h2>
+                    <SidebarTrigger className="md:hidden"/>
                 </div>
-                <Button variant="outline" className="w-full" onClick={startNewChat}>
+                <Button variant="outline" className="w-full" onClick={() => startNewChat()}>
                     <Plus className="mr-2" />
                     New Chat
                 </Button>
@@ -268,52 +331,28 @@ export default function Home() {
                 <SidebarContent className="p-2">
                     <SidebarMenu>
                         {conversations.map((conv) => (
-                            <SidebarMenuItem key={conv.id}>
+                            <SidebarMenuItem key={conv.id} className="group/item">
                                 <SidebarMenuButton
                                     onClick={() => setCurrentConversationId(conv.id)}
                                     isActive={currentConversationId === conv.id}
-                                    className="w-full justify-start"
+                                    className="w-full justify-start pr-8"
                                 >
                                     <MessageSquare />
-                                    <span className="truncate">{conv.title}</span>
+                                    <span className="truncate flex-1 text-left">{conv.title}</span>
                                 </SidebarMenuButton>
+                                 <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 opacity-0 group-hover/item:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+                                    onClick={() => handleDeleteConversation(conv.id)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
                             </SidebarMenuItem>
                         ))}
                     </SidebarMenu>
                 </SidebarContent>
             </ScrollArea>
-             <div className="p-4 mt-auto border-t border-border">
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <Link href="/about" passHref>
-                            <SidebarMenuButton className="w-full justify-start"><Info /> About</SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                     <SidebarMenuItem>
-                        <Link href="/contact" passHref>
-                            <SidebarMenuButton className="w-full justify-start"><MessageSquare /> Contact</SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <Link href="/donate" passHref>
-                            <SidebarMenuButton className="w-full justify-start"><Gift /> Donate</SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <Link href="/privacy" passHref>
-                            <SidebarMenuButton className="w-full justify-start"><Lock /> Privacy Policy</SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <Link href="/terms" passHref>
-                            <SidebarMenuButton className="w-full justify-start"><FileText /> Terms of Service</SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-                 <div className="text-xs text-muted-foreground text-center mt-4">
-                    © {new Date().getFullYear()} Shivlox AI. All rights reserved.
-                </div>
-            </div>
         </Sidebar>
 
         <main className="flex flex-1 flex-col overflow-hidden">
@@ -371,7 +410,7 @@ export default function Home() {
                   </div>
                 </div>
               ) : (
-                <div className="flex-1 space-y-4">
+                <div className="flex-1 space-y-6">
                   {currentMessages.map((msg, index) => (
                     <ChatMessage key={index} message={msg} />
                   ))}
@@ -445,3 +484,5 @@ export default function Home() {
     </SidebarProvider>
   );
 }
+
+    

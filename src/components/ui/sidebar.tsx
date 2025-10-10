@@ -1,12 +1,13 @@
+
 'use client';
 
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
-import { Menu, X } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
@@ -148,7 +149,7 @@ const Sidebar = React.forwardRef<
     side?: 'left' | 'right';
   }
 >(({ side = 'left', className, children, ...props }, ref) => {
-  const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+  const { isMobile, state, open, openMobile, setOpenMobile } = useSidebar();
 
   if (isMobile) {
     return (
@@ -174,7 +175,7 @@ const Sidebar = React.forwardRef<
       data-state={state}
       className={cn(
         'hidden md:flex flex-col bg-background/50 backdrop-blur-lg border-r border-white/10 transition-[width] duration-300 ease-in-out',
-        state === 'collapsed' ? 'w-0' : 'w-[var(--sidebar-width)]',
+        open ? 'w-[var(--sidebar-width)]' : 'w-0 border-r-0',
         className
       )}
       {...props}
@@ -295,3 +296,5 @@ export {
   SidebarTrigger,
   useSidebar,
 };
+
+    
