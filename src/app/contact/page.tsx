@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -59,8 +58,8 @@ export default function ContactPage() {
     <div className="flex flex-col min-h-screen">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-sm backdrop-blur-sm">
         <div className="flex items-center">
-            <Link href="/" className="text-2xl font-bold text-primary">
-              Auravo AI
+            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Shivlox AI
             </Link>
         </div>
       </header>

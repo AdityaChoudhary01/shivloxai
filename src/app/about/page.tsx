@@ -1,4 +1,3 @@
-
 'use client';
 
 import { motion } from 'framer-motion';
@@ -11,8 +10,8 @@ export default function AboutPage() {
     <div className="flex flex-col min-h-screen">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-sm backdrop-blur-sm">
         <div className="flex items-center">
-            <Link href="/" className="text-2xl font-bold text-primary">
-              Auravo AI
+            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Shivlox AI
             </Link>
         </div>
       </header>
@@ -26,10 +25,10 @@ export default function AboutPage() {
             className="text-center"
           >
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-              About Auravo AI
+              About Shivlox AI
             </h1>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Auravo AI is a cutting-edge chat application designed to provide intelligent, helpful, and engaging conversations. Our mission is to push the boundaries of artificial intelligence to create a seamless and intuitive user experience.
+              Shivlox AI is a cutting-edge chat application designed to provide intelligent, helpful, and engaging conversations. Our mission is to push the boundaries of artificial intelligence to create a seamless and intuitive user experience.
             </p>
           </motion.div>
 
@@ -42,14 +41,14 @@ export default function AboutPage() {
             <div>
               <h2 className="text-3xl font-bold tracking-tight text-foreground">Our Vision</h2>
               <p className="mt-4 text-lg text-muted-foreground">
-                We believe in a future where AI assistants are not just tools, but collaborative partners that help us learn, create, and solve problems more effectively. Auravo is our first step towards that future, built on a foundation of powerful large language models and a commitment to user-centric design.
+                We believe in a future where AI assistants are not just tools, but collaborative partners that help us learn, create, and solve problems more effectively. Shivlox is our first step towards that future, built on a foundation of powerful large language models and a commitment to user-centric design.
               </p>
             </div>
             
             <div>
               <h2 className="text-3xl font-bold tracking-tight text-foreground">The Technology</h2>
               <p className="mt-4 text-lg text-muted-foreground">
-                Powered by Google's Gemini models, Auravo AI leverages state-of-the-art natural language processing to understand context, generate human-like text, create images, and more. The application is built with a modern tech stack, including Next.js, React, and Tailwind CSS, ensuring a fast, responsive, and scalable platform.
+                Powered by Google's Gemini models, Shivlox AI leverages state-of-the-art natural language processing to understand context, generate human-like text, create images, and more. The application is built with a modern tech stack, including Next.js, React, and Tailwind CSS, ensuring a fast, responsive, and scalable platform.
               </p>
             </div>
 

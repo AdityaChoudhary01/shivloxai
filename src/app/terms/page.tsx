@@ -1,4 +1,3 @@
-
 'use client';
 
 import { motion } from 'framer-motion';
@@ -10,8 +9,8 @@ export default function TermsOfServicePage() {
     <div className="flex flex-col min-h-screen">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-sm backdrop-blur-sm">
         <div className="flex items-center">
-            <Link href="/" className="text-2xl font-bold text-primary">
-              Auravo AI
+            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Shivlox AI
             </Link>
         </div>
       </header>
@@ -24,12 +23,12 @@ export default function TermsOfServicePage() {
             transition={{ duration: 0.5 }}
             className="prose prose-invert max-w-none"
           >
-            <h1>Terms of Service for Auravo AI</h1>
+            <h1>Terms of Service for Shivlox AI</h1>
             <p><strong>Last Updated:</strong> {new Date().toLocaleDateString()}</p>
 
             <h2>1. Agreement to Terms</h2>
             <p>
-              By using our application, Auravo AI ("Application"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the Application.
+              By using our application, Shivlox AI ("Application"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the Application.
             </p>
 
             <h2>2. Changes to Terms or Services</h2>
@@ -51,8 +50,8 @@ export default function TermsOfServicePage() {
             <p>You agree not to do any of the following:</p>
             <ul>
                 <li>Post, upload, publish, submit or transmit any Content that: (i) infringes, misappropriates or violates a third party’s patent, copyright, trademark, trade secret, moral rights or other intellectual property rights, or rights of publicity or privacy; (ii) violates, or encourages any conduct that would violate, any applicable law or regulation or would give rise to civil liability; (iii) is fraudulent, false, misleading or deceptive; (iv) is defamatory, obscene, pornographic, vulgar or offensive; (v) promotes discrimination, bigotry, racism, hatred, harassment or harm against any individual or group.</li>
-                <li>Use, display, mirror or frame the Application or any individual element within the Application, Auravo AI’s name, any Auravo AI trademark, logo or other proprietary information, or the layout and design of any page or form contained on a page, without our express written consent.</li>
-                <li>Attempt to probe, scan or test the vulnerability of any Auravo AI system or network or breach any security or authentication measures.</li>
+                <li>Use, display, mirror or frame the Application or any individual element within the Application, Shivlox AI’s name, any Shivlox AI trademark, logo or other proprietary information, or the layout and design of any page or form contained on a page, without our express written consent.</li>
+                <li>Attempt to probe, scan or test the vulnerability of any Shivlox AI system or network or breach any security or authentication measures.</li>
             </ul>
 
             <h2>6. Termination</h2>
@@ -62,7 +61,7 @@ export default function TermsOfServicePage() {
 
             <h2>7. Limitation of Liability</h2>
             <p>
-              NEITHER AURAVO AI NOR ANY OTHER PARTY INVOLVED IN CREATING, PRODUCING, OR DELIVERING THE APPLICATION WILL BE LIABLE FOR ANY INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, LOSS OF DATA OR GOODWILL, SERVICE INTERRUPTION, COMPUTER DAMAGE OR SYSTEM FAILURE OR THE COST OF SUBSTITUTE SERVICES ARISING OUT OF OR IN CONNECTION WITH THESE TERMS OR FROM THE USE OF OR INABILITY TO USE THE APPLICATION.
+              NEITHER SHIVLOX AI NOR ANY OTHER PARTY INVOLVED IN CREATING, PRODUCING, OR DELIVERING THE APPLICATION WILL BE LIABLE FOR ANY INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, LOSS OF DATA OR GOODWILL, SERVICE INTERRUPTION, COMPUTER DAMAGE OR SYSTEM FAILURE OR THE COST OF SUBSTITUTE SERVICES ARISING OUT OF OR IN CONNECTION WITH THESE TERMS OR FROM THE USE OF OR INABILITY TO USE THE APPLICATION.
             </p>
 
             <h2>Contact Information</h2>

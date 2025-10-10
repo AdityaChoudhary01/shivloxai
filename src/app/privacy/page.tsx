@@ -1,4 +1,3 @@
-
 'use client';
 
 import { motion } from 'framer-motion';
@@ -10,8 +9,8 @@ export default function PrivacyPolicyPage() {
     <div className="flex flex-col min-h-screen">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-sm backdrop-blur-sm">
         <div className="flex items-center">
-            <Link href="/" className="text-2xl font-bold text-primary">
-              Auravo AI
+            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Shivlox AI
             </Link>
         </div>
       </header>
@@ -24,11 +23,11 @@ export default function PrivacyPolicyPage() {
             transition={{ duration: 0.5 }}
             className="prose prose-invert max-w-none"
           >
-            <h1>Privacy Policy for Auravo AI</h1>
+            <h1>Privacy Policy for Shivlox AI</h1>
             <p><strong>Last Updated:</strong> {new Date().toLocaleDateString()}</p>
             
             <p>
-              Welcome to Auravo AI. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our application. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the application.
+              Welcome to Shivlox AI. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our application. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the application.
             </p>
 
             <h2>Information We Collect</h2>

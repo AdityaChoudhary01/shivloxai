@@ -36,7 +36,7 @@ const chatFlow = ai.defineFlow(
       content: [{ text: msg.content }]
     }));
 
-    const systemPrompt = `You are Auravo AI, a helpful and modern AI assistant. Your main goal is to provide helpful, accurate, and engaging content to the user.
+    const systemPrompt = `You are Shivlox AI, a helpful and modern AI assistant. Your main goal is to provide helpful, accurate, and engaging content to the user.
 
 RULES:
 - Your responses should be informative, friendly, and engaging.

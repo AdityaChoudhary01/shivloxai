@@ -1,4 +1,3 @@
-
 'use client';
 
 import { chat, type ChatInput } from '@/ai/flows/chat';
@@ -290,11 +289,9 @@ export default function Home() {
           <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-sm backdrop-blur-sm">
             <SidebarTrigger />
             <div className="flex flex-1 items-center justify-center gap-3 text-center font-headline text-2xl font-semibold sm:text-3xl">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-transparent">
-                <GeminiIcon className="h-10 w-10" />
-              </div>
+              <GeminiIcon className="h-10 w-10" />
               <h1 className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Auravo AI
+                Shivlox AI
               </h1>
             </div>
              {user ? (
@@ -312,9 +309,9 @@ export default function Home() {
                     initial={{ scale: 0, rotate: -45 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ duration: 0.5, type: 'spring', stiffness: 260, damping: 20 }}
-                    className="mb-4 rounded-full bg-primary/10 p-4"
+                    className="mb-4"
                   >
-                    <GeminiIcon className="h-10 w-10" />
+                    <GeminiIcon className="h-16 w-16" />
                   </motion.div>
                   <motion.h2
                     initial={{ opacity: 0, y: 20 }}
@@ -334,7 +331,7 @@ export default function Home() {
                       >
                         <Button
                           variant="outline"
-                          className="h-auto min-h-14 w-full whitespace-normal rounded-lg border-dashed text-left text-sm transition-transform hover:scale-105"
+                          className="h-auto min-h-14 w-full whitespace-normal rounded-lg border-dashed text-left text-sm transition-transform hover:scale-105 hover:border-primary hover:bg-primary/10"
                           onClick={() => handleSendMessage(prompt)}
                         >
                           {prompt}

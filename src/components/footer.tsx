@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -10,7 +9,7 @@ export function Footer() {
       <div className="container mx-auto flex items-center justify-between py-6 md:flex-row flex-col gap-4">
         <div className="flex items-center gap-2">
           <GeminiIcon className="h-6 w-6" />
-          <p className="text-lg font-semibold">Auravo AI</p>
+          <p className="text-lg font-semibold">Shivlox AI</p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
           <Link href="/" className="transition-colors hover:text-foreground">
@@ -33,7 +32,7 @@ export function Footer() {
           </Link>
         </div>
         <div className="text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Auravo AI. All rights reserved.
+          © {new Date().getFullYear()} Shivlox AI. All rights reserved.
         </div>
       </div>
     </footer>

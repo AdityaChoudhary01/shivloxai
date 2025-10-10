@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -16,8 +15,8 @@ export default function DonatePage() {
         <div className="flex flex-col min-h-screen">
             <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-sm backdrop-blur-sm">
                 <div className="flex items-center">
-                    <Link href="/" className="text-2xl font-bold text-primary">
-                      Auravo AI
+                    <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                      Shivlox AI
                     </Link>
                 </div>
             </header>
@@ -34,7 +33,7 @@ export default function DonatePage() {
                             Become a Supporter
                         </h1>
                         <p className="mt-6 text-lg leading-8 text-muted-foreground">
-                            Auravo AI is a passion project. If you find our platform useful, please consider supporting us. Your contribution, no matter the size, makes a huge difference!
+                            Shivlox AI is a passion project. If you find our platform useful, please consider supporting us. Your contribution, no matter the size, makes a huge difference!
                         </p>
                     </motion.div>
 
@@ -110,7 +109,7 @@ export default function DonatePage() {
                                      <div className="flex flex-col items-center mb-4">
                                         <Image src="https://cdn.buymeacoffee.com/uploads/profile_pictures/2025/07/ZzlkIXLPpwCOJfAo.jpg@300w_0e.webp" alt="Aditya Choudhary" width={70} height={70} className="rounded-full object-cover mb-2 border-2 border-yellow-400" />
                                         <div className="font-bold text-yellow-400 text-lg">Aditya Choudhary</div>
-                                        <div className="text-muted-foreground text-sm mb-2 text-center">Support my work and help keep Auravo AI ad-free!</div>
+                                        <div className="text-muted-foreground text-sm mb-2 text-center">Support my work and help keep Shivlox AI ad-free!</div>
                                     </div>
                                     <p className="text-muted-foreground mb-4">A simple and secure way to show your support using a card or other payment methods.</p>
                                     <a href="https://coff.ee/adityachoudhary" target="_blank" rel="noopener noreferrer">

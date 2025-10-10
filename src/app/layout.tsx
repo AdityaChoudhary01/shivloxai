@@ -6,27 +6,27 @@ import { AuthProvider } from '@/components/auth-provider';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Auravo AI - Your Intelligent Chat Assistant',
-    template: '%s | Auravo AI',
+    default: 'Shivlox AI - Your Intelligent Chat Assistant',
+    template: '%s | Shivlox AI',
   },
-  description: 'Engage in intelligent conversations, generate images, and get instant answers with Auravo AI, a modern chat application powered by Google\'s Gemini models.',
-  keywords: ['AI Chat', 'Intelligent Assistant', 'Gemini AI', 'Next.js', 'Auravo AI', 'Chatbot', 'Image Generation', 'AI assistant', 'Conversational AI'],
+  description: 'Engage in intelligent conversations, generate images, and get instant answers with Shivlox AI, a modern chat application powered by Google\'s Gemini models.',
+  keywords: ['AI Chat', 'Intelligent Assistant', 'Gemini AI', 'Next.js', 'Shivlox AI', 'Chatbot', 'Image Generation', 'AI assistant', 'Conversational AI'],
   authors: [{ name: 'Aditya Choudhary', url: 'https://www.auravo.ai' }],
   creator: 'Aditya Choudhary',
-  publisher: 'Auravo AI',
+  publisher: 'Shivlox AI',
   metadataBase: new URL('https://www.auravo.ai'),
   manifest: '/manifest.json',
   openGraph: {
-    title: 'Auravo AI - Your Intelligent Chat Assistant',
-    description: 'Engage in intelligent conversations, generate images, and get instant answers with Auravo AI.',
+    title: 'Shivlox AI - Your Intelligent Chat Assistant',
+    description: 'Engage in intelligent conversations, generate images, and get instant answers with Shivlox AI.',
     url: 'https://www.auravo.ai',
-    siteName: 'Auravo AI',
+    siteName: 'Shivlox AI',
     images: [
         {
             url: '/og-image.png', // Must be an absolute URL
             width: 1200,
             height: 630,
-            alt: 'Auravo AI in action',
+            alt: 'Shivlox AI in action',
         },
     ],
     locale: 'en_US',
@@ -34,8 +34,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Auravo AI - Your Intelligent Chat Assistant',
-    description: 'Engage in intelligent conversations, generate images, and get instant answers with Auravo AI.',
+    title: 'Shivlox AI - Your Intelligent Chat Assistant',
+    description: 'Engage in intelligent conversations, generate images, and get instant answers with Shivlox AI.',
     creator: '@adityacodes',
     images: ['/twitter-image.png'], // Must be an absolute URL
   },
@@ -65,7 +65,7 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    'name': 'Auravo AI',
+    'name': 'Shivlox AI',
     'url': 'https://www.auravo.ai',
     'potentialAction': {
       '@type': 'SearchAction',
