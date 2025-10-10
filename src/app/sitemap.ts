@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next'
- 
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://www.shivlox.ai';
+  // CORRECTED: Use the consistent domain from your canonical tags and metadataBase
+  const baseUrl = 'https://shivloxai.netlify.app';
 
   return [
     {
