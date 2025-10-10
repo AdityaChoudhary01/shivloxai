@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
@@ -15,6 +16,7 @@ export function ShivloxIcon({ className, ...props }: ShivloxIconProps) {
         src={logoUrl}
         alt="Shivlox AI Logo"
         fill
+        sizes="(max-width: 768px) 10vw, (max-width: 1200px) 5vw, 3vw"
         className="object-cover"
         priority
       />
