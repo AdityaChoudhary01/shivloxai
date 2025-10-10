@@ -1,11 +1,15 @@
+
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { LoaderCircle } from 'lucide-react';
+import { Check, Copy, LoaderCircle } from 'lucide-react';
 import Markdown from 'react-markdown';
 import Image from 'next/image';
+import { Button } from './ui/button';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 export type ChatMessageProps = {
   message: {
@@ -16,6 +20,8 @@ export type ChatMessageProps = {
 };
 
 export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
+  const { toast } = useToast();
+  const [isCopied, setIsCopied] = useState(false);
   const messageVariants = {
     hidden: { opacity: 0, y: 10, scale: 0.95 },
     visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.3, ease: 'easeOut' } },
@@ -23,13 +29,27 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
 
   const aiAvatarUrl = "https://res.cloudinary.com/dygtsoclj/image/upload/v1760107864/Gemini_Generated_Image_tdm06stdm06stdm0_ymfdnp.png";
 
+  const onCopy = () => {
+    if (isCopied) return;
+
+    navigator.clipboard.writeText(message.content).then(() => {
+      setIsCopied(true);
+      toast({
+        title: "Copied to clipboard",
+      });
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 2000);
+    });
+  };
+
   if (isLoading) {
     return (
       <motion.div
         variants={messageVariants}
         initial="hidden"
         animate="visible"
-        className="flex items-start justify-start gap-3"
+        className="flex items-start justify-start gap-3 group"
       >
         <Avatar className="h-8 w-8 border-2 border-primary/50">
             <AvatarImage src={aiAvatarUrl} alt="Shivlox AI" />
@@ -51,7 +71,7 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
       initial="hidden"
       animate="visible"
       className={cn(
-        'flex items-start gap-3',
+        'flex items-start gap-3 group/message',
         isUser ? 'justify-end' : 'justify-start'
       )}
     >
@@ -70,10 +90,21 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
         )}
       >
         <div className={cn(
-            'rounded-[10px] w-full h-full',
+            'relative rounded-[10px] w-full h-full',
             isUser ? 'bg-secondary' : 'bg-background',
             isImage ? 'p-0 overflow-hidden' : 'p-3'
         )}>
+          {!isImage && (
+             <Button
+                size="icon"
+                variant="ghost"
+                onClick={onCopy}
+                className="absolute top-1 right-1 h-7 w-7 text-muted-foreground opacity-0 transition-opacity group-hover/message:opacity-100"
+              >
+                {isCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+            </Button>
+          )}
+
           {isImage ? (
             <Image
               src={message.content}
