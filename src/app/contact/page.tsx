@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { submitContactForm } from './actions';
 import { LoaderCircle, Menu } from 'lucide-react';
@@ -34,6 +35,11 @@ export default function ContactPage() {
       message: '',
     },
   });
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  };
 
   const onSubmit = async (values: z.infer<typeof contactFormSchema>) => {
     setIsSubmitting(true);
@@ -82,7 +88,7 @@ export default function ContactPage() {
         </DropdownMenu>
       </header>
       <main className="flex-1">
-        <div className="container mx-auto max-w-2xl py-12 md:py-20">
+        <div className="container mx-auto max-w-2xl py-12 md:py-20 px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -90,66 +96,75 @@ export default function ContactPage() {
             className="text-center"
           >
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-              Contact Us
+              Get in Touch
             </h1>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Have a question, feedback, or just want to say hello? Drop us a line! For details on how we handle your data, please see our <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+              Have a question, feedback, or a collaboration idea? We'd love to hear from you. Drop us a line using the form below. For details on how we handle your data, please see our <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
             </p>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            variants={cardVariants}
+            initial="hidden"
+            animate="visible"
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mt-12"
           >
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Your Name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="you@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="message"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Message</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Your message..." className="min-h-[150px]" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                  Send Message
-                </Button>
-              </form>
-            </Form>
+            <Card className="transition-all duration-300 hover:shadow-primary/20 hover:shadow-lg">
+                <CardHeader>
+                    <CardTitle>Send Us a Message</CardTitle>
+                    <CardDescription>We typically respond within 24-48 hours.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Your Name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                                <Input type="email" placeholder="you@example.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                        control={form.control}
+                        name="message"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Message</FormLabel>
+                            <FormControl>
+                                <Textarea placeholder="Your message..." className="min-h-[150px]" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <Button type="submit" className="w-full" disabled={isSubmitting}>
+                        {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                        Send Message
+                        </Button>
+                    </form>
+                    </Form>
+                </CardContent>
+            </Card>
           </motion.div>
         </div>
       </main>
