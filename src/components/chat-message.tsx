@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { LoaderCircle } from 'lucide-react';
@@ -29,12 +29,11 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
         variants={messageVariants}
         initial="hidden"
         animate="visible"
-        className="flex items-start justify-start gap-3"
+        className="flex items-start justify-start gap-3 my-4"
       >
-        <Avatar className="h-8 w-8 border-none bg-transparent">
-          <AvatarFallback className="bg-transparent p-1">
-            <ShivloxIcon />
-          </AvatarFallback>
+        <Avatar className="h-8 w-8 border">
+            <AvatarImage src="https://res.cloudinary.com/dygtsoclj/image/upload/v1760107864/Gemini_Generated_Image_tdm06stdm06stdm0_ymfdnp.png" alt="Shivlox AI" />
+            <AvatarFallback>SA</AvatarFallback>
         </Avatar>
         <div className="flex items-center justify-center rounded-lg bg-secondary p-3 text-sm shadow-sm">
           <LoaderCircle className="h-5 w-5 animate-spin text-primary" />
@@ -52,12 +51,15 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
       initial="hidden"
       animate="visible"
       className={cn(
-        'flex items-start gap-3',
+        'flex items-start gap-3 my-4',
         isUser ? 'justify-end' : 'justify-start'
       )}
     >
       {!isUser && (
-         <ShivloxIcon className="h-8 w-8" />
+         <Avatar className="h-8 w-8 border">
+            <AvatarImage src="https://res.cloudinary.com/dygtsoclj/image/upload/v1760107864/Gemini_Generated_Image_tdm06stdm06stdm0_ymfdnp.png" alt="Shivlox AI" />
+            <AvatarFallback>SA</AvatarFallback>
+        </Avatar>
       )}
       <div
         className={cn(
