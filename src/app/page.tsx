@@ -286,11 +286,11 @@ export default function Home() {
 
         <main className="flex flex-1 flex-col overflow-hidden">
           <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-lg backdrop-blur-lg">
-            <SidebarTrigger className="md:hidden" />
-            <div className="flex flex-1 items-center justify-center md:justify-start">
-               <div className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Shivlox AI
-              </div>
+            <div className="flex items-center gap-2">
+                <SidebarTrigger />
+                <div className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    Shivlox AI
+                </div>
             </div>
              {user ? (
                 <UserNav />
@@ -307,7 +307,7 @@ export default function Home() {
                     initial={{ scale: 0, rotate: -45 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ duration: 0.5, type: 'spring', stiffness: 260, damping: 20 }}
-                    className="mb-4 rounded-full p-2 bg-gradient-to-br from-primary/20 to-accent/20 shadow-lg"
+                    className="mb-4"
                   >
                     <ShivloxIcon className="h-20 w-20" />
                   </motion.div>
