@@ -2,7 +2,9 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Footer } from '@/components/footer';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Menu } from 'lucide-react';
 
 export default function TermsOfServicePage() {
   return (
@@ -15,6 +17,21 @@ export default function TermsOfServicePage() {
               </div>
             </Link>
         </div>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                    <Menu />
+                    <span className="sr-only">Open menu</span>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <Link href="/" passHref><DropdownMenuItem>Home</DropdownMenuItem></Link>
+                <Link href="/about" passHref><DropdownMenuItem>About</DropdownMenuItem></Link>
+                <Link href="/contact" passHref><DropdownMenuItem>Contact</DropdownMenuItem></Link>
+                <Link href="/donate" passHref><DropdownMenuItem>Donate</DropdownMenuItem></Link>
+                <Link href="/privacy" passHref><DropdownMenuItem>Privacy Policy</DropdownMenuItem></Link>
+            </DropdownMenuContent>
+        </DropdownMenu>
       </header>
 
       <main className="flex-1 px-4">
@@ -74,7 +91,9 @@ export default function TermsOfServicePage() {
           </motion.div>
         </div>
       </main>
-      <Footer />
+       <footer className="w-full bg-transparent py-4 text-center text-sm text-muted-foreground">
+        © {new Date().getFullYear()} Shivlox AI. All rights reserved.
+      </footer>
     </div>
   );
 }

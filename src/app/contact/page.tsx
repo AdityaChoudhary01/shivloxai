@@ -12,9 +12,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { submitContactForm } from './actions';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Menu } from 'lucide-react';
 import { useState } from 'react';
-import { Footer } from '@/components/footer';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const contactFormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -64,6 +64,21 @@ export default function ContactPage() {
               </div>
             </Link>
         </div>
+         <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                    <Menu />
+                    <span className="sr-only">Open menu</span>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <Link href="/" passHref><DropdownMenuItem>Home</DropdownMenuItem></Link>
+                <Link href="/about" passHref><DropdownMenuItem>About</DropdownMenuItem></Link>
+                <Link href="/donate" passHref><DropdownMenuItem>Donate</DropdownMenuItem></Link>
+                <Link href="/privacy" passHref><DropdownMenuItem>Privacy Policy</DropdownMenuItem></Link>
+                <Link href="/terms" passHref><DropdownMenuItem>Terms of Service</DropdownMenuItem></Link>
+            </DropdownMenuContent>
+        </DropdownMenu>
       </header>
       <main className="flex-1">
         <div className="container mx-auto max-w-2xl py-12 md:py-20">
@@ -137,7 +152,9 @@ export default function ContactPage() {
           </motion.div>
         </div>
       </main>
-      <Footer />
+      <footer className="w-full bg-transparent py-4 text-center text-sm text-muted-foreground">
+        © {new Date().getFullYear()} Shivlox AI. All rights reserved.
+      </footer>
     </div>
   );
 }

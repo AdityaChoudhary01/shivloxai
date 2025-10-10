@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X } from 'lucide-react';
+import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Info, FileText, Gift, Lock } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/use-auth';
 import { AuthModal } from '@/components/auth-modal';
 import { UserNav } from '@/components/user-nav';
-import { Footer } from '@/components/footer';
+import Link from 'next/link';
 
 type Message = ChatMessageProps['message'];
 
@@ -282,6 +282,38 @@ export default function Home() {
                     </SidebarMenu>
                 </SidebarContent>
             </ScrollArea>
+             <div className="p-4 mt-auto border-t border-border">
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <Link href="/about" passHref>
+                            <SidebarMenuButton className="w-full justify-start"><Info /> About</SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                     <SidebarMenuItem>
+                        <Link href="/contact" passHref>
+                            <SidebarMenuButton className="w-full justify-start"><MessageSquare /> Contact</SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                        <Link href="/donate" passHref>
+                            <SidebarMenuButton className="w-full justify-start"><Gift /> Donate</SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                        <Link href="/privacy" passHref>
+                            <SidebarMenuButton className="w-full justify-start"><Lock /> Privacy Policy</SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                        <Link href="/terms" passHref>
+                            <SidebarMenuButton className="w-full justify-start"><FileText /> Terms of Service</SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+                 <div className="text-xs text-muted-foreground text-center mt-4">
+                    © {new Date().getFullYear()} Shivlox AI. All rights reserved.
+                </div>
+            </div>
         </Sidebar>
 
         <main className="flex flex-1 flex-col overflow-hidden">
@@ -348,11 +380,6 @@ export default function Home() {
               {isLoading && <ChatMessage isLoading />}
               <div ref={messagesEndRef} />
             </div>
-            {currentMessages.length === 0 && !isLoading && (
-              <div className="sticky bottom-0 mt-auto">
-                <Footer />
-              </div>
-            )}
           </div>
             
           <motion.div
@@ -411,9 +438,6 @@ export default function Home() {
                   )}
                 </Button>
               </form>
-              {currentMessages.length > 0 && (
-                <Footer />
-              )}
             </div>
           </motion.div>
         </main>

@@ -4,9 +4,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Footer } from '@/components/footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Coffee, Heart, Server, Sparkles } from 'lucide-react';
+import { Coffee, Heart, Server, Sparkles, Menu } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function DonatePage() {
     const upiQRCodeUrl = 'https://res.cloudinary.com/dmtnonxtt/image/upload/v1752488580/GooglePay_QR_xtgkh4.png';
@@ -21,6 +21,21 @@ export default function DonatePage() {
                        </div>
                     </Link>
                 </div>
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <Menu />
+                            <span className="sr-only">Open menu</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <Link href="/" passHref><DropdownMenuItem>Home</DropdownMenuItem></Link>
+                        <Link href="/about" passHref><DropdownMenuItem>About</DropdownMenuItem></Link>
+                        <Link href="/contact" passHref><DropdownMenuItem>Contact</DropdownMenuItem></Link>
+                        <Link href="/privacy" passHref><DropdownMenuItem>Privacy Policy</DropdownMenuItem></Link>
+                        <Link href="/terms" passHref><DropdownMenuItem>Terms of Service</DropdownMenuItem></Link>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </header>
 
             <main className="flex-1 px-4">
@@ -126,7 +141,9 @@ export default function DonatePage() {
                     </motion.div>
                 </div>
             </main>
-            <Footer />
+             <footer className="w-full bg-transparent py-4 text-center text-sm text-muted-foreground">
+                © {new Date().getFullYear()} Shivlox AI. All rights reserved.
+            </footer>
         </div>
     );
 }
