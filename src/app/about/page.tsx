@@ -4,14 +4,15 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Footer } from '@/components/footer';
+import { ShivloxIcon } from '@/components/shivlox-icon';
 
 export default function AboutPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-sm backdrop-blur-sm">
         <div className="flex items-center">
-            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Shivlox AI
+            <Link href="/">
+              <ShivloxIcon logoType="full" />
             </Link>
         </div>
       </header>

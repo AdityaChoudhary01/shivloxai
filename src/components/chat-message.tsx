@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { LoaderCircle } from 'lucide-react';
 import Markdown from 'react-markdown';
 import Image from 'next/image';
-import { GeminiIcon } from './gemini-icon';
+import { ShivloxIcon } from './shivlox-icon';
 
 export type ChatMessageProps = {
   message: {
@@ -32,8 +32,8 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
         className="flex items-start justify-start gap-3"
       >
         <Avatar className="h-8 w-8 border-none bg-transparent">
-          <AvatarFallback className="bg-transparent">
-            <GeminiIcon className="h-5 w-5" />
+          <AvatarFallback className="bg-transparent p-1">
+            <ShivloxIcon />
           </AvatarFallback>
         </Avatar>
         <div className="flex items-center justify-center rounded-lg bg-secondary p-3 text-sm shadow-sm">
@@ -58,8 +58,8 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
     >
       {!isUser && (
         <Avatar className="h-8 w-8 border-none bg-transparent">
-          <AvatarFallback className="bg-transparent">
-            <GeminiIcon className="h-5 w-5" />
+          <AvatarFallback className="bg-transparent p-1">
+            <ShivloxIcon />
           </AvatarFallback>
         </Avatar>
       )}

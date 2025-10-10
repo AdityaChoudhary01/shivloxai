@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Footer } from '@/components/footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Coffee, Heart, Server, Sparkles } from 'lucide-react';
+import { ShivloxIcon } from '@/components/shivlox-icon';
 
 export default function DonatePage() {
     const upiQRCodeUrl = 'https://res.cloudinary.com/dmtnonxtt/image/upload/v1752488580/GooglePay_QR_xtgkh4.png';
@@ -15,8 +16,8 @@ export default function DonatePage() {
         <div className="flex flex-col min-h-screen">
             <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-sm backdrop-blur-sm">
                 <div className="flex items-center">
-                    <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                      Shivlox AI
+                    <Link href="/">
+                      <ShivloxIcon logoType="full" />
                     </Link>
                 </div>
             </header>

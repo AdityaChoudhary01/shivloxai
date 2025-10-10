@@ -4,7 +4,7 @@ import { chat, type ChatInput } from '@/ai/flows/chat';
 import { generateInitialPrompts } from '@/ai/flows/generate-initial-prompt';
 import { processAudio } from '@/ai/flows/process-audio';
 import { ChatMessage, type ChatMessageProps } from '@/components/chat-message';
-import { GeminiIcon } from '@/components/gemini-icon';
+import { ShivloxIcon } from '@/components/shivlox-icon';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -288,11 +288,8 @@ export default function Home() {
         <main className="flex flex-1 flex-col overflow-hidden">
           <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-sm backdrop-blur-sm">
             <SidebarTrigger />
-            <div className="flex flex-1 items-center justify-center gap-3 text-center font-headline text-2xl font-semibold sm:text-3xl">
-              <GeminiIcon className="h-10 w-10" />
-              <h1 className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Shivlox AI
-              </h1>
+            <div className="flex flex-1 items-center justify-center">
+                <ShivloxIcon logoType="full" />
             </div>
              {user ? (
                 <UserNav />
@@ -311,7 +308,7 @@ export default function Home() {
                     transition={{ duration: 0.5, type: 'spring', stiffness: 260, damping: 20 }}
                     className="mb-4"
                   >
-                    <GeminiIcon className="h-16 w-16" />
+                    <ShivloxIcon className="h-16 w-16" />
                   </motion.div>
                   <motion.h2
                     initial={{ opacity: 0, y: 20 }}
