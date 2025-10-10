@@ -1,0 +1,14 @@
+# This file configures the build and deployment settings for Netlify.
+# It ensures that Netlify's Next.js runtime is used to correctly handle
+# Server Components, API routes (used by Genkit), and other features.
+
+[build]
+  # The command to build your Next.js application.
+  command = "npm run build"
+  
+  # The directory where the build output is stored.
+  publish = ".next"
+
+[[plugins]]
+  # This essential plugin enables full support for Next.js features on Netlify.
+  package = "@netlify/plugin-nextjs"
