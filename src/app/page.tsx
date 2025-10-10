@@ -348,6 +348,11 @@ export default function Home() {
               {isLoading && <ChatMessage isLoading />}
               <div ref={messagesEndRef} />
             </div>
+            {currentMessages.length === 0 && !isLoading && (
+              <div className="sticky bottom-0 mt-auto">
+                <Footer />
+              </div>
+            )}
           </div>
             
           <motion.div
@@ -406,8 +411,10 @@ export default function Home() {
                   )}
                 </Button>
               </form>
+              {currentMessages.length > 0 && (
+                <Footer />
+              )}
             </div>
-            <Footer />
           </motion.div>
         </main>
       </div>
