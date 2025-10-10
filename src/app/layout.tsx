@@ -1,4 +1,3 @@
-
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
@@ -56,8 +55,12 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   alternates: {
-  canonical: 'https://shivloxai.netlify.app',
-   },
+    canonical: 'https://shivloxai.netlify.app',
+  },
+  // Added Google Site Verification here
+  verification: {
+    google: 'ftdUSQ0-7RzVhdMCxpKJOqlfjqOVyCy_ee4WIEwSjG0',
+  },
 };
 
 export default function RootLayout({
