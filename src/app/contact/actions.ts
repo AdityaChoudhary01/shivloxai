@@ -34,7 +34,7 @@ export async function submitContactForm(values: z.infer<typeof contactFormSchema
       from: `"${validatedData.name}" <${process.env.SMTP_USER}>`, // Sender's name and authorized email
       to: process.env.MAIL_TO, // Your receiving email address
       replyTo: validatedData.email, // Set the reply-to to the user's email
-      subject: `New Contact Form Message from ${validatedData.name}`,
+      subject: `New ShivloxAi Contact Form Message from ${validatedData.name}`,
       html: `
         <h1>New Contact Form Submission</h1>
         <p><strong>Name:</strong> ${validatedData.name}</p>
