@@ -57,11 +57,7 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
       )}
     >
       {!isUser && (
-        <Avatar className="h-8 w-8 border-none bg-transparent">
-          <AvatarFallback className="bg-transparent p-1">
-            <ShivloxIcon />
-          </AvatarFallback>
-        </Avatar>
+         <ShivloxIcon className="h-8 w-8" />
       )}
       <div
         className={cn(

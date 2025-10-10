@@ -1,28 +1,22 @@
+
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
-type ShivloxIconProps = React.HTMLAttributes<HTMLDivElement> & {
-    logoType?: 'icon' | 'full';
-};
+type ShivloxIconProps = React.HTMLAttributes<HTMLDivElement>;
 
-const logos = {
-    icon: 'https://res.cloudinary.com/dygtsoclj/image/upload/v1760107864/Gemini_Generated_Image_tdm06stdm06stdm0_ymfdnp.png',
-    full: 'https://res.cloudinary.com/dygtsoclj/image/upload/v1760107855/Gemini_Generated_Image_9w2ueh9w2ueh9w2u-removebg-preview_ujovsa.png'
-};
+const logoUrl = 'https://res.cloudinary.com/dygtsoclj/image/upload/v1760107864/Gemini_Generated_Image_tdm06stdm06stdm0_ymfdnp.png';
 
-export function ShivloxIcon({ className, logoType = 'icon', ...props }: ShivloxIconProps) {
-  const isFullLogo = logoType === 'full';
+export function ShivloxIcon({ className, ...props }: ShivloxIconProps) {
   return (
     <div className={cn(
-        "relative",
-        isFullLogo ? "h-8 w-32" : "h-10 w-10",
+        "relative h-10 w-10 overflow-hidden rounded-full",
         className
     )} {...props}>
       <Image
-        src={logos[logoType]}
+        src={logoUrl}
         alt="Shivlox AI Logo"
         fill
-        className="object-contain"
+        className="object-cover"
         priority
       />
     </div>

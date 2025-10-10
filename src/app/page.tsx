@@ -1,3 +1,4 @@
+
 'use client';
 
 import { chat, type ChatInput } from '@/ai/flows/chat';
@@ -310,7 +311,7 @@ export default function Home() {
                     transition={{ duration: 0.5, type: 'spring', stiffness: 260, damping: 20 }}
                     className="mb-4"
                   >
-                    <ShivloxIcon logoType="icon" className="h-20 w-20 rounded-full" />
+                    <ShivloxIcon className="h-20 w-20" />
                   </motion.div>
                   <motion.h2
                     initial={{ opacity: 0, y: 20 }}
@@ -413,5 +414,3 @@ export default function Home() {
     </SidebarProvider>
   );
 }
-
-    
