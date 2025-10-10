@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -92,7 +93,7 @@ export default function ContactPage() {
               Contact Us
             </h1>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Have a question, feedback, or just want to say hello? Drop us a line!
+              Have a question, feedback, or just want to say hello? Drop us a line! For details on how we handle your data, please see our <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
             </p>
           </motion.div>
 
@@ -152,9 +153,6 @@ export default function ContactPage() {
           </motion.div>
         </div>
       </main>
-      <footer className="w-full bg-transparent py-4 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} Shivlox AI. All rights reserved.
-      </footer>
     </div>
   );
 }
