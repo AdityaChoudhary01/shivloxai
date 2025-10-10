@@ -301,10 +301,10 @@ export default function Home() {
               )}
           </header>
 
-          <div className="flex-1 overflow-y-auto">
-            <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6">
+          <div className="flex-1 overflow-y-auto flex flex-col">
+            <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col">
               {currentMessages.length === 0 && !isLoading ? (
-                <div className="flex h-full flex-col items-center justify-center text-center">
+                <div className="flex flex-1 flex-col items-center justify-center text-center">
                   <motion.div
                     initial={{ scale: 0, rotate: -45 }}
                     animate={{ scale: 1, rotate: 0 }}
@@ -341,14 +341,16 @@ export default function Home() {
                   </div>
                 </div>
               ) : (
-                currentMessages.map((msg, index) => (
-                  <ChatMessage key={index} message={msg} />
-                ))
+                <div className="flex-1">
+                  {currentMessages.map((msg, index) => (
+                    <ChatMessage key={index} message={msg} />
+                  ))}
+                </div>
               )}
               {isLoading && <ChatMessage isLoading />}
               <div ref={messagesEndRef} />
-              <Footer />
             </div>
+            <Footer />
           </div>
 
           <motion.div
