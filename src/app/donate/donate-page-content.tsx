@@ -119,7 +119,7 @@ export function DonatePageContent() {
                                 </CardHeader>
                                 <CardContent className="flex flex-1 flex-col items-center justify-center">
                                      <div className="flex flex-col items-center mb-4">
-                                        <Image src="https://cdn.buymeacoffee.com/uploads/profile_pictures/2025/07/ZzlkIXLPpwCOJfAo.jpg@300w_0e.webp" alt="Aditya Choudhary" width={70} height={70} className="rounded-full object-cover mb-2 border-2 border-yellow-400" />
+                                        <Image src="https://cdn.buymeacoffee.com/uploads/profile_pictures/2025/10/y9sYfqwudI0b0PV0.jpg@300w_0e.webp" alt="Aditya Choudhary" width={70} height={70} className="rounded-full object-cover mb-2 border-2 border-yellow-400" />
                                         <div className="font-bold text-yellow-400 text-lg">Aditya Choudhary</div>
                                     </div>
                                     <p className="text-muted-foreground mb-4">You can use a card or other international payment methods. Every contribution is greatly appreciated!</p>
