@@ -123,7 +123,7 @@ export function DonatePageContent() {
                                         <div className="font-bold text-yellow-400 text-lg">Aditya Choudhary</div>
                                     </div>
                                     <p className="text-muted-foreground mb-4">You can use a card or other international payment methods. Every contribution is greatly appreciated!</p>
-                                    <a href="https://coff.ee/adityachoudhary" target="_blank" rel="noopener noreferrer">
+                                    <a href="https://buymeacoffee.com/adityachoudhary" target="_blank" rel="noopener noreferrer">
                                         <Button className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold">
                                             <Coffee className="mr-2" />
                                             Buy Me a Coffee
