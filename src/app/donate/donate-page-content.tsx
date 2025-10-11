@@ -10,7 +10,6 @@ import { Coffee, Heart, Server, Sparkles, Menu } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export function DonatePageContent() {
-    const upiQRCodeUrl = 'https://res.cloudinary.com/dmtnonxtt/image/upload/v1752488580/GooglePay_QR_xtgkh4.png';
     const cardVariants = {
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -112,31 +111,18 @@ export function DonatePageContent() {
                         className="mt-16"
                     >
                         <h2 className="text-3xl font-bold tracking-tight text-foreground text-center">Ways to Contribute</h2>
-                        <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2">
-                             <Card className="flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-primary/20 hover:shadow-lg">
-                                <CardHeader>
-                                    <CardTitle>UPI (for users in India)</CardTitle>
-                                    <CardDescription>Scan with any UPI app</CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex flex-1 flex-col items-center">
-                                    <p className="text-muted-foreground mb-4">Use Google Pay, PhonePe, or Paytm.</p>
-                                    <div className="p-2 border rounded-lg bg-white">
-                                        <Image src={upiQRCodeUrl} alt="UPI QR Code" width={200} height={200} className="rounded-md" />
-                                    </div>
-                                    <p className="mt-4 font-semibold"><strong>UPI ID:</strong> adityanain55@oksbi</p>
-                                </CardContent>
-                            </Card>
+                        <div className="mt-8 grid grid-cols-1 gap-8 max-w-md mx-auto">
                             <Card className="flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-yellow-400/20 hover:shadow-lg">
                                 <CardHeader>
                                     <CardTitle>Buy Me a Coffee</CardTitle>
-                                    <CardDescription>International support</CardDescription>
+                                    <CardDescription>A simple & secure way to show support</CardDescription>
                                 </CardHeader>
                                 <CardContent className="flex flex-1 flex-col items-center justify-center">
                                      <div className="flex flex-col items-center mb-4">
                                         <Image src="https://cdn.buymeacoffee.com/uploads/profile_pictures/2025/07/ZzlkIXLPpwCOJfAo.jpg@300w_0e.webp" alt="Aditya Choudhary" width={70} height={70} className="rounded-full object-cover mb-2 border-2 border-yellow-400" />
                                         <div className="font-bold text-yellow-400 text-lg">Aditya Choudhary</div>
                                     </div>
-                                    <p className="text-muted-foreground mb-4">A simple and secure way to show your support using a card or other payment methods.</p>
+                                    <p className="text-muted-foreground mb-4">You can use a card or other international payment methods. Every contribution is greatly appreciated!</p>
                                     <a href="https://coff.ee/adityachoudhary" target="_blank" rel="noopener noreferrer">
                                         <Button className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold">
                                             <Coffee className="mr-2" />
