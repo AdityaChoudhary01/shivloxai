@@ -404,26 +404,55 @@ export function HomePageContent() {
                     <ScrollArea className="flex-1">
                         <SidebarContent className="p-2">
                             <SidebarMenu>
-                                {conversations.map((conv) => (
-                                    <SidebarMenuItem key={conv.id} className="group/item">
-                                        <SidebarMenuButton
-                                            onClick={() => setCurrentConversationId(conv.id)}
-                                            isActive={currentConversationId === conv.id}
-                                            className="w-full justify-start pr-8"
-                                        >
-                                            <MessageSquare />
-                                            <span className="truncate flex-1 text-left">{conv.title}</span>
-                                        </SidebarMenuButton>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 opacity-0 group-hover/item:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
-                                            onClick={() => handleDeleteConversation(conv.id)}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </SidebarMenuItem>
-                                ))}
+                             {conversations.map((conv) => (
+  <SidebarMenuItem key={conv.id} className="group">
+    <div
+      onClick={() => setCurrentConversationId(conv.id)}
+      className={cn(
+        // Added 'justify-between' to push items apart
+        "flex items-center w-full rounded-md px-2 py-1.5 cursor-pointer transition-colors justify-between",
+        currentConversationId === conv.id
+          ? "bg-accent/60"
+          : "hover:bg-accent/40"
+      )}
+      title={conv.title} // full title tooltip
+    >
+      {/* Container for the Chat Icon and Title
+        This div ensures the icon and title stick together on the left 
+      */}
+      <div className="flex items-center overflow-hidden">
+        {/* Chat icon */}
+        <MessageSquare className="h-4 w-4 shrink-0 mr-2 text-muted-foreground" />
+
+        {/* Title — truncated with ellipsis */}
+        <span
+          // Removed inline styles and replaced with Tailwind classes for truncation and flexibility
+          // 'flex-1' is not needed here anymore, replaced by the parent flex structure
+          className="text-sm text-foreground truncate max-w-[130px]" // Max-width is now more controlled
+        >
+          {conv.title}
+        </span>
+      </div>
+
+      {/* Delete icon — remains on the right due to 'justify-between' on the parent div */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleDeleteConversation(conv.id);
+        }}
+        className="
+          ml-1 h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive
+          transition-opacity duration-200 ease-in-out
+          opacity-100 md:opacity-0 md:group-hover:opacity-100
+        "
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
+  </SidebarMenuItem>
+))}
                             </SidebarMenu>
                         </SidebarContent>
                     </ScrollArea>
