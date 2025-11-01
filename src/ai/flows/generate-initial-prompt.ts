@@ -2,7 +2,7 @@
 'use server';
 
 /**
- * @fileOverview Generates initial example prompts for new users.
+ * @fileOverview Generates example prompts for users.
  *
  * - generateInitialPrompts - A function that returns a list of example prompts.
  * - GenerateInitialPromptsOutput - The return type for the generateInitialPrompts function.
@@ -28,6 +28,14 @@ const initialPrompts: GenerateInitialPromptsOutput = [
   "Translate 'Where is the nearest library?' to French.",
   "Write a python script to sort a list of numbers.",
   "Give me some tips for learning a new language.",
+  "What's the history of the Eiffel Tower?",
+  "Plan a 3-day trip to Tokyo.",
+  "Write a haiku about a rainy day.",
+  "/imagine a futuristic city in the clouds",
+  "What are the main differences between React and Vue.js?",
+  "Explain the theory of relativity like I'm five.",
+  "Come up with a catchy slogan for a new coffee shop.",
+  "Write a formal email to a client requesting feedback.",
 ];
 
 
