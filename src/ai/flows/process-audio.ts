@@ -27,7 +27,6 @@ const processAudioFlow = ai.defineFlow(
   },
   async (input) => {
     const { text } = await ai.generate({
-      model: ai.getModel(),
       prompt: [{ media: { url: input.audioDataUri } }, { text: "Transcribe this audio." }],
     });
 
