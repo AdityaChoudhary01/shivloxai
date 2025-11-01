@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2, BookText } from 'lucide-react';
+import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2, BookText, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, SidebarFooter } from '@/components/ui/sidebar';
@@ -46,6 +46,7 @@ export function HomePageContent() {
     const [isLoading, setIsLoading] = useState(false);
     const [isSummarizing, setIsSummarizing] = useState(false);
     const [initialPrompts, setInitialPrompts] = useState<string[]>([]);
+    const [allPrompts, setAllPrompts] = useState<string[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const [isRecording, setIsRecording] = useState(false);
@@ -87,6 +88,7 @@ export function HomePageContent() {
         async function fetchPrompts() {
             try {
                 const prompts = await generateInitialPrompts();
+                setAllPrompts(prompts);
                 setInitialPrompts(prompts.slice(0, 4));
             } catch (error) {
                 console.error('Failed to fetch initial prompts:', error);
@@ -100,7 +102,7 @@ export function HomePageContent() {
     }, [currentConversationId, isLoading]);
 
     const currentMessages = conversations.find(c => c.id === currentConversationId)?.messages || [];
-
+    
     const triggerAiResponse = useCallback(async (convId: string, messageContent: string) => {
         try {
             if (!user) {
@@ -108,12 +110,17 @@ export function HomePageContent() {
             }
 
             const currentConv = conversations.find(c => c.id === convId);
-            const history = (currentConv?.messages || []).map(m => ({
-                role: m.role as 'user' | 'model',
-                content: m.content,
-            }));
+            
+            // This is a critical change. We get the latest history from the state,
+            // but we add the new user message to it manually for the API call.
+            // This avoids race conditions with React's state updates.
+            const historyForApi = (currentConv?.messages || []).filter(m => m.role !== 'user' || m.content !== messageContent);
+            const fullHistoryForApi = [...historyForApi, { role: 'user' as const, content: messageContent }];
 
-            const chatInput: ChatInput = { history, prompt: messageContent };
+            const chatInput: ChatInput = { 
+                history: fullHistoryForApi.slice(0, -1).map(m => ({ role: m.role as 'user' | 'model', content: m.content })),
+                prompt: messageContent 
+            };
             const result = await chat(chatInput);
             const aiMessage: Message = { role: 'model', content: result.response };
 
@@ -140,7 +147,7 @@ export function HomePageContent() {
         } finally {
             setIsLoading(false);
         }
-    }, [user, conversations]);
+    }, [user, conversations]); // conversations is a dependency
     
     const handleSendMessage = useCallback(async (prompt?: string) => {
         if (!user && sessionMessageCount >= 15) {
@@ -156,7 +163,11 @@ export function HomePageContent() {
         }
 
         let effectiveConvId = currentConversationId;
-        if (!effectiveConvId || conversations.find(c => c.id === effectiveConvId)?.messages.length === 0) {
+        
+        // This check is important: only create a new chat if the current one is empty.
+        const isCurrentChatEmpty = (conversations.find(c => c.id === effectiveConvId)?.messages.length || 0) === 0;
+
+        if (!effectiveConvId || isCurrentChatEmpty) {
             const newId = `chat-${Date.now()}`;
             const newTitle = userMessageContent.split(' ').slice(0, 5).join(' ');
             const newConversation: Conversation = {
@@ -164,7 +175,14 @@ export function HomePageContent() {
                 title: newTitle,
                 messages: [],
             };
-            setConversations(prev => [newConversation, ...prev.filter(c => c.messages.length > 0)]);
+             
+            // Replace the empty chat or prepend a new one
+            if (isCurrentChatEmpty && effectiveConvId) {
+                setConversations(prev => prev.map(c => c.id === effectiveConvId ? { ...newConversation, messages: c.messages } : c));
+            } else {
+                setConversations(prev => [newConversation, ...prev.filter(c => c.messages.length > 0)]);
+            }
+
             setCurrentConversationId(newId);
             effectiveConvId = newId;
         }
@@ -172,17 +190,17 @@ export function HomePageContent() {
         const newUserMessage: Message = { role: 'user', content: userMessageContent };
         
         setConversations(prev => {
-            const newConversations = prev.map(c =>
+            return prev.map(c =>
                 c.id === effectiveConvId
                     ? { ...c, messages: [...c.messages, newUserMessage] }
                     : c
             );
-            return newConversations;
         });
 
         setIsLoading(true);
 
-        triggerAiResponse(effectiveConvId, userMessageContent);
+        // Defer the AI call to the next tick to ensure state is updated.
+        setTimeout(() => triggerAiResponse(effectiveConvId!, userMessageContent), 0);
 
     }, [input, user, sessionMessageCount, currentConversationId, conversations, triggerAiResponse]);
 
@@ -340,6 +358,13 @@ export function HomePageContent() {
         }
     };
 
+    const handleSurpriseMe = () => {
+        if (allPrompts.length > 0) {
+            const randomIndex = Math.floor(Math.random() * allPrompts.length);
+            setInput(allPrompts[randomIndex]);
+        }
+    };
+
     return (
         <SidebarProvider>
             <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
@@ -420,9 +445,6 @@ export function HomePageContent() {
                     <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-lg backdrop-blur-lg">
                         <div className="flex items-center gap-2">
                             <SidebarTrigger />
-                            <div className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                                Shivlox AI
-                            </div>
                         </div>
                         <div className="flex items-center gap-2">
                              {currentMessages.length > 1 && (
@@ -445,8 +467,8 @@ export function HomePageContent() {
 
                     <div className="flex-1 overflow-y-auto flex flex-col relative">
                         {currentMessages.length === 0 && !isLoading ? (
-                                <div className="flex flex-1 flex-col items-center justify-center text-center p-4">
-                                     <motion.div
+                                <div className="flex flex-1 flex-col items-center justify-start pt-16 text-center">
+                                    <motion.div
                                         initial={{ scale: 0, rotate: -45 }}
                                         animate={{ scale: 1, rotate: 0 }}
                                         transition={{ duration: 0.5, type: 'spring', stiffness: 260, damping: 20 }}
@@ -460,9 +482,9 @@ export function HomePageContent() {
                                         transition={{ duration: 0.5, delay: 0.2 }}
                                         className="text-3xl font-bold text-foreground tracking-tight"
                                     >
-                                        How can I help you today?
+                                        Start a new conversation below.
                                     </motion.h2>
-                                    <div className="mt-8 grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
+                                    <div className="mt-8 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
                                         {initialPrompts.map((prompt, i) => (
                                             <motion.div
                                                 key={i}
@@ -473,7 +495,7 @@ export function HomePageContent() {
                                             >
                                                 <Button
                                                     variant="outline"
-                                                    className="h-auto w-full whitespace-normal rounded-lg p-3 text-left text-sm transition-all duration-300 hover:scale-[1.02] hover:border-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20"
+                                                    className="h-auto w-full whitespace-normal rounded-lg border-dashed p-4 text-left text-sm transition-all duration-300 hover:scale-105 hover:border-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20"
                                                     onClick={() => handleSendMessage(prompt)}
                                                 >
                                                     {prompt}
@@ -505,6 +527,16 @@ export function HomePageContent() {
                                 id="chat-input" 
                                 className="relative flex w-full items-end space-x-2 rounded-2xl border bg-secondary/30 p-2 shadow-lg transition-all focus-within:border-primary/50 focus-within:shadow-primary/20"
                             >
+                                <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={handleSurpriseMe}
+                                    className="h-9 w-9 shrink-0 rounded-full text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
+                                    aria-label="Surprise me"
+                                >
+                                    <Sparkles className="h-5 w-5" />
+                                </Button>
                                 <Button
                                     type="button"
                                     size="icon"
