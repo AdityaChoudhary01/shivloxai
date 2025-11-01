@@ -4,13 +4,14 @@
 import { chat, type ChatInput } from '@/ai/flows/chat';
 import { generateInitialPrompts } from '@/ai/flows/generate-initial-prompt';
 import { processAudio } from '@/ai/flows/process-audio';
+import { summarizeConversation } from '@/ai/flows/summarize-conversation';
 import { ChatMessage, type ChatMessageProps } from '@/components/chat-message';
 import { ShivloxIcon } from '@/components/shivlox-icon';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2 } from 'lucide-react';
+import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2, BookText } from 'lucide-react';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, SidebarFooter } from '@/components/ui/sidebar';
@@ -43,6 +44,7 @@ export function HomePageContent() {
     const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isSummarizing, setIsSummarizing] = useState(false);
     const [initialPrompts, setInitialPrompts] = useState<string[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -99,30 +101,61 @@ export function HomePageContent() {
 
     const currentMessages = conversations.find(c => c.id === currentConversationId)?.messages || [];
 
-    const updateConversation = (id: string, updates: Partial<Conversation>) => {
-        setConversations(prev =>
-            prev.map(c => (c.id === id ? { ...c, ...updates } : c))
-        );
-    };
+    const triggerAiResponse = useCallback(async (convId: string, messageContent: string) => {
+        try {
+            if (!user) {
+                setSessionMessageCount(prev => prev + 1);
+            }
+
+            const currentConv = conversations.find(c => c.id === convId);
+            const history = (currentConv?.messages || []).map(m => ({
+                role: m.role as 'user' | 'model',
+                content: m.content,
+            }));
+
+            const chatInput: ChatInput = { history, prompt: messageContent };
+            const result = await chat(chatInput);
+            const aiMessage: Message = { role: 'model', content: result.response };
+
+            setConversations(prev =>
+                prev.map(c =>
+                    c.id === convId
+                        ? { ...c, messages: [...c.messages, aiMessage] }
+                        : c
+                )
+            );
+        } catch (error) {
+            console.error('Error calling chat AI:', error);
+            const errorMessage: Message = {
+                role: 'model',
+                content: 'Sorry, I encountered an error. Please try again.',
+            };
+            setConversations(prev =>
+                prev.map(c =>
+                    c.id === convId
+                        ? { ...c, messages: [...c.messages, errorMessage] }
+                        : c
+                )
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    }, [user, conversations]);
     
     const handleSendMessage = useCallback(async (prompt?: string) => {
         if (!user && sessionMessageCount >= 15) {
             setIsAuthModalOpen(true);
             return;
         }
-    
+
         const userMessageContent = prompt || input;
         if (!userMessageContent.trim()) return;
-    
-        // Clear input field immediately for better UX
+
         if (!prompt) {
             setInput('');
         }
-    
-        let isNewChat = false;
+
         let effectiveConvId = currentConversationId;
-    
-        // If there's no active chat or the active chat is empty, create a new one.
         if (!effectiveConvId || conversations.find(c => c.id === effectiveConvId)?.messages.length === 0) {
             const newId = `chat-${Date.now()}`;
             const newTitle = userMessageContent.split(' ').slice(0, 5).join(' ');
@@ -131,78 +164,27 @@ export function HomePageContent() {
                 title: newTitle,
                 messages: [],
             };
-    
-            // Prepend the new conversation and set it as active
             setConversations(prev => [newConversation, ...prev.filter(c => c.messages.length > 0)]);
             setCurrentConversationId(newId);
-            
             effectiveConvId = newId;
-            isNewChat = true;
         }
-    
+        
         const newUserMessage: Message = { role: 'user', content: userMessageContent };
-    
-        // Update state with the user's message
-        setConversations(prev =>
-            prev.map(c =>
+        
+        setConversations(prev => {
+            const newConversations = prev.map(c =>
                 c.id === effectiveConvId
                     ? { ...c, messages: [...c.messages, newUserMessage] }
                     : c
-            )
-        );
-    
+            );
+            return newConversations;
+        });
+
         setIsLoading(true);
-    
-        // Trigger AI response generation in a separate async flow
-        (async () => {
-            try {
-                if (!user) {
-                    setSessionMessageCount(prev => prev + 1);
-                }
-    
-                // Wait for the state to update before getting history
-                const currentConversations = conversations;
-                const currentConv = currentConversations.find(c => c.id === effectiveConvId);
-                const history = (currentConv?.messages || []).map(m => ({
-                    role: m.role as 'user' | 'model',
-                    content: m.content,
-                }));
-    
-                const chatInput: ChatInput = { history, prompt: userMessageContent };
-                const result = await chat(chatInput);
-    
-                const aiMessage: Message = { role: 'model', content: result.response };
-    
-                // Update state with the AI's response
-                setConversations(prev =>
-                    prev.map(c =>
-                        c.id === effectiveConvId
-                            ? { ...c, messages: [...c.messages, aiMessage] }
-                            : c
-                    )
-                );
-            } catch (error) {
-                console.error('Error calling chat AI:', error);
-                const errorMessage: Message = {
-                    role: 'model',
-                    content: 'Sorry, I encountered an error. Please try again.',
-                };
-                // Update state with an error message
-                setConversations(prev =>
-                    prev.map(c =>
-                        c.id === effectiveConvId
-                            ? { ...c, messages: [...c.messages, errorMessage] }
-                            : c
-                    )
-                );
-            } finally {
-                setIsLoading(false);
-            }
-        })();
-    
-    // This is a workaround for the state batching issue
-    // We need to re-evaluate the conversations state to get the latest messages
-    }, [conversations, currentConversationId, input, user, sessionMessageCount]);
+
+        triggerAiResponse(effectiveConvId, userMessageContent);
+
+    }, [input, user, sessionMessageCount, currentConversationId, conversations, triggerAiResponse]);
 
     const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -334,6 +316,30 @@ export function HomePageContent() {
         })
     };
 
+    const handleSummarize = async () => {
+        if (!currentConversationId || currentMessages.length === 0) return;
+
+        setIsSummarizing(true);
+        try {
+            const conversationText = currentMessages.map(m => `${m.role}: ${m.content}`).join('\n');
+            const { summary } = await summarizeConversation({ conversation: conversationText });
+            toast({
+                title: "Conversation Summary",
+                description: summary,
+                duration: 9000,
+            })
+        } catch (error) {
+            console.error("Failed to summarize conversation:", error);
+            toast({
+                title: "Error",
+                description: "Could not generate a summary. Please try again.",
+                variant: 'destructive',
+            })
+        } finally {
+            setIsSummarizing(false);
+        }
+    };
+
     return (
         <SidebarProvider>
             <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
@@ -418,21 +424,29 @@ export function HomePageContent() {
                                 Shivlox AI
                             </div>
                         </div>
-                        {user ? (
-                            <UserNav />
-                        ) : (
-                            <Button onClick={() => setIsAuthModalOpen(true)}>Login</Button>
-                        )}
+                        <div className="flex items-center gap-2">
+                             {currentMessages.length > 1 && (
+                                <Button variant="outline" size="sm" onClick={handleSummarize} disabled={isSummarizing}>
+                                    {isSummarizing ? (
+                                        <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <BookText className="mr-2 h-4 w-4" />
+                                    )}
+                                    Summarize
+                                </Button>
+                            )}
+                            {user ? (
+                                <UserNav />
+                            ) : (
+                                <Button onClick={() => setIsAuthModalOpen(true)}>Login</Button>
+                            )}
+                        </div>
                     </header>
 
                     <div className="flex-1 overflow-y-auto flex flex-col relative">
-                        {/* The static banner is rendered above this area by app/page.tsx */}
-                        <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col">
-                            
-                            {/* ADJUSTED: This content loads after the static banner if no conversation exists */}
-                            {currentMessages.length === 0 && !isLoading ? (
-                                <div className="flex flex-1 flex-col items-center justify-start pt-16 text-center">
-                                    <motion.div
+                        {currentMessages.length === 0 && !isLoading ? (
+                                <div className="flex flex-1 flex-col items-center justify-center text-center p-4">
+                                     <motion.div
                                         initial={{ scale: 0, rotate: -45 }}
                                         animate={{ scale: 1, rotate: 0 }}
                                         transition={{ duration: 0.5, type: 'spring', stiffness: 260, damping: 20 }}
@@ -446,9 +460,9 @@ export function HomePageContent() {
                                         transition={{ duration: 0.5, delay: 0.2 }}
                                         className="text-3xl font-bold text-foreground tracking-tight"
                                     >
-                                        Start a new conversation below.
+                                        How can I help you today?
                                     </motion.h2>
-                                    <div className="mt-8 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div className="mt-8 grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
                                         {initialPrompts.map((prompt, i) => (
                                             <motion.div
                                                 key={i}
@@ -459,7 +473,7 @@ export function HomePageContent() {
                                             >
                                                 <Button
                                                     variant="outline"
-                                                    className="h-auto w-full whitespace-normal rounded-lg border-dashed p-4 text-left text-sm transition-all duration-300 hover:scale-105 hover:border-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20"
+                                                    className="h-auto w-full whitespace-normal rounded-lg p-3 text-left text-sm transition-all duration-300 hover:scale-[1.02] hover:border-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20"
                                                     onClick={() => handleSendMessage(prompt)}
                                                 >
                                                     {prompt}
@@ -469,16 +483,15 @@ export function HomePageContent() {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="flex-1 space-y-6">
+                                 <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col">
                                     {currentMessages.map((msg, index) => (
                                         <ChatMessage key={index} message={msg} />
                                     ))}
                                 </div>
                             )}
-                            {isLoading && <ChatMessage isLoading />}
+                            {isLoading && <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col"><ChatMessage isLoading /></div>}
                             <div ref={messagesEndRef} />
                         </div>
-                    </div>
                     
                     <motion.div
                         initial={{ y: 100, opacity: 0 }}
@@ -489,7 +502,7 @@ export function HomePageContent() {
                         <div className="mx-auto w-full max-w-3xl">
                             <form
                                 onSubmit={handleFormSubmit}
-                                id="chat-input" // ADDED ID FOR ANCHOR LINKING
+                                id="chat-input" 
                                 className="relative flex w-full items-end space-x-2 rounded-2xl border bg-secondary/30 p-2 shadow-lg transition-all focus-within:border-primary/50 focus-within:shadow-primary/20"
                             >
                                 <Button
