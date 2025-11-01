@@ -1,4 +1,4 @@
-// home-page-content.tsx
+
 'use client';
 
 import { chat, type ChatInput } from '@/ai/flows/chat';
