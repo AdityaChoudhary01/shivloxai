@@ -505,14 +505,24 @@ export function HomePageContent() {
                                     >
                                         <ShivloxIcon className="h-20 w-20" />
                                     </motion.div>
-                                    <motion.h2
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.5, delay: 0.2 }}
-                                        className="text-3xl font-bold text-foreground tracking-tight"
-                                    >
-                                        Start a new conversation below.
-                                    </motion.h2>
+                                   <motion.h2
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5, delay: 0.2 }}
+    className="text-3xl font-bold text-foreground tracking-tight"
+>
+    Your Intelligent **Shivlox AI** Chat Assistant ✨
+</motion.h2>
+<motion.p 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5, delay: 0.4 }}
+    className="mt-4 text-lg text-muted-foreground"
+>
+    Ask anything to begin your first conversation.
+</motion.p>
+
+
                                     <div className="mt-8 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
                                         {initialPrompts.map((prompt, i) => (
                                             <motion.div
