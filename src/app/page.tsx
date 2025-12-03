@@ -1,11 +1,12 @@
 // src/app/page.tsx
 import type { Metadata } from 'next';
-import { HomePageClient } from './home-page-content';
+// Import the Client Component which handles all interactivity and prompt button rendering
+import { HomePageClient } from './home-page-content'; 
 import { generateInitialPrompts } from '@/ai/flows/generate-initial-prompt';
 import { ShivloxIcon } from '@/components/shivlox-icon';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 
+// 1. Define static Metadata for SEO (Runs at build time)
 export const metadata: Metadata = {
   title: 'Shivlox AI - Your Intelligent Chat Assistant',
   description: 'Engage in intelligent conversations, generate images with AI, transcribe audio, and get instant answers with Shivlox AI, a modern and powerful chat application powered by Google\'s Gemini models.',
@@ -14,31 +15,20 @@ export const metadata: Metadata = {
   },
 };
 
-// Define the server component that orchestrates the page.
+// 2. Main Server Component (Runs on the server)
 export default async function Home() {
-  // 1. Fetch initial prompts on the server (this is the key change for SEO)
+  // Data Fetching: Fetch the initial prompts data on the server.
   const allPrompts = await generateInitialPrompts();
-  const initialPrompts = allPrompts.slice(0, 4);
 
-  // Animation variants moved here from the client component for server rendering compatibility
-  const promptVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: i * 0.1,
-        duration: 0.3,
-      },
-    }),
-  };
-
-  // 2. Render static, SEO-rich content on the server
   return (
-    // The main chat area uses flex-1 flex-col to fill the screen
     <div className="flex h-dvh bg-transparent text-foreground">
-        {/* Pass fetched data and render all the static, SEO-rich content as children */}
+        {/* Pass the fetched data to the Client Component */}
         <HomePageClient initialPrompts={allPrompts}>
+            {/* This content passed as 'children' is guaranteed to be Server-Side Rendered (SSR)
+              in the initial HTML payload, which is essential for SEO.
+              The motion components here use only static 'initial' and 'animate' props, 
+              which are safe for server-to-client serialization.
+            */}
             <div className="flex flex-1 flex-col items-center justify-start pt-16 text-center">
                 <motion.div
                     initial={{ scale: 0, rotate: -45 }}
@@ -64,29 +54,8 @@ export default async function Home() {
                 >
                     Ask anything to begin your first conversation.
                 </motion.p>
-                
-                {/* Initial Prompts rendered here (Server-side rendered for SEO/fastest load) */}
-                <div className="mt-8 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
-                    {initialPrompts.map((prompt, i) => (
-                        <motion.div
-                            key={i}
-                            custom={i}
-                            variants={promptVariants}
-                            initial="hidden"
-                            animate="visible"
-                        >
-                            {/* The data-prompt attribute is crucial for the client component to read the clicked prompt */}
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="h-auto w-full whitespace-normal rounded-lg border-dashed p-4 text-left text-sm transition-all duration-300 hover:scale-105 hover:border-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20"
-                                data-prompt={prompt}
-                            >
-                                {prompt}
-                            </Button>
-                        </motion.div>
-                    ))}
-                </div>
+                {/* NOTE: The interactive prompt buttons are now rendered inside HomePageClient (the client component), 
+                   using the 'initialPrompts' prop, which prevents the serialization error. */}
             </div>
         </HomePageClient>
     </div>
