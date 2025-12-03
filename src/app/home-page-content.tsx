@@ -1,8 +1,6 @@
-
 'use client';
 
 import { chat, type ChatInput } from '@/ai/flows/chat';
-import { generateInitialPrompts } from '@/ai/flows/generate-initial-prompt';
 import { processAudio } from '@/ai/flows/process-audio';
 import { summarizeConversation } from '@/ai/flows/summarize-conversation';
 import { ChatMessage, type ChatMessageProps } from '@/components/chat-message';
@@ -14,7 +12,7 @@ import { motion } from 'framer-motion';
 import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2, BookText, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, SidebarFooter } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarFooter } from '@/components/ui/sidebar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/use-auth';
 import { AuthModal } from '@/components/auth-modal';
@@ -39,14 +37,22 @@ type Conversation = {
     messages: Message[];
 };
 
-export function HomePageContent() {
+// Define props for the new client component
+interface HomePageClientProps {
+    // This prop holds all prompts fetched from the server
+    initialPrompts: string[]; 
+    // This prop holds the static, server-rendered content (intro text and buttons)
+    children: React.ReactNode;
+}
+
+// Renamed to HomePageClient and updated to accept props and children
+export function HomePageClient({ initialPrompts, children }: HomePageClientProps) {
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSummarizing, setIsSummarizing] = useState(false);
-    const [initialPrompts, setInitialPrompts] = useState<string[]>([]);
-    const [allPrompts, setAllPrompts] = useState<string[]>([]);
+    
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const [isRecording, setIsRecording] = useState(false);
@@ -83,20 +89,7 @@ export function HomePageContent() {
             localStorage.removeItem('chatHistory');
         }
     }, [conversations]);
-
-    useEffect(() => {
-        async function fetchPrompts() {
-            try {
-                const prompts = await generateInitialPrompts();
-                setAllPrompts(prompts);
-                setInitialPrompts(prompts.slice(0, 4));
-            } catch (error) {
-                console.error('Failed to fetch initial prompts:', error);
-            }
-        }
-        fetchPrompts();
-    }, []);
-
+    
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [currentConversationId, isLoading]);
@@ -111,9 +104,8 @@ export function HomePageContent() {
 
             const currentConv = conversations.find(c => c.id === convId);
             
-            // This is a critical change. We get the latest history from the state,
-            // but we add the new user message to it manually for the API call.
-            // This avoids race conditions with React's state updates.
+            // This ensures we get the *latest* state of conversation history for the API call,
+            // avoiding race conditions with pending state updates.
             const historyForApi = (currentConv?.messages || []).filter(m => m.role !== 'user' || m.content !== messageContent);
             const fullHistoryForApi = [...historyForApi, { role: 'user' as const, content: messageContent }];
 
@@ -147,7 +139,7 @@ export function HomePageContent() {
         } finally {
             setIsLoading(false);
         }
-    }, [user, conversations]); // conversations is a dependency
+    }, [user, conversations]); 
     
     const handleSendMessage = useCallback(async (prompt?: string) => {
         if (!user && sessionMessageCount >= 15) {
@@ -216,18 +208,7 @@ export function HomePageContent() {
         }
     };
     
-    const promptVariants = {
-        hidden: { opacity: 0, y: 20 },
-        visible: (i: number) => ({
-            opacity: 1,
-            y: 0,
-            transition: {
-                delay: i * 0.1,
-                duration: 0.3,
-            },
-        }),
-    };
-
+    // Handler for the microphone button's recording start
     const startRecording = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -273,6 +254,7 @@ export function HomePageContent() {
         }
     };
 
+    // Handler for the microphone button's recording stop
     const stopRecording = () => {
         if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
             mediaRecorderRef.current.stop();
@@ -280,6 +262,7 @@ export function HomePageContent() {
         }
     };
 
+    // Toggles microphone recording
     const handleMicClick = () => {
         if (isRecording) {
             stopRecording();
@@ -288,11 +271,14 @@ export function HomePageContent() {
         }
     };
     
+    // Triggers image generation command
     const handleImageGeneration = () => {
         if (!input.trim()) return;
+        // Prefix the message with the command trigger
         handleSendMessage(`/imagine ${input.trim()}`);
     }
 
+    // Creates a new chat and optionally sets it as active
     const startNewChat = (setActive = true) => {
         const newId = `chat-${Date.now()}`;
         const newConversation: Conversation = {
@@ -307,11 +293,13 @@ export function HomePageContent() {
         return newId;
     }
 
+    // Opens the delete confirmation dialog
     const handleDeleteConversation = (id: string) => {
         setConversationToDelete(id);
         setIsDeleteDialogOpen(true);
     };
 
+    // Confirms and executes the chat deletion
     const confirmDelete = () => {
         if (!conversationToDelete) return;
 
@@ -334,6 +322,7 @@ export function HomePageContent() {
         })
     };
 
+    // Summarizes the current conversation using a Genkit flow
     const handleSummarize = async () => {
         if (!currentConversationId || currentMessages.length === 0) return;
 
@@ -352,21 +341,38 @@ export function HomePageContent() {
                 title: "Error",
                 description: "Could not generate a summary. Please try again.",
                 variant: 'destructive',
-            })
+            });
         } finally {
             setIsSummarizing(false);
         }
     };
 
+    // Sets a random initial prompt in the input field
     const handleSurpriseMe = () => {
-        if (allPrompts.length > 0) {
-            const randomIndex = Math.floor(Math.random() * allPrompts.length);
-            setInput(allPrompts[randomIndex]);
+        // Use the prop passed from the server component
+        if (initialPrompts.length > 0) {
+            const randomIndex = Math.floor(Math.random() * initialPrompts.length);
+            setInput(initialPrompts[randomIndex]);
         }
     };
+    
+    // Handler to capture clicks on the server-rendered prompt buttons
+    const handleChildPromptClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        const target = e.target as HTMLElement;
+        // Check if the click originated on a button or an element inside a button
+        const button = target.closest('button') as HTMLButtonElement | null;
+        if (button) {
+            // Read the prompt content from the data-prompt attribute set on the server
+            const prompt = button.dataset.prompt;
+            if (prompt) {
+                handleSendMessage(prompt);
+            }
+        }
+    }
 
     return (
         <SidebarProvider>
+            {/* Modals and Dialogs */}
             <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <AlertDialogContent>
@@ -384,7 +390,7 @@ export function HomePageContent() {
                 </AlertDialogContent>
             </AlertDialog>
 
-            <div className="flex h-dvh bg-transparent text-foreground">
+            {/* Sidebar and Main Content structure */}
                 <Sidebar>
                     <SidebarHeader className="p-2">
                         <div className="flex items-center justify-between p-2">
@@ -405,54 +411,50 @@ export function HomePageContent() {
                         <SidebarContent className="p-2">
                             <SidebarMenu>
                              {conversations.map((conv) => (
-  <SidebarMenuItem key={conv.id} className="group">
-    <div
-      onClick={() => setCurrentConversationId(conv.id)}
-      className={cn(
-        // Added 'justify-between' to push items apart
-        "flex items-center w-full rounded-md px-2 py-1.5 cursor-pointer transition-colors justify-between",
-        currentConversationId === conv.id
-          ? "bg-accent/60"
-          : "hover:bg-accent/40"
-      )}
-      title={conv.title} // full title tooltip
-    >
-      {/* Container for the Chat Icon and Title
-        This div ensures the icon and title stick together on the left 
-      */}
-      <div className="flex items-center overflow-hidden">
-        {/* Chat icon */}
-        <MessageSquare className="h-4 w-4 shrink-0 mr-2 text-muted-foreground" />
+                                <SidebarMenuItem key={conv.id} className="group">
+                                    <div
+                                    onClick={() => setCurrentConversationId(conv.id)}
+                                    className={cn(
+                                        // Added 'justify-between' to push items apart
+                                        "flex items-center w-full rounded-md px-2 py-1.5 cursor-pointer transition-colors justify-between",
+                                        currentConversationId === conv.id
+                                        ? "bg-accent/60"
+                                        : "hover:bg-accent/40"
+                                    )}
+                                    title={conv.title} // full title tooltip
+                                    >
+                                    {/* Container for the Chat Icon and Title */}
+                                    <div className="flex items-center overflow-hidden">
+                                        {/* Chat icon */}
+                                        <MessageSquare className="h-4 w-4 shrink-0 mr-2 text-muted-foreground" />
 
-        {/* Title — truncated with ellipsis */}
-        <span
-          // Removed inline styles and replaced with Tailwind classes for truncation and flexibility
-          // 'flex-1' is not needed here anymore, replaced by the parent flex structure
-          className="text-sm text-foreground truncate max-w-[130px]" // Max-width is now more controlled
-        >
-          {conv.title}
-        </span>
-      </div>
+                                        {/* Title — truncated with ellipsis */}
+                                        <span
+                                        className="text-sm text-foreground truncate max-w-[130px]" // Max-width is now more controlled
+                                        >
+                                        {conv.title}
+                                        </span>
+                                    </div>
 
-      {/* Delete icon — remains on the right due to 'justify-between' on the parent div */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleDeleteConversation(conv.id);
-        }}
-        className="
-          ml-1 h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive
-          transition-opacity duration-200 ease-in-out
-          opacity-100 md:opacity-0 md:group-hover:opacity-100
-        "
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
-    </div>
-  </SidebarMenuItem>
-))}
+                                    {/* Delete icon — remains on the right due to 'justify-between' on the parent div */}
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteConversation(conv.id);
+                                        }}
+                                        className="
+                                        ml-1 h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive
+                                        transition-opacity duration-200 ease-in-out
+                                        opacity-100 md:opacity-0 md:group-hover:opacity-100
+                                        "
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                    </div>
+                                </SidebarMenuItem>
+                            ))}
                             </SidebarMenu>
                         </SidebarContent>
                     </ScrollArea>
@@ -496,63 +498,20 @@ export function HomePageContent() {
 
                     <div className="flex-1 overflow-y-auto flex flex-col relative">
                         {currentMessages.length === 0 && !isLoading ? (
-                                <div className="flex flex-1 flex-col items-center justify-start pt-16 text-center">
-                                    <motion.div
-                                        initial={{ scale: 0, rotate: -45 }}
-                                        animate={{ scale: 1, rotate: 0 }}
-                                        transition={{ duration: 0.5, type: 'spring', stiffness: 260, damping: 20 }}
-                                        className="mb-4"
-                                    >
-                                        <ShivloxIcon className="h-20 w-20" />
-                                    </motion.div>
-                                   <motion.h2
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5, delay: 0.2 }}
-    className="text-3xl font-bold text-foreground tracking-tight"
->
-    Your Intelligent **Shivlox AI** Chat Assistant ✨
-</motion.h2>
-<motion.p 
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5, delay: 0.4 }}
-    className="mt-4 text-lg text-muted-foreground"
->
-    Ask anything to begin your first conversation.
-</motion.p>
-
-
-                                    <div className="mt-8 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
-                                        {initialPrompts.map((prompt, i) => (
-                                            <motion.div
-                                                key={i}
-                                                custom={i}
-                                                variants={promptVariants}
-                                                initial="hidden"
-                                                animate="visible"
-                                            >
-                                                <Button
-                                                    variant="outline"
-                                                    className="h-auto w-full whitespace-normal rounded-lg border-dashed p-4 text-left text-sm transition-all duration-300 hover:scale-105 hover:border-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20"
-                                                    onClick={() => handleSendMessage(prompt)}
-                                                >
-                                                    {prompt}
-                                                </Button>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : (
-                                 <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col">
-                                    {currentMessages.map((msg, index) => (
-                                        <ChatMessage key={index} message={msg} />
-                                    ))}
-                                </div>
-                            )}
-                            {isLoading && <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col"><ChatMessage isLoading /></div>}
-                            <div ref={messagesEndRef} />
-                        </div>
+                            <div className="flex flex-1 flex-col items-center justify-start pt-16 text-center" onClick={handleChildPromptClick}>
+                                {/* This is where the server-rendered static content (children) is placed */}
+                                {children}
+                            </div>
+                        ) : (
+                             <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col">
+                                {currentMessages.map((msg, index) => (
+                                    <ChatMessage key={index} message={msg} />
+                                ))}
+                            </div>
+                        )}
+                        {isLoading && <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col"><ChatMessage isLoading /></div>}
+                        <div ref={messagesEndRef} />
+                    </div>
                     
                     <motion.div
                         initial={{ y: 100, opacity: 0 }}
@@ -624,7 +583,6 @@ export function HomePageContent() {
                         </div>
                     </motion.div>
                 </main>
-            </div>
         </SidebarProvider>
     );
-}
+                                }
