@@ -1,8 +1,8 @@
-// src/app/home-page-content.tsx
 
 'use client';
 
 import { chat, type ChatInput } from '@/ai/flows/chat';
+import { generateInitialPrompts } from '@/ai/flows/generate-initial-prompt';
 import { processAudio } from '@/ai/flows/process-audio';
 import { summarizeConversation } from '@/ai/flows/summarize-conversation';
 import { ChatMessage, type ChatMessageProps } from '@/components/chat-message';
@@ -14,7 +14,7 @@ import { motion } from 'framer-motion';
 import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2, BookText, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarFooter } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, SidebarFooter } from '@/components/ui/sidebar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/use-auth';
 import { AuthModal } from '@/components/auth-modal';
@@ -39,41 +39,19 @@ type Conversation = {
     messages: Message[];
 };
 
-// Define props for the new client component
-interface HomePageClientProps {
-    // This prop holds all prompts fetched from the server
-    initialPrompts: string[]; 
-    // This prop holds the static, server-rendered content (intro text and buttons)
-    children: React.ReactNode;
-}
-
-// Animation variants must be defined here in the Client Component
-const promptVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-        opacity: 1,
-        y: 0,
-        transition: {
-            delay: i * 0.1,
-            duration: 0.3,
-        },
-    }),
-};
-
-export function HomePageClient({ initialPrompts, children }: HomePageClientProps) {
+export function HomePageContent() {
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSummarizing, setIsSummarizing] = useState(false);
-    
+    const [initialPrompts, setInitialPrompts] = useState<string[]>([]);
+    const [allPrompts, setAllPrompts] = useState<string[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // Mic recording state and refs
     const [isRecording, setIsRecording] = useState(false);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
-
     const { toast } = useToast();
     const { user } = useAuth();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -105,14 +83,26 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
             localStorage.removeItem('chatHistory');
         }
     }, [conversations]);
-    
+
+    useEffect(() => {
+        async function fetchPrompts() {
+            try {
+                const prompts = await generateInitialPrompts();
+                setAllPrompts(prompts);
+                setInitialPrompts(prompts.slice(0, 4));
+            } catch (error) {
+                console.error('Failed to fetch initial prompts:', error);
+            }
+        }
+        fetchPrompts();
+    }, []);
+
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [currentConversationId, isLoading]);
 
     const currentMessages = conversations.find(c => c.id === currentConversationId)?.messages || [];
     
-    // START: AI/Chat Logic Functions (remains the same)
     const triggerAiResponse = useCallback(async (convId: string, messageContent: string) => {
         try {
             if (!user) {
@@ -121,6 +111,9 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
 
             const currentConv = conversations.find(c => c.id === convId);
             
+            // This is a critical change. We get the latest history from the state,
+            // but we add the new user message to it manually for the API call.
+            // This avoids race conditions with React's state updates.
             const historyForApi = (currentConv?.messages || []).filter(m => m.role !== 'user' || m.content !== messageContent);
             const fullHistoryForApi = [...historyForApi, { role: 'user' as const, content: messageContent }];
 
@@ -154,22 +147,8 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
         } finally {
             setIsLoading(false);
         }
-    }, [user, conversations]);
+    }, [user, conversations]); // conversations is a dependency
     
-    const startNewChat = (setActive = true) => {
-        const newId = `chat-${Date.now()}`;
-        const newConversation: Conversation = {
-            id: newId,
-            title: 'New Chat',
-            messages: [],
-        };
-        setConversations(prev => [newConversation, ...prev]);
-        if (setActive) {
-            setCurrentConversationId(newId);
-        }
-        return newId;
-    }
-
     const handleSendMessage = useCallback(async (prompt?: string) => {
         if (!user && sessionMessageCount >= 15) {
             setIsAuthModalOpen(true);
@@ -185,6 +164,7 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
 
         let effectiveConvId = currentConversationId;
         
+        // This check is important: only create a new chat if the current one is empty.
         const isCurrentChatEmpty = (conversations.find(c => c.id === effectiveConvId)?.messages.length || 0) === 0;
 
         if (!effectiveConvId || isCurrentChatEmpty) {
@@ -196,6 +176,7 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
                 messages: [],
             };
              
+            // Replace the empty chat or prepend a new one
             if (isCurrentChatEmpty && effectiveConvId) {
                 setConversations(prev => prev.map(c => c.id === effectiveConvId ? { ...newConversation, messages: c.messages } : c));
             } else {
@@ -218,12 +199,35 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
 
         setIsLoading(true);
 
+        // Defer the AI call to the next tick to ensure state is updated.
         setTimeout(() => triggerAiResponse(effectiveConvId!, userMessageContent), 0);
 
     }, [input, user, sessionMessageCount, currentConversationId, conversations, triggerAiResponse]);
-    // END: AI/Chat Logic Functions
 
-    // START: Mic Recording Functions (FIX: Moved here for scope)
+    const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        handleSendMessage();
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    };
+    
+    const promptVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: (i: number) => ({
+            opacity: 1,
+            y: 0,
+            transition: {
+                delay: i * 0.1,
+                duration: 0.3,
+            },
+        }),
+    };
+
     const startRecording = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -276,7 +280,6 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
         }
     };
 
-    // The function being called by the button (FIX: Now correctly defined in scope)
     const handleMicClick = () => {
         if (isRecording) {
             stopRecording();
@@ -284,24 +287,24 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
             startRecording();
         }
     };
-    // END: Mic Recording Functions
-    
-    // START: Remaining Event Handlers (mostly the same)
-    const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        handleSendMessage();
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage();
-        }
-    };
     
     const handleImageGeneration = () => {
         if (!input.trim()) return;
         handleSendMessage(`/imagine ${input.trim()}`);
+    }
+
+    const startNewChat = (setActive = true) => {
+        const newId = `chat-${Date.now()}`;
+        const newConversation: Conversation = {
+            id: newId,
+            title: 'New Chat',
+            messages: [],
+        };
+        setConversations(prev => [newConversation, ...prev]);
+        if (setActive) {
+            setCurrentConversationId(newId);
+        }
+        return newId;
     }
 
     const handleDeleteConversation = (id: string) => {
@@ -349,32 +352,18 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
                 title: "Error",
                 description: "Could not generate a summary. Please try again.",
                 variant: 'destructive',
-            });
+            })
         } finally {
             setIsSummarizing(false);
         }
     };
 
     const handleSurpriseMe = () => {
-        if (initialPrompts.length > 0) {
-            const randomIndex = Math.floor(Math.random() * initialPrompts.length);
-            setInput(initialPrompts[randomIndex]);
+        if (allPrompts.length > 0) {
+            const randomIndex = Math.floor(Math.random() * allPrompts.length);
+            setInput(allPrompts[randomIndex]);
         }
     };
-    
-    const handleChildPromptClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        const target = e.target as HTMLElement;
-        const button = target.closest('button') as HTMLButtonElement | null;
-        if (button) {
-            const prompt = button.dataset.prompt;
-            if (prompt) {
-                handleSendMessage(prompt);
-            }
-        }
-    }
-    
-    const initialPromptButtons = initialPrompts.slice(0, 4);
-    // END: Remaining Event Handlers
 
     return (
         <SidebarProvider>
@@ -416,44 +405,54 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
                         <SidebarContent className="p-2">
                             <SidebarMenu>
                              {conversations.map((conv) => (
-                                <SidebarMenuItem key={conv.id} className="group">
-                                    <div
-                                    onClick={() => setCurrentConversationId(conv.id)}
-                                    className={cn(
-                                        "flex items-center w-full rounded-md px-2 py-1.5 cursor-pointer transition-colors justify-between",
-                                        currentConversationId === conv.id
-                                        ? "bg-accent/60"
-                                        : "hover:bg-accent/40"
-                                    )}
-                                    title={conv.title}
-                                    >
-                                    <div className="flex items-center overflow-hidden">
-                                        <MessageSquare className="h-4 w-4 shrink-0 mr-2 text-muted-foreground" />
-                                        <span
-                                        className="text-sm text-foreground truncate max-w-[130px]"
-                                        >
-                                        {conv.title}
-                                        </span>
-                                    </div>
+  <SidebarMenuItem key={conv.id} className="group">
+    <div
+      onClick={() => setCurrentConversationId(conv.id)}
+      className={cn(
+        // Added 'justify-between' to push items apart
+        "flex items-center w-full rounded-md px-2 py-1.5 cursor-pointer transition-colors justify-between",
+        currentConversationId === conv.id
+          ? "bg-accent/60"
+          : "hover:bg-accent/40"
+      )}
+      title={conv.title} // full title tooltip
+    >
+      {/* Container for the Chat Icon and Title
+        This div ensures the icon and title stick together on the left 
+      */}
+      <div className="flex items-center overflow-hidden">
+        {/* Chat icon */}
+        <MessageSquare className="h-4 w-4 shrink-0 mr-2 text-muted-foreground" />
 
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteConversation(conv.id);
-                                        }}
-                                        className="
-                                        ml-1 h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive
-                                        transition-opacity duration-200 ease-in-out
-                                        opacity-100 md:opacity-0 md:group-hover:opacity-100
-                                        "
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                    </div>
-                                </SidebarMenuItem>
-                            ))}
+        {/* Title — truncated with ellipsis */}
+        <span
+          // Removed inline styles and replaced with Tailwind classes for truncation and flexibility
+          // 'flex-1' is not needed here anymore, replaced by the parent flex structure
+          className="text-sm text-foreground truncate max-w-[130px]" // Max-width is now more controlled
+        >
+          {conv.title}
+        </span>
+      </div>
+
+      {/* Delete icon — remains on the right due to 'justify-between' on the parent div */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleDeleteConversation(conv.id);
+        }}
+        className="
+          ml-1 h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive
+          transition-opacity duration-200 ease-in-out
+          opacity-100 md:opacity-0 md:group-hover:opacity-100
+        "
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
+  </SidebarMenuItem>
+))}
                             </SidebarMenu>
                         </SidebarContent>
                     </ScrollArea>
@@ -497,42 +496,63 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
 
                     <div className="flex-1 overflow-y-auto flex flex-col relative">
                         {currentMessages.length === 0 && !isLoading ? (
-                            <div className="flex flex-1 flex-col items-center justify-start pt-16 text-center" onClick={handleChildPromptClick}>
-                                {/* RENDER STATIC CONTENT (CHILDREN) FROM SERVER (SEO) */}
-                                {children}
+                                <div className="flex flex-1 flex-col items-center justify-start pt-16 text-center">
+                                    <motion.div
+                                        initial={{ scale: 0, rotate: -45 }}
+                                        animate={{ scale: 1, rotate: 0 }}
+                                        transition={{ duration: 0.5, type: 'spring', stiffness: 260, damping: 20 }}
+                                        className="mb-4"
+                                    >
+                                        <ShivloxIcon className="h-20 w-20" />
+                                    </motion.div>
+                                   <motion.h2
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5, delay: 0.2 }}
+    className="text-3xl font-bold text-foreground tracking-tight"
+>
+    Your Intelligent **Shivlox AI** Chat Assistant ✨
+</motion.h2>
+<motion.p 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5, delay: 0.4 }}
+    className="mt-4 text-lg text-muted-foreground"
+>
+    Ask anything to begin your first conversation.
+</motion.p>
 
-                                {/* RENDER THE INTERACTIVE PROMPTS HERE (Client Side) */}
-                                <div className="mt-8 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
-                                    {initialPromptButtons.map((prompt, i) => (
-                                        <motion.div
-                                            key={i}
-                                            custom={i}
-                                            variants={promptVariants}
-                                            initial="hidden"
-                                            animate="visible"
-                                        >
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                className="h-auto w-full whitespace-normal rounded-lg border-dashed p-4 text-left text-sm transition-all duration-300 hover:scale-105 hover:border-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20"
-                                                data-prompt={prompt}
+
+                                    <div className="mt-8 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
+                                        {initialPrompts.map((prompt, i) => (
+                                            <motion.div
+                                                key={i}
+                                                custom={i}
+                                                variants={promptVariants}
+                                                initial="hidden"
+                                                animate="visible"
                                             >
-                                                {prompt}
-                                            </Button>
-                                        </motion.div>
+                                                <Button
+                                                    variant="outline"
+                                                    className="h-auto w-full whitespace-normal rounded-lg border-dashed p-4 text-left text-sm transition-all duration-300 hover:scale-105 hover:border-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20"
+                                                    onClick={() => handleSendMessage(prompt)}
+                                                >
+                                                    {prompt}
+                                                </Button>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : (
+                                 <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col">
+                                    {currentMessages.map((msg, index) => (
+                                        <ChatMessage key={index} message={msg} />
                                     ))}
                                 </div>
-                            </div>
-                        ) : (
-                             <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col">
-                                {currentMessages.map((msg, index) => (
-                                    <ChatMessage key={index} message={msg} />
-                                ))}
-                            </div>
-                        )}
-                        {isLoading && <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col"><ChatMessage isLoading /></div>}
-                        <div ref={messagesEndRef} />
-                    </div>
+                            )}
+                            {isLoading && <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col"><ChatMessage isLoading /></div>}
+                            <div ref={messagesEndRef} />
+                        </div>
                     
                     <motion.div
                         initial={{ y: 100, opacity: 0 }}
@@ -560,7 +580,6 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
                                     type="button"
                                     size="icon"
                                     variant="ghost"
-                                    // FIX: handleMicClick is now correctly defined in the component scope
                                     onClick={handleMicClick}
                                     className={cn("h-9 w-9 shrink-0 rounded-full text-muted-foreground transition-colors hover:text-primary", isRecording && "bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-500")}
                                     aria-label={isRecording ? 'Stop recording' : 'Start recording'}
@@ -608,4 +627,4 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
             </div>
         </SidebarProvider>
     );
-                                    }
+            }
