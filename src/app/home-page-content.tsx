@@ -47,7 +47,7 @@ interface HomePageClientProps {
     children: React.ReactNode;
 }
 
-// Re-define the animation variants here, in the Client Component
+// Animation variants must be defined here in the Client Component
 const promptVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: (i: number) => ({
@@ -60,7 +60,6 @@ const promptVariants = {
     }),
 };
 
-// Renamed to HomePageClient and updated to accept props and children
 export function HomePageClient({ initialPrompts, children }: HomePageClientProps) {
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
@@ -70,9 +69,11 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
     
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    // Mic recording state and refs
     const [isRecording, setIsRecording] = useState(false);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
+
     const { toast } = useToast();
     const { user } = useAuth();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -111,6 +112,7 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
 
     const currentMessages = conversations.find(c => c.id === currentConversationId)?.messages || [];
     
+    // START: AI/Chat Logic Functions (remains the same)
     const triggerAiResponse = useCallback(async (convId: string, messageContent: string) => {
         try {
             if (!user) {
@@ -219,7 +221,72 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
         setTimeout(() => triggerAiResponse(effectiveConvId!, userMessageContent), 0);
 
     }, [input, user, sessionMessageCount, currentConversationId, conversations, triggerAiResponse]);
+    // END: AI/Chat Logic Functions
 
+    // START: Mic Recording Functions (FIX: Moved here for scope)
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorderRef.current = new MediaRecorder(stream);
+            audioChunksRef.current = [];
+
+            mediaRecorderRef.current.ondataavailable = (event) => {
+                audioChunksRef.current.push(event.data);
+            };
+
+            mediaRecorderRef.current.onstop = async () => {
+                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = async () => {
+                    const base64Audio = reader.result as string;
+                    try {
+                        setIsLoading(true);
+                        const { transcript } = await processAudio({ audioDataUri: base64Audio });
+                        setInput(transcript);
+                    } catch (error) {
+                        console.error('Error processing audio:', error);
+                        toast({
+                            title: 'Error',
+                            description: 'Failed to process audio. Please try again.',
+                            variant: 'destructive',
+                        });
+                    } finally {
+                        setIsLoading(false);
+                    }
+                };
+            };
+
+            mediaRecorderRef.current.start();
+            setIsRecording(true);
+        } catch (error) {
+            console.error('Error starting recording:', error);
+            toast({
+                title: 'Microphone Error',
+                description: 'Could not access the microphone. Please check your permissions.',
+                variant: 'destructive',
+            });
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+            mediaRecorderRef.current.stop();
+            setIsRecording(false);
+        }
+    };
+
+    // The function being called by the button (FIX: Now correctly defined in scope)
+    const handleMicClick = () => {
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    };
+    // END: Mic Recording Functions
+    
+    // START: Remaining Event Handlers (mostly the same)
     const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         handleSendMessage();
@@ -306,8 +373,8 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
         }
     }
     
-    // The first 4 prompts are needed for the client-side rendered button grid
     const initialPromptButtons = initialPrompts.slice(0, 4);
+    // END: Remaining Event Handlers
 
     return (
         <SidebarProvider>
@@ -431,10 +498,10 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
                     <div className="flex-1 overflow-y-auto flex flex-col relative">
                         {currentMessages.length === 0 && !isLoading ? (
                             <div className="flex flex-1 flex-col items-center justify-start pt-16 text-center" onClick={handleChildPromptClick}>
-                                {/* RENDER STATIC CONTENT (CHILDREN) FROM SERVER */}
+                                {/* RENDER STATIC CONTENT (CHILDREN) FROM SERVER (SEO) */}
                                 {children}
 
-                                {/* RENDER THE INTERACTIVE PROMPTS HERE ON THE CLIENT SIDE */}
+                                {/* RENDER THE INTERACTIVE PROMPTS HERE (Client Side) */}
                                 <div className="mt-8 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
                                     {initialPromptButtons.map((prompt, i) => (
                                         <motion.div
@@ -448,7 +515,6 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
                                                 type="button"
                                                 variant="outline"
                                                 className="h-auto w-full whitespace-normal rounded-lg border-dashed p-4 text-left text-sm transition-all duration-300 hover:scale-105 hover:border-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20"
-                                                // This data attribute is what the handleChildPromptClick function reads
                                                 data-prompt={prompt}
                                             >
                                                 {prompt}
@@ -494,6 +560,7 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
                                     type="button"
                                     size="icon"
                                     variant="ghost"
+                                    // FIX: handleMicClick is now correctly defined in the component scope
                                     onClick={handleMicClick}
                                     className={cn("h-9 w-9 shrink-0 rounded-full text-muted-foreground transition-colors hover:text-primary", isRecording && "bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-500")}
                                     aria-label={isRecording ? 'Stop recording' : 'Start recording'}
@@ -541,4 +608,4 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
             </div>
         </SidebarProvider>
     );
-        }
+                                    }
