@@ -1,3 +1,5 @@
+// src/app/home-page-content.tsx
+
 'use client';
 
 import { chat, type ChatInput } from '@/ai/flows/chat';
@@ -44,6 +46,19 @@ interface HomePageClientProps {
     // This prop holds the static, server-rendered content (intro text and buttons)
     children: React.ReactNode;
 }
+
+// Re-define the animation variants here, in the Client Component
+const promptVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+        opacity: 1,
+        y: 0,
+        transition: {
+            delay: i * 0.1,
+            duration: 0.3,
+        },
+    }),
+};
 
 // Renamed to HomePageClient and updated to accept props and children
 export function HomePageClient({ initialPrompts, children }: HomePageClientProps) {
@@ -104,8 +119,6 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
 
             const currentConv = conversations.find(c => c.id === convId);
             
-            // This ensures we get the *latest* state of conversation history for the API call,
-            // avoiding race conditions with pending state updates.
             const historyForApi = (currentConv?.messages || []).filter(m => m.role !== 'user' || m.content !== messageContent);
             const fullHistoryForApi = [...historyForApi, { role: 'user' as const, content: messageContent }];
 
@@ -139,8 +152,22 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
         } finally {
             setIsLoading(false);
         }
-    }, [user, conversations]); 
+    }, [user, conversations]);
     
+    const startNewChat = (setActive = true) => {
+        const newId = `chat-${Date.now()}`;
+        const newConversation: Conversation = {
+            id: newId,
+            title: 'New Chat',
+            messages: [],
+        };
+        setConversations(prev => [newConversation, ...prev]);
+        if (setActive) {
+            setCurrentConversationId(newId);
+        }
+        return newId;
+    }
+
     const handleSendMessage = useCallback(async (prompt?: string) => {
         if (!user && sessionMessageCount >= 15) {
             setIsAuthModalOpen(true);
@@ -156,7 +183,6 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
 
         let effectiveConvId = currentConversationId;
         
-        // This check is important: only create a new chat if the current one is empty.
         const isCurrentChatEmpty = (conversations.find(c => c.id === effectiveConvId)?.messages.length || 0) === 0;
 
         if (!effectiveConvId || isCurrentChatEmpty) {
@@ -168,7 +194,6 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
                 messages: [],
             };
              
-            // Replace the empty chat or prepend a new one
             if (isCurrentChatEmpty && effectiveConvId) {
                 setConversations(prev => prev.map(c => c.id === effectiveConvId ? { ...newConversation, messages: c.messages } : c));
             } else {
@@ -191,7 +216,6 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
 
         setIsLoading(true);
 
-        // Defer the AI call to the next tick to ensure state is updated.
         setTimeout(() => triggerAiResponse(effectiveConvId!, userMessageContent), 0);
 
     }, [input, user, sessionMessageCount, currentConversationId, conversations, triggerAiResponse]);
@@ -208,98 +232,16 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
         }
     };
     
-    // Handler for the microphone button's recording start
-    const startRecording = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorderRef.current = new MediaRecorder(stream);
-            audioChunksRef.current = [];
-
-            mediaRecorderRef.current.ondataavailable = (event) => {
-                audioChunksRef.current.push(event.data);
-            };
-
-            mediaRecorderRef.current.onstop = async () => {
-                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-                const reader = new FileReader();
-                reader.readAsDataURL(audioBlob);
-                reader.onloadend = async () => {
-                    const base64Audio = reader.result as string;
-                    try {
-                        setIsLoading(true);
-                        const { transcript } = await processAudio({ audioDataUri: base64Audio });
-                        setInput(transcript);
-                    } catch (error) {
-                        console.error('Error processing audio:', error);
-                        toast({
-                            title: 'Error',
-                            description: 'Failed to process audio. Please try again.',
-                            variant: 'destructive',
-                        });
-                    } finally {
-                        setIsLoading(false);
-                    }
-                };
-            };
-
-            mediaRecorderRef.current.start();
-            setIsRecording(true);
-        } catch (error) {
-            console.error('Error starting recording:', error);
-            toast({
-                title: 'Microphone Error',
-                description: 'Could not access the microphone. Please check your permissions.',
-                variant: 'destructive',
-            });
-        }
-    };
-
-    // Handler for the microphone button's recording stop
-    const stopRecording = () => {
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-            mediaRecorderRef.current.stop();
-            setIsRecording(false);
-        }
-    };
-
-    // Toggles microphone recording
-    const handleMicClick = () => {
-        if (isRecording) {
-            stopRecording();
-        } else {
-            startRecording();
-        }
-    };
-    
-    // Triggers image generation command
     const handleImageGeneration = () => {
         if (!input.trim()) return;
-        // Prefix the message with the command trigger
         handleSendMessage(`/imagine ${input.trim()}`);
     }
 
-    // Creates a new chat and optionally sets it as active
-    const startNewChat = (setActive = true) => {
-        const newId = `chat-${Date.now()}`;
-        const newConversation: Conversation = {
-            id: newId,
-            title: 'New Chat',
-            messages: [],
-        };
-        setConversations(prev => [newConversation, ...prev]);
-        if (setActive) {
-            setCurrentConversationId(newId);
-        }
-        return newId;
-    }
-
-    // Opens the delete confirmation dialog
     const handleDeleteConversation = (id: string) => {
         setConversationToDelete(id);
         setIsDeleteDialogOpen(true);
     };
 
-    // Confirms and executes the chat deletion
     const confirmDelete = () => {
         if (!conversationToDelete) return;
 
@@ -322,7 +264,6 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
         })
     };
 
-    // Summarizes the current conversation using a Genkit flow
     const handleSummarize = async () => {
         if (!currentConversationId || currentMessages.length === 0) return;
 
@@ -347,32 +288,29 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
         }
     };
 
-    // Sets a random initial prompt in the input field
     const handleSurpriseMe = () => {
-        // Use the prop passed from the server component
         if (initialPrompts.length > 0) {
             const randomIndex = Math.floor(Math.random() * initialPrompts.length);
             setInput(initialPrompts[randomIndex]);
         }
     };
     
-    // Handler to capture clicks on the server-rendered prompt buttons
     const handleChildPromptClick = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
-        // Check if the click originated on a button or an element inside a button
         const button = target.closest('button') as HTMLButtonElement | null;
         if (button) {
-            // Read the prompt content from the data-prompt attribute set on the server
             const prompt = button.dataset.prompt;
             if (prompt) {
                 handleSendMessage(prompt);
             }
         }
     }
+    
+    // The first 4 prompts are needed for the client-side rendered button grid
+    const initialPromptButtons = initialPrompts.slice(0, 4);
 
     return (
         <SidebarProvider>
-            {/* Modals and Dialogs */}
             <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <AlertDialogContent>
@@ -390,7 +328,7 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* Sidebar and Main Content structure */}
+            <div className="flex h-dvh bg-transparent text-foreground">
                 <Sidebar>
                     <SidebarHeader className="p-2">
                         <div className="flex items-center justify-between p-2">
@@ -415,28 +353,22 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
                                     <div
                                     onClick={() => setCurrentConversationId(conv.id)}
                                     className={cn(
-                                        // Added 'justify-between' to push items apart
                                         "flex items-center w-full rounded-md px-2 py-1.5 cursor-pointer transition-colors justify-between",
                                         currentConversationId === conv.id
                                         ? "bg-accent/60"
                                         : "hover:bg-accent/40"
                                     )}
-                                    title={conv.title} // full title tooltip
+                                    title={conv.title}
                                     >
-                                    {/* Container for the Chat Icon and Title */}
                                     <div className="flex items-center overflow-hidden">
-                                        {/* Chat icon */}
                                         <MessageSquare className="h-4 w-4 shrink-0 mr-2 text-muted-foreground" />
-
-                                        {/* Title — truncated with ellipsis */}
                                         <span
-                                        className="text-sm text-foreground truncate max-w-[130px]" // Max-width is now more controlled
+                                        className="text-sm text-foreground truncate max-w-[130px]"
                                         >
                                         {conv.title}
                                         </span>
                                     </div>
 
-                                    {/* Delete icon — remains on the right due to 'justify-between' on the parent div */}
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -499,8 +431,31 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
                     <div className="flex-1 overflow-y-auto flex flex-col relative">
                         {currentMessages.length === 0 && !isLoading ? (
                             <div className="flex flex-1 flex-col items-center justify-start pt-16 text-center" onClick={handleChildPromptClick}>
-                                {/* This is where the server-rendered static content (children) is placed */}
+                                {/* RENDER STATIC CONTENT (CHILDREN) FROM SERVER */}
                                 {children}
+
+                                {/* RENDER THE INTERACTIVE PROMPTS HERE ON THE CLIENT SIDE */}
+                                <div className="mt-8 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
+                                    {initialPromptButtons.map((prompt, i) => (
+                                        <motion.div
+                                            key={i}
+                                            custom={i}
+                                            variants={promptVariants}
+                                            initial="hidden"
+                                            animate="visible"
+                                        >
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                className="h-auto w-full whitespace-normal rounded-lg border-dashed p-4 text-left text-sm transition-all duration-300 hover:scale-105 hover:border-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20"
+                                                // This data attribute is what the handleChildPromptClick function reads
+                                                data-prompt={prompt}
+                                            >
+                                                {prompt}
+                                            </Button>
+                                        </motion.div>
+                                    ))}
+                                </div>
                             </div>
                         ) : (
                              <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col">
@@ -583,6 +538,7 @@ export function HomePageClient({ initialPrompts, children }: HomePageClientProps
                         </div>
                     </motion.div>
                 </main>
+            </div>
         </SidebarProvider>
     );
-                                }
+        }
