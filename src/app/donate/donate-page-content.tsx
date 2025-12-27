@@ -110,6 +110,18 @@ export function DonatePageContent() {
                     {/* --- SIDEBAR FOOTER --- */}
                     <SidebarFooter className="p-2 border-t border-border group-data-[collapsible=icon]:hidden">
                         <SidebarMenu>
+                            {/* Donate Link (Active/Highlighted) */}
+                            <SidebarMenuItem>
+                                <Link 
+                                    href="/donate" 
+                                    className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium bg-accent text-red-500 transition-colors"
+                                >
+                                    <Heart className="h-4 w-4 fill-current" />
+                                    <span>Donate</span>
+                                </Link>
+                            </SidebarMenuItem>
+
+                            {/* Contact Link */}
                             <SidebarMenuItem>
                                 <Link 
                                     href="/contact" 
@@ -137,8 +149,7 @@ export function DonatePageContent() {
                     </SidebarFooter>
                 </Sidebar>
 
-                {/* --- MAIN CONTENT --- */}
-                {/* Gradient Effect Applied Here */}
+                {/* --- MAIN CONTENT (Gradient Applied) --- */}
                 <main className="flex flex-1 flex-col overflow-hidden w-full relative bg-gradient-to-br from-background via-secondary/5 to-secondary/10">
                     <header className="shrink-0 flex h-16 items-center justify-between border-b border-border/40 bg-background/50 px-4 backdrop-blur-lg z-10 sticky top-0">
                         <div className="flex items-center gap-2">
@@ -194,7 +205,8 @@ export function DonatePageContent() {
                                         >
                                             <div className="flex flex-col md:flex-row items-center gap-8">
                                                 <div className="bg-white p-4 rounded-xl shadow-inner border border-gray-100 shrink-0">
-                                                    {/* Placeholder for QR Code */}
+                                                    {/* REPLACE WITH YOUR ACTUAL QR CODE IMAGE */}
+                                                    {/* <img src="/upi-qr.png" alt="UPI QR Code" className="w-48 h-48 object-contain" /> */}
                                                     <div className="w-48 h-48 bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center rounded-lg text-gray-400">
                                                         <QrCode className="h-12 w-12 mb-2 opacity-50" />
                                                         <span className="text-xs text-center px-2 font-medium">Add QR Code Image</span>
@@ -235,10 +247,10 @@ export function DonatePageContent() {
                                         </motion.div>
                                     </TabsContent>
 
-                                    {/* --- TAB 2: BUY ME A COFFEE --- */}
+                                    {/* --- TAB 2: BUY ME A COFFEE (International/Cards) --- */}
                                     <TabsContent value="international">
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-                                            {/* Card 1 */}
+                                            {/* Tier 1 */}
                                             <motion.div variants={itemVariants} className="flex">
                                                 <Card className="flex flex-col h-full hover:border-blue-500/50 transition-all hover:shadow-lg relative overflow-hidden group w-full">
                                                     <div className="absolute top-0 left-0 w-full h-1 bg-blue-500" />
@@ -264,7 +276,7 @@ export function DonatePageContent() {
                                                 </Card>
                                             </motion.div>
 
-                                            {/* Card 2 */}
+                                            {/* Tier 2 (Highlighted) */}
                                             <motion.div variants={itemVariants} className="flex">
                                                 <Card className="flex flex-col h-full border-primary shadow-md hover:shadow-xl transition-all relative overflow-hidden scale-105 z-10 bg-background w-full">
                                                     <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[10px] font-bold px-3 py-1 rounded-bl-lg tracking-wider">POPULAR</div>
@@ -292,7 +304,7 @@ export function DonatePageContent() {
                                                 </Card>
                                             </motion.div>
 
-                                            {/* Card 3 */}
+                                            {/* Tier 3 */}
                                             <motion.div variants={itemVariants} className="flex">
                                                 <Card className="flex flex-col h-full hover:border-purple-500/50 transition-all hover:shadow-lg relative overflow-hidden group w-full">
                                                     <div className="absolute top-0 left-0 w-full h-1 bg-purple-500" />
@@ -330,7 +342,7 @@ export function DonatePageContent() {
                                 transition={{ delay: 0.8, duration: 0.6 }}
                                 className="mt-20 border-t border-border/50 pt-10 text-center"
                             >
-                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-600 text-sm font-medium mb-4">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-600 text-sm font-medium mb-4 ring-1 ring-green-500/20">
                                     <ShieldCheck className="h-4 w-4" /> 100% Transparency
                                 </div>
                                 <h2 className="text-2xl font-bold mb-4">Where does the money go?</h2>
