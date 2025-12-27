@@ -1,8 +1,7 @@
-
 'use client';
 
 import { chat, type ChatInput } from '@/ai/flows/chat';
-import { generateInitialPrompts } from '@/ai/flows/generate-initial-prompt';
+// REMOVED: import { generateInitialPrompts } ... (Saves API Quota)
 import { processAudio } from '@/ai/flows/process-audio';
 import { summarizeConversation } from '@/ai/flows/summarize-conversation';
 import { ChatMessage, type ChatMessageProps } from '@/components/chat-message';
@@ -11,10 +10,10 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2, BookText, Sparkles } from 'lucide-react';
+import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2, BookText, Sparkles, Zap, Shield, Brain, Code, PenTool, Globe } from 'lucide-react';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, SidebarFooter } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarFooter } from '@/components/ui/sidebar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/use-auth';
 import { AuthModal } from '@/components/auth-modal';
@@ -60,6 +59,23 @@ export function HomePageContent() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
 
+    // Static prompts to avoid API Quota usage on page load
+    useEffect(() => {
+        const staticPrompts = [
+            "Explain the theory of relativity like I'm 5",
+            "Debug this React useEffect code snippet",
+            "Write a creative blog post about AI trends in 2025",
+            "Create a 3-day workout plan for beginners",
+            "Suggest 5 unique dinner recipes with chicken",
+            "How do I center a div using Tailwind CSS?",
+            "Analyze the pros and cons of remote work",
+            "Generate a Python script to scrape a website"
+        ];
+        setAllPrompts(staticPrompts);
+        // Randomly select 4 prompts for variety
+        const shuffled = [...staticPrompts].sort(() => 0.5 - Math.random());
+        setInitialPrompts(shuffled.slice(0, 4));
+    }, []);
 
     useEffect(() => {
         const savedConversations = localStorage.getItem('chatHistory');
@@ -85,19 +101,6 @@ export function HomePageContent() {
     }, [conversations]);
 
     useEffect(() => {
-        async function fetchPrompts() {
-            try {
-                const prompts = await generateInitialPrompts();
-                setAllPrompts(prompts);
-                setInitialPrompts(prompts.slice(0, 4));
-            } catch (error) {
-                console.error('Failed to fetch initial prompts:', error);
-            }
-        }
-        fetchPrompts();
-    }, []);
-
-    useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [currentConversationId, isLoading]);
 
@@ -110,10 +113,6 @@ export function HomePageContent() {
             }
 
             const currentConv = conversations.find(c => c.id === convId);
-            
-            // This is a critical change. We get the latest history from the state,
-            // but we add the new user message to it manually for the API call.
-            // This avoids race conditions with React's state updates.
             const historyForApi = (currentConv?.messages || []).filter(m => m.role !== 'user' || m.content !== messageContent);
             const fullHistoryForApi = [...historyForApi, { role: 'user' as const, content: messageContent }];
 
@@ -135,7 +134,7 @@ export function HomePageContent() {
             console.error('Error calling chat AI:', error);
             const errorMessage: Message = {
                 role: 'model',
-                content: 'Sorry, I encountered an error. Please try again.',
+                content: 'Sorry, I encountered an error. Please try again or check your connection.',
             };
             setConversations(prev =>
                 prev.map(c =>
@@ -147,7 +146,7 @@ export function HomePageContent() {
         } finally {
             setIsLoading(false);
         }
-    }, [user, conversations]); // conversations is a dependency
+    }, [user, conversations]);
     
     const handleSendMessage = useCallback(async (prompt?: string) => {
         if (!user && sessionMessageCount >= 15) {
@@ -163,8 +162,6 @@ export function HomePageContent() {
         }
 
         let effectiveConvId = currentConversationId;
-        
-        // This check is important: only create a new chat if the current one is empty.
         const isCurrentChatEmpty = (conversations.find(c => c.id === effectiveConvId)?.messages.length || 0) === 0;
 
         if (!effectiveConvId || isCurrentChatEmpty) {
@@ -176,7 +173,6 @@ export function HomePageContent() {
                 messages: [],
             };
              
-            // Replace the empty chat or prepend a new one
             if (isCurrentChatEmpty && effectiveConvId) {
                 setConversations(prev => prev.map(c => c.id === effectiveConvId ? { ...newConversation, messages: c.messages } : c));
             } else {
@@ -198,8 +194,6 @@ export function HomePageContent() {
         });
 
         setIsLoading(true);
-
-        // Defer the AI call to the next tick to ensure state is updated.
         setTimeout(() => triggerAiResponse(effectiveConvId!, userMessageContent), 0);
 
     }, [input, user, sessionMessageCount, currentConversationId, conversations, triggerAiResponse]);
@@ -384,7 +378,7 @@ export function HomePageContent() {
                 </AlertDialogContent>
             </AlertDialog>
 
-            <div className="flex h-dvh bg-transparent text-foreground">
+            <div className="flex h-dvh bg-transparent text-foreground w-full">
                 <Sidebar>
                     <SidebarHeader className="p-2">
                         <div className="flex items-center justify-between p-2">
@@ -405,54 +399,37 @@ export function HomePageContent() {
                         <SidebarContent className="p-2">
                             <SidebarMenu>
                              {conversations.map((conv) => (
-  <SidebarMenuItem key={conv.id} className="group">
-    <div
-      onClick={() => setCurrentConversationId(conv.id)}
-      className={cn(
-        // Added 'justify-between' to push items apart
-        "flex items-center w-full rounded-md px-2 py-1.5 cursor-pointer transition-colors justify-between",
-        currentConversationId === conv.id
-          ? "bg-accent/60"
-          : "hover:bg-accent/40"
-      )}
-      title={conv.title} // full title tooltip
-    >
-      {/* Container for the Chat Icon and Title
-        This div ensures the icon and title stick together on the left 
-      */}
-      <div className="flex items-center overflow-hidden">
-        {/* Chat icon */}
-        <MessageSquare className="h-4 w-4 shrink-0 mr-2 text-muted-foreground" />
-
-        {/* Title — truncated with ellipsis */}
-        <span
-          // Removed inline styles and replaced with Tailwind classes for truncation and flexibility
-          // 'flex-1' is not needed here anymore, replaced by the parent flex structure
-          className="text-sm text-foreground truncate max-w-[130px]" // Max-width is now more controlled
-        >
-          {conv.title}
-        </span>
-      </div>
-
-      {/* Delete icon — remains on the right due to 'justify-between' on the parent div */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleDeleteConversation(conv.id);
-        }}
-        className="
-          ml-1 h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive
-          transition-opacity duration-200 ease-in-out
-          opacity-100 md:opacity-0 md:group-hover:opacity-100
-        "
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
-    </div>
-  </SidebarMenuItem>
-))}
+                                <SidebarMenuItem key={conv.id} className="group">
+                                    <div
+                                    onClick={() => setCurrentConversationId(conv.id)}
+                                    className={cn(
+                                        "flex items-center w-full rounded-md px-2 py-1.5 cursor-pointer transition-colors justify-between",
+                                        currentConversationId === conv.id
+                                        ? "bg-accent/60"
+                                        : "hover:bg-accent/40"
+                                    )}
+                                    title={conv.title}
+                                    >
+                                    <div className="flex items-center overflow-hidden">
+                                        <MessageSquare className="h-4 w-4 shrink-0 mr-2 text-muted-foreground" />
+                                        <span className="text-sm text-foreground truncate max-w-[130px]">
+                                        {conv.title}
+                                        </span>
+                                    </div>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteConversation(conv.id);
+                                        }}
+                                        className="ml-1 h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive transition-opacity duration-200 ease-in-out opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                    </div>
+                                </SidebarMenuItem>
+                                ))}
                             </SidebarMenu>
                         </SidebarContent>
                     </ScrollArea>
@@ -462,7 +439,7 @@ export function HomePageContent() {
                             <Link href="/contact" className="hover:text-primary">Contact</Link>
                             <Link href="/donate" className="hover:text-primary">Donate</Link>
                             <Link href="/privacy" className="hover:text-primary">Privacy</Link>
-                            <Link href="/terms" className="hovertext-primary">Terms</Link>
+                            <Link href="/terms" className="hover:text-primary">Terms</Link>
                         </div>
                         <p className="mt-4 text-center text-xs text-muted-foreground">
                             &copy; {new Date().getFullYear()} Shivlox AI. All rights reserved.
@@ -470,8 +447,8 @@ export function HomePageContent() {
                     </SidebarFooter>
                 </Sidebar>
 
-                <main className="flex flex-1 flex-col overflow-hidden">
-                    <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-lg backdrop-blur-lg">
+                <main className="flex flex-1 flex-col overflow-hidden w-full relative">
+                    <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/10 bg-background/50 px-4 shadow-lg backdrop-blur-lg z-10">
                         <div className="flex items-center gap-2">
                             <SidebarTrigger />
                         </div>
@@ -494,36 +471,35 @@ export function HomePageContent() {
                         </div>
                     </header>
 
-                    <div className="flex-1 overflow-y-auto flex flex-col relative">
+                    <div className="flex-1 overflow-y-auto flex flex-col relative w-full scroll-smooth">
                         {currentMessages.length === 0 && !isLoading ? (
-                                <div className="flex flex-1 flex-col items-center justify-start pt-16 text-center">
+                                <div className="flex flex-1 flex-col items-center justify-start pt-10 pb-20 text-center px-4">
                                     <motion.div
                                         initial={{ scale: 0, rotate: -45 }}
                                         animate={{ scale: 1, rotate: 0 }}
                                         transition={{ duration: 0.5, type: 'spring', stiffness: 260, damping: 20 }}
-                                        className="mb-4"
+                                        className="mb-6"
                                     >
-                                        <ShivloxIcon className="h-20 w-20" />
+                                        <ShivloxIcon className="h-24 w-24" />
                                     </motion.div>
-                                   <motion.h2
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5, delay: 0.2 }}
-    className="text-3xl font-bold text-foreground tracking-tight"
->
-    Your Intelligent **Shivlox AI** Chat Assistant ✨
-</motion.h2>
-<motion.p 
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5, delay: 0.4 }}
-    className="mt-4 text-lg text-muted-foreground"
->
-    Ask anything to begin your first conversation.
-</motion.p>
+                                   <motion.h1
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.5, delay: 0.2 }}
+                                        className="text-4xl md:text-5xl font-extrabold text-foreground tracking-tight mb-4"
+                                    >
+                                        Your Intelligent <span className="text-primary">Shivlox AI</span> Assistant
+                                    </motion.h1>
+                                    <motion.p 
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.5, delay: 0.4 }}
+                                        className="mt-2 text-lg md:text-xl text-muted-foreground max-w-2xl"
+                                    >
+                                        Experience the future of conversation. Ask questions, generate code, create images, and solve complex problems instantly.
+                                    </motion.p>
 
-
-                                    <div className="mt-8 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div className="mt-10 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
                                         {initialPrompts.map((prompt, i) => (
                                             <motion.div
                                                 key={i}
@@ -534,14 +510,65 @@ export function HomePageContent() {
                                             >
                                                 <Button
                                                     variant="outline"
-                                                    className="h-auto w-full whitespace-normal rounded-lg border-dashed p-4 text-left text-sm transition-all duration-300 hover:scale-105 hover:border-primary hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/20"
+                                                    className="h-auto w-full justify-start text-left whitespace-normal rounded-xl border-dashed p-4 text-sm transition-all duration-300 hover:scale-[1.02] hover:border-primary hover:bg-primary/5 hover:shadow-lg"
                                                     onClick={() => handleSendMessage(prompt)}
                                                 >
+                                                    <span className="mr-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                                        {i === 0 ? <Zap className="h-4 w-4" /> : 
+                                                         i === 1 ? <Code className="h-4 w-4" /> :
+                                                         i === 2 ? <PenTool className="h-4 w-4" /> : <Globe className="h-4 w-4" />}
+                                                    </span>
                                                     {prompt}
                                                 </Button>
                                             </motion.div>
                                         ))}
                                     </div>
+
+                                    {/* SEO Content Section - Visible when no chat is active */}
+                                    <motion.div 
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ delay: 0.8, duration: 0.8 }}
+                                        className="mt-20 w-full max-w-5xl text-left space-y-12 pb-10"
+                                    >
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                            <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-secondary/10 border border-border/50">
+                                                <div className="h-12 w-12 bg-blue-500/20 text-blue-500 rounded-full flex items-center justify-center mb-4">
+                                                    <Brain className="h-6 w-6" />
+                                                </div>
+                                                <h3 className="text-xl font-bold mb-2">Advanced Reasoning</h3>
+                                                <p className="text-muted-foreground text-sm">Powered by Gemini 1.5 Flash, Shivlox AI understands complex queries, context, and nuance better than ever before.</p>
+                                            </div>
+                                            <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-secondary/10 border border-border/50">
+                                                <div className="h-12 w-12 bg-purple-500/20 text-purple-500 rounded-full flex items-center justify-center mb-4">
+                                                    <Shield className="h-6 w-6" />
+                                                </div>
+                                                <h3 className="text-xl font-bold mb-2">Secure & Private</h3>
+                                                <p className="text-muted-foreground text-sm">Your conversations are private. We prioritize your data security with enterprise-grade encryption.</p>
+                                            </div>
+                                            <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-secondary/10 border border-border/50">
+                                                <div className="h-12 w-12 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mb-4">
+                                                    <Sparkles className="h-6 w-6" />
+                                                </div>
+                                                <h3 className="text-xl font-bold mb-2">Multimodal Magic</h3>
+                                                <p className="text-muted-foreground text-sm">Generate images, process audio, and analyze text all in one interface. Just type <code className="bg-muted px-1 rounded">/imagine</code> to start.</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="prose prose-invert max-w-none text-muted-foreground text-center">
+                                            <h2 className="text-2xl font-semibold text-foreground mb-4">Why Choose Shivlox AI?</h2>
+                                            <p className="mb-4">
+                                                Shivlox AI represents the next generation of artificial intelligence assistants. 
+                                                Unlike traditional chatbots, our platform leverages the speed of <strong>Google&apos;s Gemini 1.5 Flash</strong> technology 
+                                                to deliver near-instant responses. Whether you are a developer debugging code, a writer seeking inspiration, 
+                                                or a student learning new concepts, Shivlox AI adapts to your needs.
+                                            </p>
+                                            <p>
+                                                Start chatting today to unlock productivity, creativity, and knowledge like never before. 
+                                                Our AI models are constantly updated to ensure accuracy and relevance in every interaction.
+                                            </p>
+                                        </div>
+                                    </motion.div>
                                 </div>
                             ) : (
                                  <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col">
@@ -558,7 +585,7 @@ export function HomePageContent() {
                         initial={{ y: 100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 0.5, ease: 'easeOut' }}
-                        className="shrink-0 bg-background/50 p-4 backdrop-blur-sm"
+                        className="shrink-0 bg-background/50 p-4 backdrop-blur-sm z-20"
                     >
                         <div className="mx-auto w-full max-w-3xl">
                             <form
@@ -627,4 +654,4 @@ export function HomePageContent() {
             </div>
         </SidebarProvider>
     );
-            }
+}
