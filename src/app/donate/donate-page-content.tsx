@@ -1,13 +1,23 @@
 'use client';
 
 import React, { useState } from 'react';
-import { SidebarProvider, Sidebar, SidebarHeader, SidebarTrigger, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarFooter } from '@/components/ui/sidebar';
+import { 
+  SidebarProvider, 
+  Sidebar, 
+  SidebarHeader, 
+  SidebarTrigger, 
+  SidebarContent, 
+  SidebarMenu, 
+  SidebarMenuItem, 
+  SidebarFooter 
+} from '@/components/ui/sidebar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { ShivloxIcon } from '@/components/shivlox-icon';
 import { useAuth } from '@/hooks/use-auth';
 import { UserNav } from '@/components/user-nav';
 import { AuthModal } from '@/components/auth-modal';
+import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { 
@@ -21,7 +31,13 @@ import {
   CreditCard,
   CheckCircle2,
   ShieldCheck,
-  Mail
+  Mail,
+  Copy,
+  Check,
+  Info,
+  Lock,
+  FileText,
+  ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,7 +45,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function DonatePageContent() {
     const { user } = useAuth();
+    const { toast } = useToast();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
 
     // Animation variants
     const containerVariants = {
@@ -42,45 +60,56 @@ export function DonatePageContent() {
         visible: { opacity: 1, y: 0 }
     };
 
+    const handleCopyUpi = () => {
+        navigator.clipboard.writeText("adityachoudhary@okhdfcbank");
+        setIsCopied(true);
+        toast({ 
+            title: "Copied!", 
+            description: "UPI ID copied to clipboard.",
+            variant: "default"
+        });
+        
+        setTimeout(() => setIsCopied(false), 2000);
+    };
+
     return (
         <SidebarProvider>
             <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
             
             <div className="flex h-dvh bg-background text-foreground w-full">
                 {/* --- SIDEBAR --- */}
-                <Sidebar>
+                <Sidebar collapsible="icon">
                     <SidebarHeader className="p-2">
                         <div className="flex items-center justify-between p-2">
-                            <Link href="/" className="flex items-center gap-2">
-                                <ShivloxIcon className="h-8 w-8" />
-                                <h2 className="text-lg font-semibold">Shivlox AI</h2>
+                            <Link href="/" className="flex items-center gap-2 overflow-hidden">
+                                <ShivloxIcon className="h-8 w-8 shrink-0" />
+                                <h2 className="text-lg font-semibold group-data-[collapsible=icon]:hidden">Shivlox AI</h2>
                             </Link>
-                            <SidebarTrigger className="md:hidden"/>
                         </div>
-                        <Button variant="outline" className="w-full" asChild>
+                        <Button variant="outline" className="w-full justify-start group-data-[collapsible=icon]:justify-center" asChild>
                             <Link href="/">
-                                <Plus className="mr-2" />
-                                New Chat
+                                <Plus className="mr-2 h-4 w-4 group-data-[collapsible=icon]:mr-0" />
+                                <span className="group-data-[collapsible=icon]:hidden">New Chat</span>
                             </Link>
                         </Button>
                     </SidebarHeader>
+                    
                     <ScrollArea className="flex-1">
                         <SidebarContent className="p-2">
                             <SidebarMenu>
                                 <SidebarMenuItem>
-                                    <Link href="/" className="flex items-center w-full rounded-md px-2 py-2 hover:bg-accent/40 transition-colors">
-                                        <MessageSquare className="h-4 w-4 mr-2 text-muted-foreground" />
-                                        <span className="text-sm">Back to Chat</span>
+                                    <Link href="/" className="flex items-center w-full rounded-md px-2 py-2 hover:bg-accent/40 transition-colors group-data-[collapsible=icon]:justify-center">
+                                        <MessageSquare className="h-4 w-4 mr-2 text-muted-foreground group-data-[collapsible=icon]:mr-0" />
+                                        <span className="text-sm group-data-[collapsible=icon]:hidden">Back to Chat</span>
                                     </Link>
                                 </SidebarMenuItem>
                             </SidebarMenu>
                         </SidebarContent>
                     </ScrollArea>
                     
-                     {/* --- SIDEBAR FOOTER WITH LINKS --- */}
-                     <SidebarFooter className="p-2 border-t border-border">
+                    {/* --- SIDEBAR FOOTER --- */}
+                    <SidebarFooter className="p-2 border-t border-border group-data-[collapsible=icon]:hidden">
                         <SidebarMenu>
-                            {/* Contact Link */}
                             <SidebarMenuItem>
                                 <Link 
                                     href="/contact" 
@@ -91,7 +120,6 @@ export function DonatePageContent() {
                                 </Link>
                             </SidebarMenuItem>
 
-                            {/* Divider & Legal Links */}
                             <div className="my-1 border-t border-border/50" />
                             
                             <div className="flex flex-wrap gap-2 px-2 py-1 text-xs text-muted-foreground/60">
@@ -110,8 +138,9 @@ export function DonatePageContent() {
                 </Sidebar>
 
                 {/* --- MAIN CONTENT --- */}
+                {/* Gradient Effect Applied Here */}
                 <main className="flex flex-1 flex-col overflow-hidden w-full relative bg-gradient-to-br from-background via-secondary/5 to-secondary/10">
-                    <header className="shrink-0 flex h-16 items-center justify-between border-b border-border/40 bg-background/50 px-4 backdrop-blur-lg z-10">
+                    <header className="shrink-0 flex h-16 items-center justify-between border-b border-border/40 bg-background/50 px-4 backdrop-blur-lg z-10 sticky top-0">
                         <div className="flex items-center gap-2">
                             <SidebarTrigger />
                         </div>
@@ -121,7 +150,7 @@ export function DonatePageContent() {
                     </header>
 
                     <ScrollArea className="flex-1">
-                        <div className="max-w-5xl mx-auto px-4 py-12 md:py-20">
+                        <div className="max-w-6xl mx-auto px-4 py-12 md:py-20">
                             
                             {/* HERO SECTION */}
                             <motion.div 
@@ -130,11 +159,11 @@ export function DonatePageContent() {
                                 transition={{ duration: 0.6 }}
                                 className="text-center mb-16 space-y-6"
                             >
-                                <div className="inline-flex items-center justify-center p-3 rounded-full bg-red-500/10 mb-4">
-                                    <Heart className="h-8 w-8 text-red-500 fill-current animate-pulse" />
+                                <div className="inline-flex items-center justify-center p-3 rounded-full bg-red-500/10 mb-4 ring-1 ring-red-500/20">
+                                    <Heart className="h-8 w-8 text-red-500 fill-red-500/20 animate-pulse" />
                                 </div>
                                 <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-                                    Help Keep Shivlox <span className="text-primary">Alive & Free</span>
+                                    Help Keep Shivlox <span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">Alive & Free</span>
                                 </h1>
                                 <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                                     Shivlox AI is built and maintained by a solo developer. Your support directly covers 
@@ -153,26 +182,25 @@ export function DonatePageContent() {
                                     <div className="flex justify-center mb-8">
                                         <TabsList className="grid w-full max-w-[400px] grid-cols-2">
                                             <TabsTrigger value="upi">UPI (India)</TabsTrigger>
-                                            <TabsTrigger value="international">International / Cards</TabsTrigger>
+                                            <TabsTrigger value="international">Cards / International</TabsTrigger>
                                         </TabsList>
                                     </div>
 
-                                    {/* --- TAB 1: UPI / QR CODE (For India - Default) --- */}
+                                    {/* --- TAB 1: UPI / QR CODE (For India) --- */}
                                     <TabsContent value="upi">
                                         <motion.div 
                                             variants={itemVariants}
                                             className="bg-background rounded-xl border border-border p-8 max-w-2xl mx-auto shadow-sm"
                                         >
                                             <div className="flex flex-col md:flex-row items-center gap-8">
-                                                <div className="bg-white p-4 rounded-xl shadow-inner border border-gray-100">
-                                                    {/* REPLACE WITH YOUR ACTUAL QR CODE IMAGE */}
-                                                    {/* <img src="/upi-qr.png" alt="UPI QR Code" className="w-48 h-48 object-contain" /> */}
-                                                    <div className="w-48 h-48 bg-gray-100 flex flex-col items-center justify-center rounded-lg text-gray-400">
-                                                        <QrCode className="h-12 w-12 mb-2" />
-                                                        <span className="text-xs text-center px-2">Add your QR Code Image here</span>
+                                                <div className="bg-white p-4 rounded-xl shadow-inner border border-gray-100 shrink-0">
+                                                    {/* Placeholder for QR Code */}
+                                                    <div className="w-48 h-48 bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center rounded-lg text-gray-400">
+                                                        <QrCode className="h-12 w-12 mb-2 opacity-50" />
+                                                        <span className="text-xs text-center px-2 font-medium">Add QR Code Image</span>
                                                     </div>
                                                 </div>
-                                                <div className="flex-1 space-y-4 text-center md:text-left">
+                                                <div className="flex-1 space-y-4 text-center md:text-left w-full">
                                                     <div>
                                                         <h3 className="text-xl font-bold flex items-center justify-center md:justify-start gap-2">
                                                             <CreditCard className="h-5 w-5 text-primary" />
@@ -183,39 +211,45 @@ export function DonatePageContent() {
                                                         </p>
                                                     </div>
                                                     
-                                                    <div className="bg-secondary/50 p-4 rounded-lg flex items-center justify-between">
-                                                        <code className="text-sm font-mono font-semibold">adityachoudhary@okhdfcbank</code>
-                                                        <Button size="sm" variant="ghost" onClick={() => {
-                                                            navigator.clipboard.writeText("adityachoudhary@okhdfcbank");
-                                                            toast({ title: "Copied!", description: "UPI ID copied to clipboard." });
-                                                        }}>
-                                                            Copy
+                                                    <div className="bg-secondary/50 border border-border p-3 rounded-lg flex items-center justify-between group hover:border-primary/50 transition-colors">
+                                                        <code className="text-sm font-mono font-semibold truncate mr-2 select-all">adityachoudhary@okhdfcbank</code>
+                                                        <Button 
+                                                            size="icon" 
+                                                            variant="ghost" 
+                                                            className="h-8 w-8 shrink-0"
+                                                            onClick={handleCopyUpi}
+                                                        >
+                                                            {isCopied ? (
+                                                                <Check className="h-4 w-4 text-green-500" />
+                                                            ) : (
+                                                                <Copy className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                                            )}
                                                         </Button>
                                                     </div>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        * 100% of UPI contributions go directly to server maintenance.
+                                                    <p className="text-xs text-muted-foreground flex items-center justify-center md:justify-start gap-1">
+                                                        <ShieldCheck className="h-3 w-3" />
+                                                        100% of UPI contributions go directly to server maintenance.
                                                     </p>
                                                 </div>
                                             </div>
                                         </motion.div>
                                     </TabsContent>
 
-                                    {/* --- TAB 2: BUY ME A COFFEE (International/Cards) --- */}
+                                    {/* --- TAB 2: BUY ME A COFFEE --- */}
                                     <TabsContent value="international">
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            
-                                            {/* Tier 1 */}
-                                            <motion.div variants={itemVariants}>
-                                                <Card className="h-full hover:border-primary/50 transition-all hover:shadow-lg relative overflow-hidden group">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                                            {/* Card 1 */}
+                                            <motion.div variants={itemVariants} className="flex">
+                                                <Card className="flex flex-col h-full hover:border-blue-500/50 transition-all hover:shadow-lg relative overflow-hidden group w-full">
                                                     <div className="absolute top-0 left-0 w-full h-1 bg-blue-500" />
                                                     <CardHeader>
                                                         <CardTitle className="flex items-center gap-2 text-lg">
                                                             <Coffee className="h-5 w-5 text-blue-500" /> 
-                                                            Buy me a Coffee
+                                                            Buy a Coffee
                                                         </CardTitle>
                                                         <CardDescription>Fuel for late night coding</CardDescription>
                                                     </CardHeader>
-                                                    <CardContent>
+                                                    <CardContent className="flex-1">
                                                         <div className="text-3xl font-bold mb-4">₹150 <span className="text-sm font-normal text-muted-foreground">/ one-time</span></div>
                                                         <ul className="space-y-2 text-sm text-muted-foreground">
                                                             <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Virtual High Five</li>
@@ -223,17 +257,17 @@ export function DonatePageContent() {
                                                         </ul>
                                                     </CardContent>
                                                     <CardFooter>
-                                                        <Button className="w-full" asChild>
+                                                        <Button className="w-full" variant="outline" asChild>
                                                             <Link href="https://buymeacoffee.com/adityachoudhary" target="_blank">Support ₹150</Link>
                                                         </Button>
                                                     </CardFooter>
                                                 </Card>
                                             </motion.div>
 
-                                            {/* Tier 2 (Highlighted) */}
-                                            <motion.div variants={itemVariants}>
-                                                <Card className="h-full border-primary shadow-md hover:shadow-xl transition-all relative overflow-hidden scale-105 z-10 bg-background">
-                                                    <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">POPULAR</div>
+                                            {/* Card 2 */}
+                                            <motion.div variants={itemVariants} className="flex">
+                                                <Card className="flex flex-col h-full border-primary shadow-md hover:shadow-xl transition-all relative overflow-hidden scale-105 z-10 bg-background w-full">
+                                                    <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[10px] font-bold px-3 py-1 rounded-bl-lg tracking-wider">POPULAR</div>
                                                     <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
                                                     <CardHeader>
                                                         <CardTitle className="flex items-center gap-2 text-lg">
@@ -242,7 +276,7 @@ export function DonatePageContent() {
                                                         </CardTitle>
                                                         <CardDescription>Keeps the API running</CardDescription>
                                                     </CardHeader>
-                                                    <CardContent>
+                                                    <CardContent className="flex-1">
                                                         <div className="text-3xl font-bold mb-4">₹1,000 <span className="text-sm font-normal text-muted-foreground">/ month</span></div>
                                                         <ul className="space-y-2 text-sm text-muted-foreground">
                                                             <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Covers 10k Tokens</li>
@@ -258,9 +292,9 @@ export function DonatePageContent() {
                                                 </Card>
                                             </motion.div>
 
-                                            {/* Tier 3 */}
-                                            <motion.div variants={itemVariants}>
-                                                <Card className="h-full hover:border-purple-500/50 transition-all hover:shadow-lg relative overflow-hidden">
+                                            {/* Card 3 */}
+                                            <motion.div variants={itemVariants} className="flex">
+                                                <Card className="flex flex-col h-full hover:border-purple-500/50 transition-all hover:shadow-lg relative overflow-hidden group w-full">
                                                     <div className="absolute top-0 left-0 w-full h-1 bg-purple-500" />
                                                     <CardHeader>
                                                         <CardTitle className="flex items-center gap-2 text-lg">
@@ -269,7 +303,7 @@ export function DonatePageContent() {
                                                         </CardTitle>
                                                         <CardDescription>Accelerate Development</CardDescription>
                                                     </CardHeader>
-                                                    <CardContent>
+                                                    <CardContent className="flex-1">
                                                         <div className="text-3xl font-bold mb-4">₹4,000+ <span className="text-sm font-normal text-muted-foreground">/ one-time</span></div>
                                                         <ul className="space-y-2 text-sm text-muted-foreground">
                                                             <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Feature Request Priority</li>
@@ -301,28 +335,89 @@ export function DonatePageContent() {
                                 </div>
                                 <h2 className="text-2xl font-bold mb-4">Where does the money go?</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto text-sm text-muted-foreground">
-                                    <div className="p-4">
+                                    <div className="p-4 rounded-lg bg-background/50 border border-transparent hover:border-border/50 transition-colors">
                                         <strong className="block text-foreground text-lg mb-2">60%</strong>
                                         Covers Google Cloud Platform & Vercel hosting fees to keep the app fast.
                                     </div>
-                                    <div className="p-4">
+                                    <div className="p-4 rounded-lg bg-background/50 border border-transparent hover:border-border/50 transition-colors">
                                         <strong className="block text-foreground text-lg mb-2">30%</strong>
                                         API Usage costs (Gemini Pro/Flash) as we scale beyond free tiers.
                                     </div>
-                                    <div className="p-4">
+                                    <div className="p-4 rounded-lg bg-background/50 border border-transparent hover:border-border/50 transition-colors">
                                         <strong className="block text-foreground text-lg mb-2">10%</strong>
                                         Coffee & Snacks to keep the developer awake during bug fixes.
                                     </div>
                                 </div>
                             </motion.div>
 
-                            {/* --- CONTENT PAGE FOOTER LINKS --- */}
-                            <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-sm text-muted-foreground border-t border-border/50 pt-10 mt-10 pb-10">
-                                <Link href="/about" className="hover:text-primary hover:underline transition-all">About Shivlox</Link>
-                                <Link href="/contact" className="hover:text-primary hover:underline transition-all">Contact Support</Link>
-                                <Link href="/privacy" className="hover:text-primary hover:underline transition-all">Privacy Policy</Link>
-                                <Link href="/terms" className="hover:text-primary hover:underline transition-all">Terms of Service</Link>
-                            </div>
+                            {/* --- CREATIVE FOOTER LINKS SECTION --- */}
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.9, duration: 0.6 }}
+                                className="mt-24 border-t border-border/50 pt-16"
+                            >
+                                <h2 className="text-2xl font-bold text-center mb-10">Explore More</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    
+                                    {/* About Link */}
+                                    <Link href="/about" className="group p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all text-left">
+                                        <div className="mb-4 p-3 bg-blue-500/10 rounded-lg w-fit text-blue-500">
+                                            <Info className="h-6 w-6" />
+                                        </div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="font-bold text-lg group-hover:text-primary transition-colors">About Us</h3>
+                                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">
+                                            Learn about our mission to democratize AI access.
+                                        </p>
+                                    </Link>
+
+                                    {/* Contact Link */}
+                                    <Link href="/contact" className="group p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all text-left">
+                                        <div className="mb-4 p-3 bg-purple-500/10 rounded-lg w-fit text-purple-500">
+                                            <Mail className="h-6 w-6" />
+                                        </div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="font-bold text-lg group-hover:text-primary transition-colors">Contact</h3>
+                                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">
+                                            Get support or report bugs directly to the team.
+                                        </p>
+                                    </Link>
+
+                                    {/* Privacy Link */}
+                                    <Link href="/privacy" className="group p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all text-left">
+                                        <div className="mb-4 p-3 bg-green-500/10 rounded-lg w-fit text-green-500">
+                                            <Lock className="h-6 w-6" />
+                                        </div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="font-bold text-lg group-hover:text-primary transition-colors">Privacy</h3>
+                                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">
+                                            How we secure your data and chat history.
+                                        </p>
+                                    </Link>
+
+                                    {/* Terms Link */}
+                                    <Link href="/terms" className="group p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all text-left">
+                                        <div className="mb-4 p-3 bg-orange-500/10 rounded-lg w-fit text-orange-500">
+                                            <FileText className="h-6 w-6" />
+                                        </div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="font-bold text-lg group-hover:text-primary transition-colors">Terms</h3>
+                                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">
+                                            Rules of engagement and usage policies.
+                                        </p>
+                                    </Link>
+
+                                </div>
+                            </motion.div>
 
                         </div>
                     </ScrollArea>
