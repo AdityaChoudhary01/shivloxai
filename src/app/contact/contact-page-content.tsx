@@ -19,10 +19,14 @@ import {
   Twitter, 
   Plus, 
   HelpCircle, 
-  Mail
+  Mail,
+  Heart,
+  Info,
+  Lock,
+  FileText,
+  ChevronRight
 } from 'lucide-react';
 
-// --- IMPORT YOUR EXISTING COMPONENT HERE ---
 import { ContactForm } from './contact-form'; 
 
 export function ContactPageContent() {
@@ -63,15 +67,38 @@ export function ContactPageContent() {
                             </SidebarMenu>
                         </SidebarContent>
                     </ScrollArea>
-                    <SidebarFooter className="p-4 border-t border-border">
-                        <p className="text-center text-xs text-muted-foreground">
-                            &copy; {new Date().getFullYear()} Shivlox AI.
-                        </p>
+                    
+                    <SidebarFooter className="p-2 border-t border-border">
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <Link href="/donate" className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-red-500 transition-colors">
+                                    <Heart className="h-4 w-4" />
+                                    <span>Donate</span>
+                                </Link>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                                <Link href="/contact" className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium bg-accent text-accent-foreground transition-colors">
+                                    <Mail className="h-4 w-4" />
+                                    <span>Contact & Support</span>
+                                </Link>
+                            </SidebarMenuItem>
+                            <div className="my-1 border-t border-border/50" />
+                            <div className="flex flex-wrap gap-2 px-2 py-1 text-xs text-muted-foreground/60">
+                                <Link href="/about" className="hover:text-foreground transition-colors">About</Link>
+                                <span>•</span>
+                                <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+                                <span>•</span>
+                                <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+                            </div>
+                            <p className="mt-2 text-center text-[10px] text-muted-foreground/40">
+                                &copy; {new Date().getFullYear()} Shivlox AI.
+                            </p>
+                        </SidebarMenu>
                     </SidebarFooter>
                 </Sidebar>
 
-                {/* --- MAIN CONTENT --- */}
-                <main className="flex flex-1 flex-col overflow-hidden w-full relative bg-secondary/5">
+                {/* --- MAIN CONTENT (Gradient Restored) --- */}
+                <main className="flex flex-1 flex-col overflow-hidden w-full relative bg-gradient-to-br from-background via-secondary/5 to-secondary/10">
                     <header className="shrink-0 flex h-16 items-center justify-between border-b border-border/40 bg-background/50 px-4 backdrop-blur-lg z-10">
                         <div className="flex items-center gap-2">
                             <SidebarTrigger />
@@ -103,8 +130,7 @@ export function ContactPageContent() {
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                                 
-                                {/* --- 1. YOUR CONTACT FORM COMPONENT --- */}
-                                {/* This replaces the manual form logic */}
+                                {/* 1. CONTACT FORM */}
                                 <div>
                                     <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
                                         <Mail className="h-5 w-5 text-primary" />
@@ -113,7 +139,7 @@ export function ContactPageContent() {
                                     <ContactForm />
                                 </div>
 
-                                {/* --- 2. INFO SIDEBAR --- */}
+                                {/* 2. INFO SIDEBAR */}
                                 <div className="space-y-8 mt-12 lg:mt-0">
                                     {/* Direct Contact Cards */}
                                     <motion.div 
@@ -139,7 +165,7 @@ export function ContactPageContent() {
                                         initial={{ opacity: 0, x: 20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: 0.4, duration: 0.5 }}
-                                        className="bg-background rounded-2xl border border-border/50 p-6 space-y-4"
+                                        className="bg-background rounded-2xl border border-border/50 p-6 space-y-4 shadow-sm"
                                     >
                                         <div className="flex items-start gap-4">
                                             <MapPin className="h-5 w-5 text-muted-foreground mt-1" />
@@ -165,10 +191,10 @@ export function ContactPageContent() {
                                     >
                                         <h3 className="text-lg font-semibold mb-4">Connect with the Developer</h3>
                                         <div className="flex gap-4">
-                                            <a href="https://github.com/AdityaChoudhary01" target="_blank" className="p-3 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
+                                            <a href="https://github.com/adityachoudhary" target="_blank" className="p-3 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
                                                 <Github className="h-5 w-5" />
                                             </a>
-                                            <a href="https://www.linkedin.com/in/aditya-kumar-38093a304/" target="_blank" className="p-3 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
+                                            <a href="https://linkedin.com" target="_blank" className="p-3 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
                                                 <Linkedin className="h-5 w-5" />
                                             </a>
                                             <a href="https://twitter.com" target="_blank" className="p-3 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
@@ -179,7 +205,57 @@ export function ContactPageContent() {
                                 </div>
                             </div>
 
-                            {/* FAQ SECTION */}
+                            {/* 3. HELPFUL RESOURCES (WITH BACKLINKS) */}
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.5, duration: 0.5 }}
+                                className="mt-24"
+                            >
+                                <h2 className="text-2xl font-bold mb-8 text-center">Helpful Resources</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <Link href="/about" className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="p-3 bg-blue-500/10 rounded-lg text-blue-500">
+                                                <Info className="h-6 w-6" />
+                                            </div>
+                                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                        </div>
+                                        <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">About Us</h3>
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            Learn about the mission behind Shivlox AI, our commitment to open-source, and the technology powering our platform.
+                                        </p>
+                                    </Link>
+
+                                    <Link href="/privacy" className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="p-3 bg-green-500/10 rounded-lg text-green-500">
+                                                <Lock className="h-6 w-6" />
+                                            </div>
+                                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                        </div>
+                                        <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">Privacy Policy</h3>
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            We value your data. Read how we handle your information, chat logs, and ensure your conversations remain secure.
+                                        </p>
+                                    </Link>
+
+                                    <Link href="/terms" className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="p-3 bg-orange-500/10 rounded-lg text-orange-500">
+                                                <FileText className="h-6 w-6" />
+                                            </div>
+                                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                        </div>
+                                        <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">Terms of Service</h3>
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            Understand the rules of engagement, usage limits for the free tier, and our policies regarding AI-generated content.
+                                        </p>
+                                    </Link>
+                                </div>
+                            </motion.div>
+
+                            {/* 4. FAQ SECTION */}
                             <motion.div 
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
