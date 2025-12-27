@@ -76,9 +76,11 @@ export function DonatePageContent() {
         <SidebarProvider>
             <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
             
-            <div className="flex h-dvh bg-background text-foreground w-full">
-                {/* --- SIDEBAR --- */}
-                <Sidebar collapsible="icon">
+            {/* 1. UPDATED: bg-transparent */}
+            <div className="flex h-dvh bg-transparent text-foreground w-full">
+                
+                {/* 2. UPDATED: Sidebar Glassmorphism */}
+                <Sidebar collapsible="icon" className="bg-background/40 backdrop-blur-md border-r border-white/5">
                     <SidebarHeader className="p-2">
                         <div className="flex items-center justify-between p-2">
                             <Link href="/" className="flex items-center gap-2 overflow-hidden">
@@ -86,7 +88,7 @@ export function DonatePageContent() {
                                 <h2 className="text-lg font-semibold group-data-[collapsible=icon]:hidden">Shivlox AI</h2>
                             </Link>
                         </div>
-                        <Button variant="outline" className="w-full justify-start group-data-[collapsible=icon]:justify-center" asChild>
+                        <Button variant="outline" className="w-full justify-start group-data-[collapsible=icon]:justify-center bg-secondary/50 border-white/10 hover:bg-secondary/80" asChild>
                             <Link href="/">
                                 <Plus className="mr-2 h-4 w-4 group-data-[collapsible=icon]:mr-0" />
                                 <span className="group-data-[collapsible=icon]:hidden">New Chat</span>
@@ -98,8 +100,8 @@ export function DonatePageContent() {
                         <SidebarContent className="p-2">
                             <SidebarMenu>
                                 <SidebarMenuItem>
-                                    <Link href="/" className="flex items-center w-full rounded-md px-2 py-2 hover:bg-accent/40 transition-colors group-data-[collapsible=icon]:justify-center">
-                                        <MessageSquare className="h-4 w-4 mr-2 text-muted-foreground group-data-[collapsible=icon]:mr-0" />
+                                    <Link href="/" className="flex items-center w-full rounded-md px-2 py-2 hover:bg-white/5 hover:text-white text-muted-foreground transition-colors group-data-[collapsible=icon]:justify-center">
+                                        <MessageSquare className="h-4 w-4 mr-2 group-data-[collapsible=icon]:mr-0" />
                                         <span className="text-sm group-data-[collapsible=icon]:hidden">Back to Chat</span>
                                     </Link>
                                 </SidebarMenuItem>
@@ -108,13 +110,13 @@ export function DonatePageContent() {
                     </ScrollArea>
                     
                     {/* --- SIDEBAR FOOTER --- */}
-                    <SidebarFooter className="p-2 border-t border-border group-data-[collapsible=icon]:hidden">
+                    <SidebarFooter className="p-2 border-t border-white/10 group-data-[collapsible=icon]:hidden">
                         <SidebarMenu>
-                            {/* Donate Link (Active/Highlighted) */}
+                            {/* Donate Link (Active/Highlighted with Glass) */}
                             <SidebarMenuItem>
                                 <Link 
                                     href="/donate" 
-                                    className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium bg-accent text-red-500 transition-colors"
+                                    className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium bg-white/10 text-red-500 transition-colors"
                                 >
                                     <Heart className="h-4 w-4 fill-current" />
                                     <span>Donate</span>
@@ -125,21 +127,21 @@ export function DonatePageContent() {
                             <SidebarMenuItem>
                                 <Link 
                                     href="/contact" 
-                                    className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                                    className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-white transition-colors"
                                 >
                                     <Mail className="h-4 w-4" />
                                     <span>Contact & Support</span>
                                 </Link>
                             </SidebarMenuItem>
 
-                            <div className="my-1 border-t border-border/50" />
+                            <div className="my-1 border-t border-white/10" />
                             
                             <div className="flex flex-wrap gap-2 px-2 py-1 text-xs text-muted-foreground/60">
-                                <Link href="/about" className="hover:text-foreground transition-colors">About</Link>
+                                <Link href="/about" className="hover:text-white transition-colors">About</Link>
                                 <span>•</span>
-                                <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+                                <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
                                 <span>•</span>
-                                <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+                                <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
                             </div>
 
                             <p className="mt-2 text-center text-[10px] text-muted-foreground/40">
@@ -149,9 +151,12 @@ export function DonatePageContent() {
                     </SidebarFooter>
                 </Sidebar>
 
-                {/* --- MAIN CONTENT (Gradient Applied) --- */}
-                <main className="flex flex-1 flex-col overflow-hidden w-full relative">
-                    <header className="shrink-0 flex h-16 items-center justify-between border-b border-border/40 bg-background/50 px-4 backdrop-blur-lg z-10 sticky top-0">
+                {/* --- MAIN CONTENT --- */}
+                {/* 3. UPDATED: bg-transparent relative container */}
+                <main className="flex flex-1 flex-col overflow-hidden w-full relative bg-transparent">
+                    
+                    {/* 4. UPDATED: Header Glassmorphism */}
+                    <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/5 bg-background/20 backdrop-blur-xl px-4 shadow-sm z-10 sticky top-0">
                         <div className="flex items-center gap-2">
                             <SidebarTrigger />
                         </div>
@@ -173,7 +178,7 @@ export function DonatePageContent() {
                                 <div className="inline-flex items-center justify-center p-3 rounded-full bg-red-500/10 mb-4 ring-1 ring-red-500/20">
                                     <Heart className="h-8 w-8 text-red-500 fill-red-500/20 animate-pulse" />
                                 </div>
-                                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+                                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white">
                                     Help Keep Shivlox <span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">Alive & Free</span>
                                 </h1>
                                 <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
@@ -191,9 +196,9 @@ export function DonatePageContent() {
                             >
                                 <Tabs defaultValue="international" className="w-full">
                                     <div className="flex justify-center mb-8">
-                                        <TabsList className="grid w-full max-w-[400px] grid-cols-2">
-                                            <TabsTrigger value="international">Cards / International</TabsTrigger>
-                                          <TabsTrigger value="upi">UPI (India)</TabsTrigger>
+                                        <TabsList className="grid w-full max-w-[400px] grid-cols-2 bg-white/5 border border-white/10">
+                                            <TabsTrigger value="international" className="data-[state=active]:bg-primary/20 data-[state=active]:text-white text-muted-foreground">Cards / International</TabsTrigger>
+                                            <TabsTrigger value="upi" className="data-[state=active]:bg-primary/20 data-[state=active]:text-white text-muted-foreground">UPI (India)</TabsTrigger>
                                         </TabsList>
                                     </div>
 
@@ -201,12 +206,11 @@ export function DonatePageContent() {
                                     <TabsContent value="upi">
                                         <motion.div 
                                             variants={itemVariants}
-                                            className="bg-background rounded-xl border border-border p-8 max-w-2xl mx-auto shadow-sm"
+                                            className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-8 max-w-2xl mx-auto shadow-sm"
                                         >
                                             <div className="flex flex-col md:flex-row items-center gap-8">
                                                 <div className="bg-white p-4 rounded-xl shadow-inner border border-gray-100 shrink-0">
                                                     {/* REPLACE WITH YOUR ACTUAL QR CODE IMAGE */}
-                                                    {/* <img src="/upi-qr.png" alt="UPI QR Code" className="w-48 h-48 object-contain" /> */}
                                                     <div className="w-48 h-48 bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center rounded-lg text-gray-400">
                                                         <QrCode className="h-12 w-12 mb-2 opacity-50" />
                                                         <span className="text-xs text-center px-2 font-medium">Add QR Code Image</span>
@@ -214,7 +218,7 @@ export function DonatePageContent() {
                                                 </div>
                                                 <div className="flex-1 space-y-4 text-center md:text-left w-full">
                                                     <div>
-                                                        <h3 className="text-xl font-bold flex items-center justify-center md:justify-start gap-2">
+                                                        <h3 className="text-xl font-bold flex items-center justify-center md:justify-start gap-2 text-white">
                                                             <CreditCard className="h-5 w-5 text-primary" />
                                                             Pay via UPI
                                                         </h3>
@@ -223,12 +227,12 @@ export function DonatePageContent() {
                                                         </p>
                                                     </div>
                                                     
-                                                    <div className="bg-secondary/50 border border-border p-3 rounded-lg flex items-center justify-between group hover:border-primary/50 transition-colors">
-                                                        <code className="text-sm font-mono font-semibold truncate mr-2 select-all">adityachoudhary@okhdfcbank</code>
+                                                    <div className="bg-white/10 border border-white/10 p-3 rounded-lg flex items-center justify-between group hover:border-primary/50 transition-colors">
+                                                        <code className="text-sm font-mono font-semibold truncate mr-2 select-all text-white">adityachoudhary@okhdfcbank</code>
                                                         <Button 
                                                             size="icon" 
                                                             variant="ghost" 
-                                                            className="h-8 w-8 shrink-0"
+                                                            className="h-8 w-8 shrink-0 hover:bg-white/10 hover:text-white"
                                                             onClick={handleCopyUpi}
                                                         >
                                                             {isCopied ? (
@@ -252,24 +256,24 @@ export function DonatePageContent() {
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
                                             {/* Tier 1 */}
                                             <motion.div variants={itemVariants} className="flex">
-                                                <Card className="flex flex-col h-full hover:border-blue-500/50 transition-all hover:shadow-lg relative overflow-hidden group w-full">
+                                                <Card className="flex flex-col h-full hover:border-blue-500/50 transition-all hover:shadow-lg relative overflow-hidden group w-full bg-white/5 backdrop-blur-sm border-white/10">
                                                     <div className="absolute top-0 left-0 w-full h-1 bg-blue-500" />
                                                     <CardHeader>
-                                                        <CardTitle className="flex items-center gap-2 text-lg">
+                                                        <CardTitle className="flex items-center gap-2 text-lg text-white">
                                                             <Coffee className="h-5 w-5 text-blue-500" /> 
                                                             Buy a Coffee
                                                         </CardTitle>
                                                         <CardDescription>Fuel for late night coding</CardDescription>
                                                     </CardHeader>
                                                     <CardContent className="flex-1">
-                                                        <div className="text-3xl font-bold mb-4">₹150 <span className="text-sm font-normal text-muted-foreground">/ one-time</span></div>
+                                                        <div className="text-3xl font-bold mb-4 text-white">₹150 <span className="text-sm font-normal text-muted-foreground">/ one-time</span></div>
                                                         <ul className="space-y-2 text-sm text-muted-foreground">
                                                             <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Virtual High Five</li>
                                                             <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Developer Gratitude</li>
                                                         </ul>
                                                     </CardContent>
                                                     <CardFooter>
-                                                        <Button className="w-full" variant="outline" asChild>
+                                                        <Button className="w-full border-white/10 hover:bg-white/10 hover:text-white" variant="outline" asChild>
                                                             <Link href="https://buymeacoffee.com/adityachoudhary" target="_blank">Support ₹150</Link>
                                                         </Button>
                                                     </CardFooter>
@@ -278,18 +282,18 @@ export function DonatePageContent() {
 
                                             {/* Tier 2 (Highlighted) */}
                                             <motion.div variants={itemVariants} className="flex">
-                                                <Card className="flex flex-col h-full border-primary shadow-md hover:shadow-xl transition-all relative overflow-hidden scale-105 z-10 bg-background w-full">
+                                                <Card className="flex flex-col h-full border-primary shadow-md hover:shadow-xl transition-all relative overflow-hidden scale-105 z-10 bg-background/40 backdrop-blur-md w-full">
                                                     <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[10px] font-bold px-3 py-1 rounded-bl-lg tracking-wider">POPULAR</div>
                                                     <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
                                                     <CardHeader>
-                                                        <CardTitle className="flex items-center gap-2 text-lg">
+                                                        <CardTitle className="flex items-center gap-2 text-lg text-white">
                                                             <Server className="h-5 w-5 text-primary" /> 
                                                             Server Sponsor
                                                         </CardTitle>
                                                         <CardDescription>Keeps the API running</CardDescription>
                                                     </CardHeader>
                                                     <CardContent className="flex-1">
-                                                        <div className="text-3xl font-bold mb-4">₹1,000 <span className="text-sm font-normal text-muted-foreground">/ month</span></div>
+                                                        <div className="text-3xl font-bold mb-4 text-white">₹1,000 <span className="text-sm font-normal text-muted-foreground">/ month</span></div>
                                                         <ul className="space-y-2 text-sm text-muted-foreground">
                                                             <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Covers 10k Tokens</li>
                                                             <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Priority Support</li>
@@ -297,7 +301,7 @@ export function DonatePageContent() {
                                                         </ul>
                                                     </CardContent>
                                                     <CardFooter>
-                                                        <Button className="w-full bg-primary hover:bg-primary/90" asChild>
+                                                        <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
                                                             <Link href="https://buymeacoffee.com/adityachoudhary" target="_blank">Become a Sponsor</Link>
                                                         </Button>
                                                     </CardFooter>
@@ -306,17 +310,17 @@ export function DonatePageContent() {
 
                                             {/* Tier 3 */}
                                             <motion.div variants={itemVariants} className="flex">
-                                                <Card className="flex flex-col h-full hover:border-purple-500/50 transition-all hover:shadow-lg relative overflow-hidden group w-full">
+                                                <Card className="flex flex-col h-full hover:border-purple-500/50 transition-all hover:shadow-lg relative overflow-hidden group w-full bg-white/5 backdrop-blur-sm border-white/10">
                                                     <div className="absolute top-0 left-0 w-full h-1 bg-purple-500" />
                                                     <CardHeader>
-                                                        <CardTitle className="flex items-center gap-2 text-lg">
+                                                        <CardTitle className="flex items-center gap-2 text-lg text-white">
                                                             <Zap className="h-5 w-5 text-purple-500" /> 
                                                             Power User
                                                         </CardTitle>
                                                         <CardDescription>Accelerate Development</CardDescription>
                                                     </CardHeader>
                                                     <CardContent className="flex-1">
-                                                        <div className="text-3xl font-bold mb-4">₹4,000+ <span className="text-sm font-normal text-muted-foreground">/ one-time</span></div>
+                                                        <div className="text-3xl font-bold mb-4 text-white">₹4,000+ <span className="text-sm font-normal text-muted-foreground">/ one-time</span></div>
                                                         <ul className="space-y-2 text-sm text-muted-foreground">
                                                             <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Feature Request Priority</li>
                                                             <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Early Access to Beta</li>
@@ -324,7 +328,7 @@ export function DonatePageContent() {
                                                         </ul>
                                                     </CardContent>
                                                     <CardFooter>
-                                                        <Button className="w-full" variant="outline" asChild>
+                                                        <Button className="w-full border-white/10 hover:bg-white/10 hover:text-white" variant="outline" asChild>
                                                             <Link href="https://buymeacoffee.com/adityachoudhary" target="_blank">Support on BMC</Link>
                                                         </Button>
                                                     </CardFooter>
@@ -340,23 +344,23 @@ export function DonatePageContent() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.8, duration: 0.6 }}
-                                className="mt-20 border-t border-border/50 pt-10 text-center"
+                                className="mt-20 border-t border-white/10 pt-10 text-center"
                             >
                                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-600 text-sm font-medium mb-4 ring-1 ring-green-500/20">
                                     <ShieldCheck className="h-4 w-4" /> 100% Transparency
                                 </div>
-                                <h2 className="text-2xl font-bold mb-4">Where does the money go?</h2>
+                                <h2 className="text-2xl font-bold mb-4 text-white">Where does the money go?</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto text-sm text-muted-foreground">
-                                    <div className="p-4 rounded-lg bg-background/50 border border-transparent hover:border-border/50 transition-colors">
-                                        <strong className="block text-foreground text-lg mb-2">60%</strong>
+                                    <div className="p-4 rounded-lg bg-white/5 border border-transparent hover:border-white/10 transition-colors backdrop-blur-sm">
+                                        <strong className="block text-white text-lg mb-2">60%</strong>
                                         Covers Google Cloud Platform & Vercel hosting fees to keep the app fast.
                                     </div>
-                                    <div className="p-4 rounded-lg bg-background/50 border border-transparent hover:border-border/50 transition-colors">
-                                        <strong className="block text-foreground text-lg mb-2">30%</strong>
+                                    <div className="p-4 rounded-lg bg-white/5 border border-transparent hover:border-white/10 transition-colors backdrop-blur-sm">
+                                        <strong className="block text-white text-lg mb-2">30%</strong>
                                         API Usage costs (Gemini Pro/Flash) as we scale beyond free tiers.
                                     </div>
-                                    <div className="p-4 rounded-lg bg-background/50 border border-transparent hover:border-border/50 transition-colors">
-                                        <strong className="block text-foreground text-lg mb-2">10%</strong>
+                                    <div className="p-4 rounded-lg bg-white/5 border border-transparent hover:border-white/10 transition-colors backdrop-blur-sm">
+                                        <strong className="block text-white text-lg mb-2">10%</strong>
                                         Coffee & Snacks to keep the developer awake during bug fixes.
                                     </div>
                                 </div>
@@ -367,18 +371,18 @@ export function DonatePageContent() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.9, duration: 0.6 }}
-                                className="mt-24 border-t border-border/50 pt-16"
+                                className="mt-24 border-t border-white/10 pt-16"
                             >
-                                <h2 className="text-2xl font-bold text-center mb-10">Explore More</h2>
+                                <h2 className="text-2xl font-bold text-center mb-10 text-white">Explore More</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                     
                                     {/* About Link */}
-                                    <Link href="/about" className="group p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all text-left">
+                                    <Link href="/about" className="group p-6 rounded-xl border border-white/10 bg-white/5 hover:border-primary/50 hover:shadow-lg transition-all text-left backdrop-blur-sm">
                                         <div className="mb-4 p-3 bg-blue-500/10 rounded-lg w-fit text-blue-500">
                                             <Info className="h-6 w-6" />
                                         </div>
                                         <div className="flex items-center justify-between mb-2">
-                                            <h3 className="font-bold text-lg group-hover:text-primary transition-colors">About Us</h3>
+                                            <h3 className="font-bold text-lg group-hover:text-primary transition-colors text-white">About Us</h3>
                                             <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                                         </div>
                                         <p className="text-sm text-muted-foreground">
@@ -387,12 +391,12 @@ export function DonatePageContent() {
                                     </Link>
 
                                     {/* Contact Link */}
-                                    <Link href="/contact" className="group p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all text-left">
+                                    <Link href="/contact" className="group p-6 rounded-xl border border-white/10 bg-white/5 hover:border-primary/50 hover:shadow-lg transition-all text-left backdrop-blur-sm">
                                         <div className="mb-4 p-3 bg-purple-500/10 rounded-lg w-fit text-purple-500">
                                             <Mail className="h-6 w-6" />
                                         </div>
                                         <div className="flex items-center justify-between mb-2">
-                                            <h3 className="font-bold text-lg group-hover:text-primary transition-colors">Contact</h3>
+                                            <h3 className="font-bold text-lg group-hover:text-primary transition-colors text-white">Contact</h3>
                                             <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                                         </div>
                                         <p className="text-sm text-muted-foreground">
@@ -401,12 +405,12 @@ export function DonatePageContent() {
                                     </Link>
 
                                     {/* Privacy Link */}
-                                    <Link href="/privacy" className="group p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all text-left">
+                                    <Link href="/privacy" className="group p-6 rounded-xl border border-white/10 bg-white/5 hover:border-primary/50 hover:shadow-lg transition-all text-left backdrop-blur-sm">
                                         <div className="mb-4 p-3 bg-green-500/10 rounded-lg w-fit text-green-500">
                                             <Lock className="h-6 w-6" />
                                         </div>
                                         <div className="flex items-center justify-between mb-2">
-                                            <h3 className="font-bold text-lg group-hover:text-primary transition-colors">Privacy</h3>
+                                            <h3 className="font-bold text-lg group-hover:text-primary transition-colors text-white">Privacy</h3>
                                             <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                                         </div>
                                         <p className="text-sm text-muted-foreground">
@@ -415,12 +419,12 @@ export function DonatePageContent() {
                                     </Link>
 
                                     {/* Terms Link */}
-                                    <Link href="/terms" className="group p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all text-left">
+                                    <Link href="/terms" className="group p-6 rounded-xl border border-white/10 bg-white/5 hover:border-primary/50 hover:shadow-lg transition-all text-left backdrop-blur-sm">
                                         <div className="mb-4 p-3 bg-orange-500/10 rounded-lg w-fit text-orange-500">
                                             <FileText className="h-6 w-6" />
                                         </div>
                                         <div className="flex items-center justify-between mb-2">
-                                            <h3 className="font-bold text-lg group-hover:text-primary transition-colors">Terms</h3>
+                                            <h3 className="font-bold text-lg group-hover:text-primary transition-colors text-white">Terms</h3>
                                             <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                                         </div>
                                         <p className="text-sm text-muted-foreground">
