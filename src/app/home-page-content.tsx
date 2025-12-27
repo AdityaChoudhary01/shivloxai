@@ -1,7 +1,6 @@
 'use client';
 
 import { chat, type ChatInput } from '@/ai/flows/chat';
-// REMOVED: import { generateInitialPrompts } ... (Saves API Quota)
 import { processAudio } from '@/ai/flows/process-audio';
 import { summarizeConversation } from '@/ai/flows/summarize-conversation';
 import { ChatMessage, type ChatMessageProps } from '@/components/chat-message';
@@ -10,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2, BookText, Sparkles, Zap, Shield, Brain, Code, PenTool, Globe } from 'lucide-react';
+// Added ChevronRight and Cpu to imports
+import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2, BookText, Sparkles, Zap, Shield, Brain, Code, PenTool, Globe, ChevronRight, Cpu } from 'lucide-react';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarFooter } from '@/components/ui/sidebar';
@@ -437,7 +437,6 @@ export function HomePageContent() {
                         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
                             <Link href="/about" className="hover:text-primary">About</Link>
                             <Link href="/contact" className="hover:text-primary">Contact</Link>
-                            <Link href="/donate" className="hover:text-primary">Donate</Link>
                             <Link href="/privacy" className="hover:text-primary">Privacy</Link>
                             <Link href="/terms" className="hover:text-primary">Terms</Link>
                         </div>
@@ -473,7 +472,7 @@ export function HomePageContent() {
 
                     <div className="flex-1 overflow-y-auto flex flex-col relative w-full scroll-smooth">
                         {currentMessages.length === 0 && !isLoading ? (
-                                <div className="flex flex-1 flex-col items-center justify-start pt-10 pb-20 text-center px-4">
+                                <div className="flex flex-1 flex-col items-center justify-start pt-10 pb-32 text-center px-4">
                                     <motion.div
                                         initial={{ scale: 0, rotate: -45 }}
                                         animate={{ scale: 1, rotate: 0 }}
@@ -524,60 +523,111 @@ export function HomePageContent() {
                                         ))}
                                     </div>
 
-                                    {/* SEO Content Section - Visible when no chat is active */}
+                                    {/* --- SEO CONTENT SECTION (EXPANDED) --- */}
                                     <motion.div 
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         transition={{ delay: 0.8, duration: 0.8 }}
-                                        className="mt-20 w-full max-w-5xl text-left space-y-12 pb-10"
+                                        className="mt-20 w-full max-w-5xl text-left space-y-16 pb-10"
                                     >
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                            <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-secondary/10 border border-border/50">
-                                                <div className="h-12 w-12 bg-blue-500/20 text-blue-500 rounded-full flex items-center justify-center mb-4">
-                                                    <Brain className="h-6 w-6" />
+                                        {/* FEATURES GRID */}
+                                        <div>
+                                            <h2 className="text-2xl font-bold text-center mb-8">Why Developers Choose Shivlox</h2>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-secondary/10 border border-border/50 hover:bg-secondary/20 transition-colors">
+                                                    <div className="h-12 w-12 bg-blue-500/20 text-blue-500 rounded-full flex items-center justify-center mb-4">
+                                                        <Brain className="h-6 w-6" />
+                                                    </div>
+                                                    <h3 className="text-lg font-bold mb-2">Advanced Reasoning</h3>
+                                                    <p className="text-muted-foreground text-sm">Powered by Gemini 1.5 Flash, Shivlox AI understands complex stack traces, context, and nuance better than ever before.</p>
                                                 </div>
-                                                <h3 className="text-xl font-bold mb-2">Advanced Reasoning</h3>
-                                                <p className="text-muted-foreground text-sm">Powered by Gemini 1.5 Flash, Shivlox AI understands complex queries, context, and nuance better than ever before.</p>
-                                            </div>
-                                            <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-secondary/10 border border-border/50">
-                                                <div className="h-12 w-12 bg-purple-500/20 text-purple-500 rounded-full flex items-center justify-center mb-4">
-                                                    <Shield className="h-6 w-6" />
+                                                <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-secondary/10 border border-border/50 hover:bg-secondary/20 transition-colors">
+                                                    <div className="h-12 w-12 bg-purple-500/20 text-purple-500 rounded-full flex items-center justify-center mb-4">
+                                                        <Shield className="h-6 w-6" />
+                                                    </div>
+                                                    <h3 className="text-lg font-bold mb-2">Secure & Private</h3>
+                                                    <p className="text-muted-foreground text-sm">Your conversations are private. We prioritize data security with enterprise-grade encryption for all user interactions.</p>
                                                 </div>
-                                                <h3 className="text-xl font-bold mb-2">Secure & Private</h3>
-                                                <p className="text-muted-foreground text-sm">Your conversations are private. We prioritize your data security with enterprise-grade encryption.</p>
-                                            </div>
-                                            <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-secondary/10 border border-border/50">
-                                                <div className="h-12 w-12 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mb-4">
-                                                    <Sparkles className="h-6 w-6" />
+                                                <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-secondary/10 border border-border/50 hover:bg-secondary/20 transition-colors">
+                                                    <div className="h-12 w-12 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mb-4">
+                                                        <Sparkles className="h-6 w-6" />
+                                                    </div>
+                                                    <h3 className="text-lg font-bold mb-2">Multimodal Magic</h3>
+                                                    <p className="text-muted-foreground text-sm">Generate images, process audio, and analyze code all in one interface. Type <code className="bg-muted px-1 rounded">/imagine</code> to start.</p>
                                                 </div>
-                                                <h3 className="text-xl font-bold mb-2">Multimodal Magic</h3>
-                                                <p className="text-muted-foreground text-sm">Generate images, process audio, and analyze text all in one interface. Just type <code className="bg-muted px-1 rounded">/imagine</code> to start.</p>
                                             </div>
                                         </div>
 
-                                        <div className="prose prose-invert max-w-none text-muted-foreground text-center">
-                                            <h2 className="text-2xl font-semibold text-foreground mb-4">Why Choose Shivlox AI?</h2>
-                                            <p className="mb-4">
-                                                Shivlox AI represents the next generation of artificial intelligence assistants. 
-                                                Unlike traditional chatbots, our platform leverages the speed of <strong>Google&apos;s Gemini 1.5 Flash</strong> technology 
-                                                to deliver near-instant responses. Whether you are a developer debugging code, a writer seeking inspiration, 
-                                                or a student learning new concepts, Shivlox AI adapts to your needs.
-                                            </p>
-                                            <p>
-                                                Start chatting today to unlock productivity, creativity, and knowledge like never before. 
-                                                Our AI models are constantly updated to ensure accuracy and relevance in every interaction.
-                                            </p>
+                                        {/* USE CASES */}
+                                        <div className="bg-secondary/5 rounded-2xl p-8 border border-border/50">
+                                            <div className="flex flex-col md:flex-row gap-8 items-center">
+                                                <div className="flex-1 space-y-4">
+                                                    <h2 className="text-2xl font-bold">Master the MERN Stack</h2>
+                                                    <p className="text-muted-foreground">Shivlox is optimized for modern web development. Whether you are building with Next.js, managing MongoDB aggregations, or debugging React Native apps.</p>
+                                                    <ul className="space-y-2 text-sm text-muted-foreground">
+                                                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-primary" /> Generate boilerplate Express.js servers</li>
+                                                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-primary" /> Optimize React rendering performance</li>
+                                                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-primary" /> Convert Python logic to TypeScript</li>
+                                                    </ul>
+                                                </div>
+                                                <div className="flex-1 w-full space-y-3">
+                                                    <div className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border shadow-sm">
+                                                        <Code className="h-5 w-5 text-blue-500" />
+                                                        <div>
+                                                            <div className="font-semibold text-sm">Code Refactoring</div>
+                                                            <div className="text-xs text-muted-foreground">Clean up legacy code instantly</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border shadow-sm">
+                                                        <Cpu className="h-5 w-5 text-orange-500" />
+                                                        <div>
+                                                            <div className="font-semibold text-sm">Algorithm Logic</div>
+                                                            <div className="text-xs text-muted-foreground">Explain complex O(n) problems</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border shadow-sm">
+                                                        <Globe className="h-5 w-5 text-indigo-500" />
+                                                        <div>
+                                                            <div className="font-semibold text-sm">Translation & Content</div>
+                                                            <div className="text-xs text-muted-foreground">Translate docs and write blogs</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* FAQ SECTION */}
+                                        <div>
+                                            <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="p-4 rounded-xl border border-border/50 hover:bg-secondary/10 transition-colors">
+                                                    <h4 className="font-semibold mb-2">Is Shivlox AI free to use?</h4>
+                                                    <p className="text-sm text-muted-foreground">Yes, Shivlox AI provides a free tier powered by Gemini 1.5 Flash, making advanced AI accessible for students and developers.</p>
+                                                </div>
+                                                <div className="p-4 rounded-xl border border-border/50 hover:bg-secondary/10 transition-colors">
+                                                    <h4 className="font-semibold mb-2">Can I generate images?</h4>
+                                                    <p className="text-sm text-muted-foreground">Absolutely. Just type a prompt starting with "Generate an image of..." or use the image command to create visuals instantly.</p>
+                                                </div>
+                                                <div className="p-4 rounded-xl border border-border/50 hover:bg-secondary/10 transition-colors">
+                                                    <h4 className="font-semibold mb-2">Does it support coding?</h4>
+                                                    <p className="text-sm text-muted-foreground">Yes, Shivlox excels at coding. It can write, debug, and explain code in Python, JavaScript, C++, Java, and more.</p>
+                                                </div>
+                                                <div className="p-4 rounded-xl border border-border/50 hover:bg-secondary/10 transition-colors">
+                                                    <h4 className="font-semibold mb-2">How do I save my chats?</h4>
+                                                    <p className="text-sm text-muted-foreground">Chats are automatically saved to your local browser storage. Login features for cross-device syncing are coming soon.</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </motion.div>
                                 </div>
                             ) : (
-                                 <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col">
+                                <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col pb-32">
                                     {currentMessages.map((msg, index) => (
                                         <ChatMessage key={index} message={msg} />
                                     ))}
                                 </div>
                             )}
-                            {isLoading && <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col"><ChatMessage isLoading /></div>}
+                            {isLoading && <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col pb-32"><ChatMessage isLoading /></div>}
                             <div ref={messagesEndRef} />
                         </div>
                     
@@ -585,7 +635,7 @@ export function HomePageContent() {
                         initial={{ y: 100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 0.5, ease: 'easeOut' }}
-                        className="shrink-0 bg-background/50 p-4 backdrop-blur-sm z-20"
+                        className="absolute bottom-0 left-0 right-0 bg-background/80 p-4 backdrop-blur-md z-20 border-t border-white/10"
                     >
                         <div className="mx-auto w-full max-w-3xl">
                             <form
