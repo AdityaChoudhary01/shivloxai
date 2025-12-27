@@ -27,8 +27,7 @@ import {
   FileText, 
   Shield, 
   Info, 
-  Lock, 
-  ChevronRight 
+  Lock 
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -108,27 +107,18 @@ export function TermsPageContent() {
                     <SidebarFooter className="p-2 border-t border-border group-data-[collapsible=icon]:hidden">
                         <SidebarMenu>
                             <SidebarMenuItem>
-                                <Link 
-                                    href="/donate" 
-                                    className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-red-500 transition-colors"
-                                >
+                                <Link href="/donate" className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-red-500 transition-colors">
                                     <Heart className="h-4 w-4" />
                                     <span>Donate</span>
                                 </Link>
                             </SidebarMenuItem>
-                            
                             <SidebarMenuItem>
-                                <Link 
-                                    href="/contact" 
-                                    className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                                >
+                                <Link href="/contact" className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
                                     <Mail className="h-4 w-4" />
                                     <span>Contact & Support</span>
                                 </Link>
                             </SidebarMenuItem>
-
                             <div className="my-1 border-t border-border/50" />
-                            
                             <div className="flex flex-wrap gap-2 px-2 py-1 text-xs text-muted-foreground/60">
                                 <Link href="/about" className="hover:text-foreground transition-colors">About</Link>
                                 <span>•</span>
@@ -136,7 +126,6 @@ export function TermsPageContent() {
                                 <span>•</span>
                                 <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
                             </div>
-
                             <p className="mt-2 text-center text-[10px] text-muted-foreground/40">
                                 &copy; {new Date().getFullYear()} Shivlox AI.
                             </p>
@@ -186,7 +175,7 @@ export function TermsPageContent() {
                                         whileInView="visible"
                                         viewport={{ once: true, amount: 0.3 }}
                                     >
-                                        <Card className="transition-all duration-300 hover:shadow-lg border-border/50">
+                                        <Card className="transition-all duration-300 hover:shadow-lg border-border/50 bg-card/50 backdrop-blur-sm">
                                             <CardHeader>
                                                 <CardTitle className="flex items-center gap-2">
                                                     <Shield className="h-5 w-5 text-primary" />
@@ -216,57 +205,32 @@ export function TermsPageContent() {
                                     {/* About Link */}
                                     <Link href="/about" className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all">
                                         <div className="flex items-center justify-between mb-4">
-                                            <div className="p-3 bg-blue-500/10 rounded-lg text-blue-500">
-                                                <Info className="h-6 w-6" />
-                                            </div>
-                                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                            <div className="p-3 bg-blue-500/10 rounded-lg text-blue-500"><Info className="h-6 w-6" /></div>
                                         </div>
                                         <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">About Us</h3>
-                                        <p className="text-sm text-muted-foreground leading-relaxed">
-                                            Learn about our mission and the technology powering Shivlox AI.
-                                        </p>
-                                    </Link>
-
-                                    {/* Privacy Link */}
-                                    <Link href="/privacy" className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="p-3 bg-green-500/10 rounded-lg text-green-500">
-                                                <Lock className="h-6 w-6" />
-                                            </div>
-                                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                                        </div>
-                                        <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">Privacy Policy</h3>
-                                        <p className="text-sm text-muted-foreground leading-relaxed">
-                                            Read how we handle your information and chat logs securely.
-                                        </p>
+                                        <p className="text-sm text-muted-foreground">Learn about our mission and technology.</p>
                                     </Link>
 
                                     {/* Contact Link */}
                                     <Link href="/contact" className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all">
                                         <div className="flex items-center justify-between mb-4">
-                                            <div className="p-3 bg-purple-500/10 rounded-lg text-purple-500">
-                                                <Mail className="h-6 w-6" />
-                                            </div>
-                                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                            <div className="p-3 bg-purple-500/10 rounded-lg text-purple-500"><Mail className="h-6 w-6" /></div>
                                         </div>
-                                        <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">Contact Us</h3>
-                                        <p className="text-sm text-muted-foreground leading-relaxed">
-                                            Have questions about these terms? Reach out to our support team.
-                                        </p>
+                                        <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">Contact Support</h3>
+                                        <p className="text-sm text-muted-foreground">Get help or report issues directly.</p>
+                                    </Link>
+
+                                    {/* Privacy Link */}
+                                    <Link href="/privacy" className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="p-3 bg-green-500/10 rounded-lg text-green-500"><Lock className="h-6 w-6" /></div>
+                                        </div>
+                                        <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">Privacy Policy</h3>
+                                        <p className="text-sm text-muted-foreground">Understand how we secure your data.</p>
                                     </Link>
 
                                 </div>
                             </motion.div>
-
-                            {/* Standard Footer Links */}
-                            <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-sm text-muted-foreground border-t border-border/50 pt-10 mt-16 pb-10">
-                                <Link href="/about" className="hover:text-primary hover:underline transition-all">About Shivlox</Link>
-                                <Link href="/contact" className="hover:text-primary hover:underline transition-all">Contact Support</Link>
-                                <Link href="/donate" className="flex items-center gap-2 hover:text-red-500 font-medium transition-colors">
-                                    <Heart className="h-4 w-4 fill-current" /> Donate
-                                </Link>
-                                <Link href="/privacy" className="hover:text-primary hover:underline transition-all">Privacy Policy</Link>
-                            </div>
 
                         </div>
                     </ScrollArea>
