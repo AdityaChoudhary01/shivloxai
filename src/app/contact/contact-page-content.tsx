@@ -165,10 +165,10 @@ export function ContactPageContent() {
                                     >
                                         <h3 className="text-lg font-semibold mb-4">Connect with the Developer</h3>
                                         <div className="flex gap-4">
-                                            <a href="https://github.com/adityachoudhary" target="_blank" className="p-3 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
+                                            <a href="https://github.com/AdityaChoudhary01" target="_blank" className="p-3 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
                                                 <Github className="h-5 w-5" />
                                             </a>
-                                            <a href="https://linkedin.com" target="_blank" className="p-3 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
+                                            <a href="https://www.linkedin.com/in/aditya-kumar-38093a304/" target="_blank" className="p-3 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
                                                 <Linkedin className="h-5 w-5" />
                                             </a>
                                             <a href="https://twitter.com" target="_blank" className="p-3 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
