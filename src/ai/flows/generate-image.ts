@@ -1,11 +1,4 @@
 'use server';
-/**
- * @fileOverview Generates an image from a text prompt.
- *
- * - generateImage - A function that generates an image.
- * - GenerateImageInput - The input type for the generateImage function.
- * - GenerateImageOutput - The return type for the generateImage function.
- */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
@@ -27,11 +20,12 @@ const generateImageFlow = ai.defineFlow(
     outputSchema: GenerateImageOutputSchema,
   },
   async (input) => {
+    // UPDATED: Using the valid 2025 image model
     const { media } = await ai.generate({
-      model: 'googleai/gemini-2.0-flash-preview-image-generation',
+      model: 'googleai/gemini-2.5-flash-image', 
       prompt: input.prompt,
       config: {
-        responseModalities: ['TEXT', 'IMAGE'],
+        // responseModalities is implied for image models
       },
     });
 
