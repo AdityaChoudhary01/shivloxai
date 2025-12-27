@@ -4,72 +4,37 @@ import React, { useState } from 'react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarTrigger, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarFooter } from '@/components/ui/sidebar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { ShivloxIcon } from '@/components/shivlox-icon';
 import { useAuth } from '@/hooks/use-auth';
 import { UserNav } from '@/components/user-nav';
 import { AuthModal } from '@/components/auth-modal';
-import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { 
-  Mail, 
   MapPin, 
-  Phone, 
-  Send, 
+  Clock,
   MessageSquare, 
   Github, 
   Linkedin, 
   Twitter, 
   Plus, 
   HelpCircle, 
-  CheckCircle2,
-  Clock,
-  Globe
+  Mail
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
+// --- IMPORT YOUR EXISTING COMPONENT HERE ---
+import { ContactForm } from './contact-form'; 
 
 export function ContactPageContent() {
     const { user } = useAuth();
-    const { toast } = useToast();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-
-    // Form State
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        subject: '',
-        message: ''
-    });
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        toast({
-            title: "Message Sent!",
-            description: "We'll get back to you within 24 hours.",
-        });
-
-        setFormData({ name: '', email: '', subject: '', message: '' });
-        setIsLoading(false);
-    };
 
     return (
         <SidebarProvider>
             <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
             
             <div className="flex h-dvh bg-background text-foreground w-full">
-                {/* --- REUSED SIDEBAR (Consistency) --- */}
+                {/* --- SIDEBAR --- */}
                 <Sidebar>
                     <SidebarHeader className="p-2">
                         <div className="flex items-center justify-between p-2">
@@ -105,9 +70,8 @@ export function ContactPageContent() {
                     </SidebarFooter>
                 </Sidebar>
 
-                {/* --- MAIN CONTENT AREA --- */}
+                {/* --- MAIN CONTENT --- */}
                 <main className="flex flex-1 flex-col overflow-hidden w-full relative bg-secondary/5">
-                    {/* Header */}
                     <header className="shrink-0 flex h-16 items-center justify-between border-b border-border/40 bg-background/50 px-4 backdrop-blur-lg z-10">
                         <div className="flex items-center gap-2">
                             <SidebarTrigger />
@@ -120,7 +84,7 @@ export function ContactPageContent() {
                     <ScrollArea className="flex-1">
                         <div className="max-w-6xl mx-auto px-4 py-12 md:py-20">
                             
-                            {/* 1. HERO SECTION */}
+                            {/* HERO */}
                             <div className="text-center mb-16 space-y-4">
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
@@ -139,59 +103,18 @@ export function ContactPageContent() {
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                                 
-                                {/* 2. CONTACT FORM */}
-                                <motion.div 
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: 0.2, duration: 0.5 }}
-                                    className="bg-background rounded-2xl border border-border/50 p-6 md:p-8 shadow-sm"
-                                >
-                                    <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                                {/* --- 1. YOUR CONTACT FORM COMPONENT --- */}
+                                {/* This replaces the manual form logic */}
+                                <div>
+                                    <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
                                         <Mail className="h-5 w-5 text-primary" />
                                         Send us a Message
                                     </h2>
-                                    <form onSubmit={handleSubmit} className="space-y-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label htmlFor="name" className="text-sm font-medium">Name</label>
-                                                <Input 
-                                                    id="name" name="name" placeholder="John Doe" 
-                                                    value={formData.name} onChange={handleChange} required 
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label htmlFor="email" className="text-sm font-medium">Email</label>
-                                                <Input 
-                                                    id="email" name="email" type="email" placeholder="john@example.com" 
-                                                    value={formData.email} onChange={handleChange} required 
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label htmlFor="subject" className="text-sm font-medium">Subject</label>
-                                            <Input 
-                                                id="subject" name="subject" placeholder="Bug Report / Feature Request" 
-                                                value={formData.subject} onChange={handleChange} required 
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label htmlFor="message" className="text-sm font-medium">Message</label>
-                                            <Textarea 
-                                                id="message" name="message" placeholder="Tell us how we can help..." 
-                                                className="min-h-[150px]"
-                                                value={formData.message} onChange={handleChange} required 
-                                            />
-                                        </div>
-                                        <Button type="submit" className="w-full" disabled={isLoading}>
-                                            {isLoading ? "Sending..." : "Send Message"} 
-                                            {!isLoading && <Send className="ml-2 h-4 w-4" />}
-                                        </Button>
-                                    </form>
-                                </motion.div>
+                                    <ContactForm />
+                                </div>
 
-                                {/* 3. INFO & FAQ SIDEBAR */}
-                                <div className="space-y-8">
-                                    
+                                {/* --- 2. INFO SIDEBAR --- */}
+                                <div className="space-y-8 mt-12 lg:mt-0">
                                     {/* Direct Contact Cards */}
                                     <motion.div 
                                         initial={{ opacity: 0, x: 20 }}
@@ -211,7 +134,7 @@ export function ContactPageContent() {
                                         </div>
                                     </motion.div>
 
-                                    {/* Location & Hours */}
+                                    {/* Location */}
                                     <motion.div 
                                         initial={{ opacity: 0, x: 20 }}
                                         animate={{ opacity: 1, x: 0 }}
@@ -253,11 +176,10 @@ export function ContactPageContent() {
                                             </a>
                                         </div>
                                     </motion.div>
-
                                 </div>
                             </div>
 
-                            {/* 4. MINI FAQ SECTION */}
+                            {/* FAQ SECTION */}
                             <motion.div 
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
