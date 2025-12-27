@@ -1,16 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  SidebarProvider, 
-  Sidebar, 
-  SidebarHeader, 
-  SidebarTrigger, 
-  SidebarContent, 
-  SidebarMenu, 
-  SidebarMenuItem, 
-  SidebarFooter 
-} from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarHeader, SidebarTrigger, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarFooter } from '@/components/ui/sidebar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { ShivloxIcon } from '@/components/shivlox-icon';
@@ -41,6 +32,12 @@ import { ContactForm } from './contact-form';
 export function ContactPageContent() {
     const { user } = useAuth();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+    // Animation variants
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+    };
 
     return (
         <SidebarProvider>
@@ -89,6 +86,8 @@ export function ContactPageContent() {
                                     <span>Donate</span>
                                 </Link>
                             </SidebarMenuItem>
+                            
+                            {/* Contact Active */}
                             <SidebarMenuItem>
                                 <Link 
                                     href="/contact" 
@@ -116,7 +115,7 @@ export function ContactPageContent() {
                     </SidebarFooter>
                 </Sidebar>
 
-                {/* --- MAIN CONTENT (Gradient Restored) --- */}
+                {/* --- MAIN CONTENT (Gradient Applied) --- */}
                 <main className="flex flex-1 flex-col overflow-hidden w-full relative bg-gradient-to-br from-background via-secondary/5 to-secondary/10">
                     <header className="shrink-0 flex h-16 items-center justify-between border-b border-border/40 bg-background/50 px-4 backdrop-blur-lg z-10 sticky top-0">
                         <div className="flex items-center gap-2">
@@ -224,7 +223,7 @@ export function ContactPageContent() {
                                 </div>
                             </div>
 
-                            {/* 3. HELPFUL RESOURCES (Detailed Cards) */}
+                            {/* 3. HELPFUL RESOURCES (CREATIVE GRID) */}
                             <motion.div 
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -234,7 +233,6 @@ export function ContactPageContent() {
                                 <h2 className="text-2xl font-bold mb-8 text-center">Helpful Resources</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     
-                                    {/* About Card */}
                                     <Link href="/about" className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all">
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="p-3 bg-blue-500/10 rounded-lg text-blue-500">
@@ -248,7 +246,6 @@ export function ContactPageContent() {
                                         </p>
                                     </Link>
 
-                                    {/* Privacy Card */}
                                     <Link href="/privacy" className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all">
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="p-3 bg-green-500/10 rounded-lg text-green-500">
@@ -262,7 +259,6 @@ export function ContactPageContent() {
                                         </p>
                                     </Link>
 
-                                    {/* Terms Card */}
                                     <Link href="/terms" className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:shadow-lg transition-all">
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="p-3 bg-orange-500/10 rounded-lg text-orange-500">
