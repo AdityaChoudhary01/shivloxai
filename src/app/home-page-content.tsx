@@ -383,7 +383,7 @@ export function HomePageContent() {
             {/* MAIN LAYOUT WRAPPER - Transparent to show global gradient */}
             <div className="flex h-dvh bg-transparent text-foreground w-full">
                 
-                {/* SIDEBAR - Glass Effect Applied */}
+                {/* SIDEBAR - Glass Effect */}
                 <Sidebar className="bg-background/40 backdrop-blur-md border-r border-white/5">
                     <SidebarHeader className="p-2">
                         <div className="flex items-center justify-between p-2">
@@ -439,10 +439,9 @@ export function HomePageContent() {
                         </SidebarContent>
                     </ScrollArea>
                     
-                    {/* SIDEBAR FOOTER - Updated with Menu */}
+                    {/* SIDEBAR FOOTER */}
                     <SidebarFooter className="p-2 border-t border-white/10">
                         <SidebarMenu>
-                            {/* Donate Link */}
                             <SidebarMenuItem>
                                 <Link 
                                     href="/donate" 
@@ -453,7 +452,6 @@ export function HomePageContent() {
                                 </Link>
                             </SidebarMenuItem>
                             
-                            {/* Contact Link */}
                             <SidebarMenuItem>
                                 <Link 
                                     href="/contact" 
@@ -464,7 +462,6 @@ export function HomePageContent() {
                                 </Link>
                             </SidebarMenuItem>
 
-                            {/* Divider & Legal Links */}
                             <div className="my-1 border-t border-white/10" />
                             
                             <div className="flex flex-wrap gap-2 px-2 py-1 text-xs text-muted-foreground/60">
@@ -730,17 +727,17 @@ export function HomePageContent() {
                                     </motion.div>
                                 </div>
                             ) : (
-                                <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col pb-32">
+                                <div className="mx-auto w-full max-w-4xl flex-1 space-y-6 p-4 md:p-6 flex flex-col pb-32">
                                     {currentMessages.map((msg, index) => (
                                         <ChatMessage key={index} message={msg} />
                                     ))}
+                                    {isLoading && <ChatMessage isLoading />}
+                                    <div ref={messagesEndRef} />
                                 </div>
                             )}
-                            {isLoading && <div className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 md:p-6 flex flex-col pb-32"><ChatMessage isLoading /></div>}
-                            <div ref={messagesEndRef} />
-                        </div>
+                    </div>
                     
-                    {/* FLOATING CHAT INPUT - Glassmorphism */}
+                    {/* INPUT AREA: Floating Glass */}
                     <motion.div
                         initial={{ y: 100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
