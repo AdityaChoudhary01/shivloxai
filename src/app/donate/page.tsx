@@ -2,14 +2,20 @@ import type { Metadata } from 'next';
 import { DonatePageContent } from './donate-page-content';
 
 export const metadata: Metadata = {
-    title: 'Donate to Shivlox AI',
-    description: 'Support the development of Shivlox AI. Your contributions help cover server costs, fund new features, and keep the platform ad-free.',
-    // Add the canonical link using the alternates property
-    alternates: {
-        canonical: 'https://shivloxai.netlify.app/donate',
-    },
+  title: 'Support Shivlox AI | Donate to Keep Us Free',
+  description: 'Help Aditya Choudhary keep Shivlox AI running. Your donations cover server costs, API fees, and development time.',
+  keywords: ['Donate', 'Support Open Source', 'Aditya Choudhary', 'Shivlox AI', 'Buy Me a Coffee'],
+  alternates: {
+    canonical: 'https://shivloxai.netlify.app/donate',
+  },
+  openGraph: {
+    title: 'Support Shivlox AI',
+    description: 'Powering the future of free AI. Help us keep the lights on.',
+    url: 'https://shivloxai.netlify.app/donate',
+    type: 'website',
+  },
 };
 
 export default function DonatePage() {
-    return <DonatePageContent />;
+  return <DonatePageContent />;
 }
