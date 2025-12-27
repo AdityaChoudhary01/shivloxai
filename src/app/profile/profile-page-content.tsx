@@ -60,7 +60,6 @@ export function ProfilePageContent() {
 
   // Redirect logic or empty state if not logged in
   if (!loading && !user) {
-     // You might want to redirect here in a real app
      return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <div className="text-center space-y-4">
@@ -157,9 +156,11 @@ export function ProfilePageContent() {
     <SidebarProvider>
         <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
         
-        <div className="flex h-dvh bg-background text-foreground w-full">
-            {/* --- SIDEBAR --- */}
-            <Sidebar collapsible="icon">
+        {/* 1. UPDATED: bg-transparent */}
+        <div className="flex h-dvh bg-transparent text-foreground w-full">
+            
+            {/* 2. UPDATED: Sidebar Glassmorphism */}
+            <Sidebar collapsible="icon" className="bg-background/40 backdrop-blur-md border-r border-white/5">
                 <SidebarHeader className="p-2">
                     <div className="flex items-center justify-between p-2">
                         <Link href="/" className="flex items-center gap-2 overflow-hidden">
@@ -167,7 +168,7 @@ export function ProfilePageContent() {
                             <h2 className="text-lg font-semibold group-data-[collapsible=icon]:hidden">Shivlox AI</h2>
                         </Link>
                     </div>
-                    <Button variant="outline" className="w-full justify-start group-data-[collapsible=icon]:justify-center" asChild>
+                    <Button variant="outline" className="w-full justify-start group-data-[collapsible=icon]:justify-center bg-secondary/50 border-white/10 hover:bg-secondary/80" asChild>
                         <Link href="/">
                             <Plus className="mr-2 h-4 w-4 group-data-[collapsible=icon]:mr-0" />
                             <span className="group-data-[collapsible=icon]:hidden">New Chat</span>
@@ -179,8 +180,8 @@ export function ProfilePageContent() {
                     <SidebarContent className="p-2">
                         <SidebarMenu>
                             <SidebarMenuItem>
-                                <Link href="/" className="flex items-center w-full rounded-md px-2 py-2 hover:bg-accent/40 transition-colors group-data-[collapsible=icon]:justify-center">
-                                    <MessageSquare className="h-4 w-4 mr-2 text-muted-foreground group-data-[collapsible=icon]:mr-0" />
+                                <Link href="/" className="flex items-center w-full rounded-md px-2 py-2 hover:bg-white/5 hover:text-white text-muted-foreground transition-colors group-data-[collapsible=icon]:justify-center">
+                                    <MessageSquare className="h-4 w-4 mr-2 group-data-[collapsible=icon]:mr-0" />
                                     <span className="text-sm group-data-[collapsible=icon]:hidden">Back to Chat</span>
                                 </Link>
                             </SidebarMenuItem>
@@ -189,29 +190,29 @@ export function ProfilePageContent() {
                 </ScrollArea>
                 
                 {/* --- SIDEBAR FOOTER --- */}
-                <SidebarFooter className="p-2 border-t border-border group-data-[collapsible=icon]:hidden">
+                <SidebarFooter className="p-2 border-t border-white/10 group-data-[collapsible=icon]:hidden">
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <Link href="/donate" className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-red-500 transition-colors">
+                            <Link href="/donate" className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-red-500 transition-colors">
                                 <Heart className="h-4 w-4" />
                                 <span>Donate</span>
                             </Link>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <Link href="/contact" className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+                            <Link href="/contact" className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-white transition-colors">
                                 <Mail className="h-4 w-4" />
                                 <span>Contact & Support</span>
                             </Link>
                         </SidebarMenuItem>
 
-                        <div className="my-1 border-t border-border/50" />
+                        <div className="my-1 border-t border-white/10" />
                         
                         <div className="flex flex-wrap gap-2 px-2 py-1 text-xs text-muted-foreground/60">
-                            <Link href="/about" className="hover:text-foreground transition-colors">About</Link>
+                            <Link href="/about" className="hover:text-white transition-colors">About</Link>
                             <span>•</span>
-                            <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+                            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
                             <span>•</span>
-                            <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+                            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
                         </div>
 
                         <p className="mt-2 text-center text-[10px] text-muted-foreground/40">
@@ -221,9 +222,12 @@ export function ProfilePageContent() {
                 </SidebarFooter>
             </Sidebar>
 
-            {/* --- MAIN CONTENT (Gradient) --- */}
-            <main className="flex flex-1 flex-col overflow-hidden w-full relative bg-gradient-to-br from-background via-secondary/5 to-secondary/10">
-                <header className="shrink-0 flex h-16 items-center justify-between border-b border-border/40 bg-background/50 px-4 backdrop-blur-lg z-10 sticky top-0">
+            {/* --- MAIN CONTENT --- */}
+            {/* 3. UPDATED: Transparent main wrapper */}
+            <main className="flex flex-1 flex-col overflow-hidden w-full relative bg-transparent">
+                
+                {/* 4. UPDATED: Header Glassmorphism */}
+                <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/5 bg-background/20 backdrop-blur-xl px-4 shadow-sm z-10 sticky top-0">
                     <div className="flex items-center gap-2">
                         <SidebarTrigger />
                     </div>
@@ -240,9 +244,10 @@ export function ProfilePageContent() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
                         >
-                            <Card className="border-border/50 shadow-lg bg-background/60 backdrop-blur-sm">
-                                <CardHeader className="border-b border-border/50 pb-8">
-                                    <CardTitle className="text-2xl font-bold">Profile Settings</CardTitle>
+                            {/* 5. UPDATED: Profile Card Glassmorphism */}
+                            <Card className="border-white/10 shadow-lg bg-white/5 backdrop-blur-sm">
+                                <CardHeader className="border-b border-white/10 pb-8">
+                                    <CardTitle className="text-2xl font-bold text-white">Profile Settings</CardTitle>
                                     <CardDescription>
                                         Manage your public profile and account settings.
                                     </CardDescription>
@@ -253,7 +258,7 @@ export function ProfilePageContent() {
                                         {/* Avatar Upload Section */}
                                         <div className="flex flex-col md:flex-row items-center gap-8">
                                             <div className="relative group cursor-pointer" onClick={triggerFileInput}>
-                                                <Avatar className="h-32 w-32 border-4 border-background shadow-xl ring-2 ring-border/20 transition-transform group-hover:scale-105">
+                                                <Avatar className="h-32 w-32 border-4 border-white/10 shadow-xl ring-2 ring-white/10 transition-transform group-hover:scale-105">
                                                     <AvatarImage src={avatarPreview} className="object-cover" />
                                                     <AvatarFallback className="text-3xl bg-secondary">{getInitials(name)}</AvatarFallback>
                                                 </Avatar>
@@ -269,7 +274,7 @@ export function ProfilePageContent() {
                                                 />
                                             </div>
                                             <div className="flex-1 text-center md:text-left space-y-2">
-                                                <h3 className="font-medium text-lg">Profile Picture</h3>
+                                                <h3 className="font-medium text-lg text-white">Profile Picture</h3>
                                                 <p className="text-sm text-muted-foreground">
                                                     Click on the avatar to upload a custom photo from your device.
                                                 </p>
@@ -278,7 +283,7 @@ export function ProfilePageContent() {
                                                     variant="outline" 
                                                     size="sm" 
                                                     onClick={triggerFileInput}
-                                                    className="mt-2"
+                                                    className="mt-2 border-white/10 hover:bg-white/10 hover:text-white"
                                                 >
                                                     Upload New Image
                                                 </Button>
@@ -287,26 +292,26 @@ export function ProfilePageContent() {
 
                                         <div className="grid gap-6">
                                             <div className="space-y-2">
-                                                <Label htmlFor="name" className="flex items-center gap-2">
+                                                <Label htmlFor="name" className="flex items-center gap-2 text-white">
                                                     <User className="h-4 w-4" /> Display Name
                                                 </Label>
                                                 <Input 
                                                     id="name" 
                                                     value={name} 
                                                     onChange={(e) => setName(e.target.value)} 
-                                                    className="max-w-md bg-secondary/20"
+                                                    className="max-w-md bg-white/10 border-white/10 text-white focus-visible:ring-primary/50"
                                                 />
                                             </div>
 
                                             <div className="space-y-2">
-                                                <Label htmlFor="email" className="flex items-center gap-2">
+                                                <Label htmlFor="email" className="flex items-center gap-2 text-white">
                                                     <Mail className="h-4 w-4" /> Email Address
                                                 </Label>
                                                 <Input 
                                                     id="email" 
                                                     value={user?.email || ''} 
                                                     disabled 
-                                                    className="max-w-md bg-muted text-muted-foreground cursor-not-allowed"
+                                                    className="max-w-md bg-white/5 border-white/5 text-muted-foreground cursor-not-allowed"
                                                 />
                                                 <p className="text-[12px] text-muted-foreground">
                                                     Your email address is managed by Google Sign-In.
@@ -314,11 +319,11 @@ export function ProfilePageContent() {
                                             </div>
                                         </div>
 
-                                        <div className="flex justify-end pt-4 border-t border-border/50">
+                                        <div className="flex justify-end pt-4 border-t border-white/10">
                                             <Button 
                                                 type="submit" 
                                                 disabled={isSubmitting}
-                                                className="min-w-[140px]"
+                                                className="min-w-[140px] bg-primary hover:bg-primary/90 text-primary-foreground"
                                             >
                                                 {isSubmitting ? (
                                                     <>
