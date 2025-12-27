@@ -9,8 +9,13 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-// ADDED: Heart icon to imports
-import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2, BookText, Sparkles, Zap, Shield, Brain, Code, PenTool, Globe, ChevronRight, Cpu, ExternalLink, Layers, GraduationCap, BookOpen, Heart } from 'lucide-react';
+// ADDED: Info, FileText, Lock, Mail icons for Sidebar
+import { 
+    ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, 
+    Trash2, BookText, Sparkles, Zap, Shield, Brain, Code, PenTool, Globe, 
+    ChevronRight, Cpu, ExternalLink, Layers, GraduationCap, BookOpen, Heart,
+    Info, FileText, Lock, Mail
+} from 'lucide-react';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarFooter } from '@/components/ui/sidebar';
@@ -431,11 +436,49 @@ export function HomePageContent() {
                             </SidebarMenu>
                         </SidebarContent>
                     </ScrollArea>
-                    <SidebarFooter className="p-4 border-t border-border">
-                        <p className="text-center text-xs text-muted-foreground">
-                            &copy; {new Date().getFullYear()} Shivlox AI. All rights reserved.
-                        </p>
+                    
+                    {/* --- UPDATED SIDEBAR FOOTER WITH LINKS --- */}
+                    <SidebarFooter className="p-2 border-t border-border">
+                        <SidebarMenu>
+                            {/* Donate Link - Highlighted */}
+                            <SidebarMenuItem>
+                                <Link 
+                                    href="/donate" 
+                                    className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-red-500 transition-colors"
+                                >
+                                    <Heart className="h-4 w-4" />
+                                    <span>Donate</span>
+                                </Link>
+                            </SidebarMenuItem>
+                            
+                            {/* Contact Link */}
+                            <SidebarMenuItem>
+                                <Link 
+                                    href="/contact" 
+                                    className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                                >
+                                    <Mail className="h-4 w-4" />
+                                    <span>Contact & Support</span>
+                                </Link>
+                            </SidebarMenuItem>
+
+                            {/* Divider & Legal Links */}
+                            <div className="my-1 border-t border-border/50" />
+                            
+                            <div className="flex flex-wrap gap-2 px-2 py-1 text-xs text-muted-foreground/60">
+                                <Link href="/about" className="hover:text-foreground transition-colors">About</Link>
+                                <span>•</span>
+                                <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+                                <span>•</span>
+                                <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+                            </div>
+
+                            <p className="mt-2 text-center text-[10px] text-muted-foreground/40">
+                                &copy; {new Date().getFullYear()} Shivlox AI.
+                            </p>
+                        </SidebarMenu>
                     </SidebarFooter>
+
                 </Sidebar>
 
                 <main className="flex flex-1 flex-col overflow-hidden w-full relative">
