@@ -20,7 +20,8 @@ import {
   QrCode, 
   CreditCard,
   CheckCircle2,
-  ShieldCheck
+  ShieldCheck,
+  Mail
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -75,10 +76,36 @@ export function DonatePageContent() {
                             </SidebarMenu>
                         </SidebarContent>
                     </ScrollArea>
-                    <SidebarFooter className="p-4 border-t border-border">
-                        <p className="text-center text-xs text-muted-foreground">
-                            &copy; {new Date().getFullYear()} Shivlox AI.
-                        </p>
+                    
+                     {/* --- SIDEBAR FOOTER WITH LINKS --- */}
+                     <SidebarFooter className="p-2 border-t border-border">
+                        <SidebarMenu>
+                            {/* Contact Link */}
+                            <SidebarMenuItem>
+                                <Link 
+                                    href="/contact" 
+                                    className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                                >
+                                    <Mail className="h-4 w-4" />
+                                    <span>Contact & Support</span>
+                                </Link>
+                            </SidebarMenuItem>
+
+                            {/* Divider & Legal Links */}
+                            <div className="my-1 border-t border-border/50" />
+                            
+                            <div className="flex flex-wrap gap-2 px-2 py-1 text-xs text-muted-foreground/60">
+                                <Link href="/about" className="hover:text-foreground transition-colors">About</Link>
+                                <span>•</span>
+                                <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+                                <span>•</span>
+                                <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+                            </div>
+
+                            <p className="mt-2 text-center text-[10px] text-muted-foreground/40">
+                                &copy; {new Date().getFullYear()} Shivlox AI.
+                            </p>
+                        </SidebarMenu>
                     </SidebarFooter>
                 </Sidebar>
 
@@ -122,105 +149,15 @@ export function DonatePageContent() {
                                 animate="visible"
                                 className="max-w-4xl mx-auto"
                             >
-                                <Tabs defaultValue="international" className="w-full">
+                                <Tabs defaultValue="upi" className="w-full">
                                     <div className="flex justify-center mb-8">
                                         <TabsList className="grid w-full max-w-[400px] grid-cols-2">
-                                            <TabsTrigger value="international">Cards / International</TabsTrigger>
                                             <TabsTrigger value="upi">UPI (India)</TabsTrigger>
+                                            <TabsTrigger value="international">International / Cards</TabsTrigger>
                                         </TabsList>
                                     </div>
 
-                                    {/* --- TAB 1: BUY ME A COFFEE / PAYPAL --- */}
-                                    <TabsContent value="international">
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            
-                                            {/* Tier 1 */}
-                                            <motion.div variants={itemVariants}>
-                                                <Card className="h-full hover:border-primary/50 transition-all hover:shadow-lg relative overflow-hidden group">
-                                                    <div className="absolute top-0 left-0 w-full h-1 bg-blue-500" />
-                                                    <CardHeader>
-                                                        <CardTitle className="flex items-center gap-2 text-lg">
-                                                            <Coffee className="h-5 w-5 text-blue-500" /> 
-                                                            Buy me a Coffee
-                                                        </CardTitle>
-                                                        <CardDescription>Fuel for late night coding</CardDescription>
-                                                    </CardHeader>
-                                                    <CardContent>
-                                                        <div className="text-3xl font-bold mb-4">$5 <span className="text-sm font-normal text-muted-foreground">/ one-time</span></div>
-                                                        <ul className="space-y-2 text-sm text-muted-foreground">
-                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Virtual High Five</li>
-                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Developer Gratitude</li>
-                                                        </ul>
-                                                    </CardContent>
-                                                    <CardFooter>
-                                                        {/* UPDATE LINK HERE */}
-                                                        <Button className="w-full" asChild>
-                                                            <Link href="https://buymeacoffee.com/adityachoudhary" target="_blank">Support $5</Link>
-                                                        </Button>
-                                                    </CardFooter>
-                                                </Card>
-                                            </motion.div>
-
-                                            {/* Tier 2 (Highlighted) */}
-                                            <motion.div variants={itemVariants}>
-                                                <Card className="h-full border-primary shadow-md hover:shadow-xl transition-all relative overflow-hidden scale-105 z-10 bg-background">
-                                                    <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">POPULAR</div>
-                                                    <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
-                                                    <CardHeader>
-                                                        <CardTitle className="flex items-center gap-2 text-lg">
-                                                            <Server className="h-5 w-5 text-primary" /> 
-                                                            Server Sponsor
-                                                        </CardTitle>
-                                                        <CardDescription>Keeps the API running</CardDescription>
-                                                    </CardHeader>
-                                                    <CardContent>
-                                                        <div className="text-3xl font-bold mb-4">$15 <span className="text-sm font-normal text-muted-foreground">/ month</span></div>
-                                                        <ul className="space-y-2 text-sm text-muted-foreground">
-                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Covers 10k Tokens</li>
-                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Priority Support</li>
-                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Name in GitHub Readme</li>
-                                                        </ul>
-                                                    </CardContent>
-                                                    <CardFooter>
-                                                         {/* UPDATE LINK HERE */}
-                                                        <Button className="w-full bg-primary hover:bg-primary/90" asChild>
-                                                            <Link href="https://ko-fi.com/adityachoudhary" target="_blank">Become a Sponsor</Link>
-                                                        </Button>
-                                                    </CardFooter>
-                                                </Card>
-                                            </motion.div>
-
-                                            {/* Tier 3 */}
-                                            <motion.div variants={itemVariants}>
-                                                <Card className="h-full hover:border-purple-500/50 transition-all hover:shadow-lg relative overflow-hidden">
-                                                    <div className="absolute top-0 left-0 w-full h-1 bg-purple-500" />
-                                                    <CardHeader>
-                                                        <CardTitle className="flex items-center gap-2 text-lg">
-                                                            <Zap className="h-5 w-5 text-purple-500" /> 
-                                                            Power User
-                                                        </CardTitle>
-                                                        <CardDescription>Accelerate Development</CardDescription>
-                                                    </CardHeader>
-                                                    <CardContent>
-                                                        <div className="text-3xl font-bold mb-4">$50+ <span className="text-sm font-normal text-muted-foreground">/ one-time</span></div>
-                                                        <ul className="space-y-2 text-sm text-muted-foreground">
-                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Feature Request Priority</li>
-                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Early Access to Beta</li>
-                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Personal Thank You</li>
-                                                        </ul>
-                                                    </CardContent>
-                                                    <CardFooter>
-                                                         {/* UPDATE LINK HERE */}
-                                                        <Button className="w-full" variant="outline" asChild>
-                                                            <Link href="https://paypal.me/adityachoudhary" target="_blank">Donate Custom</Link>
-                                                        </Button>
-                                                    </CardFooter>
-                                                </Card>
-                                            </motion.div>
-                                        </div>
-                                    </TabsContent>
-
-                                    {/* --- TAB 2: UPI / QR CODE (For India) --- */}
+                                    {/* --- TAB 1: UPI / QR CODE (For India - Default) --- */}
                                     <TabsContent value="upi">
                                         <motion.div 
                                             variants={itemVariants}
@@ -250,7 +187,7 @@ export function DonatePageContent() {
                                                         <code className="text-sm font-mono font-semibold">adityachoudhary@okhdfcbank</code>
                                                         <Button size="sm" variant="ghost" onClick={() => {
                                                             navigator.clipboard.writeText("adityachoudhary@okhdfcbank");
-                                                            // Optional: Add toast here
+                                                            toast({ title: "Copied!", description: "UPI ID copied to clipboard." });
                                                         }}>
                                                             Copy
                                                         </Button>
@@ -261,6 +198,93 @@ export function DonatePageContent() {
                                                 </div>
                                             </div>
                                         </motion.div>
+                                    </TabsContent>
+
+                                    {/* --- TAB 2: BUY ME A COFFEE (International/Cards) --- */}
+                                    <TabsContent value="international">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            
+                                            {/* Tier 1 */}
+                                            <motion.div variants={itemVariants}>
+                                                <Card className="h-full hover:border-primary/50 transition-all hover:shadow-lg relative overflow-hidden group">
+                                                    <div className="absolute top-0 left-0 w-full h-1 bg-blue-500" />
+                                                    <CardHeader>
+                                                        <CardTitle className="flex items-center gap-2 text-lg">
+                                                            <Coffee className="h-5 w-5 text-blue-500" /> 
+                                                            Buy me a Coffee
+                                                        </CardTitle>
+                                                        <CardDescription>Fuel for late night coding</CardDescription>
+                                                    </CardHeader>
+                                                    <CardContent>
+                                                        <div className="text-3xl font-bold mb-4">₹150 <span className="text-sm font-normal text-muted-foreground">/ one-time</span></div>
+                                                        <ul className="space-y-2 text-sm text-muted-foreground">
+                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Virtual High Five</li>
+                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Developer Gratitude</li>
+                                                        </ul>
+                                                    </CardContent>
+                                                    <CardFooter>
+                                                        <Button className="w-full" asChild>
+                                                            <Link href="https://buymeacoffee.com/adityachoudhary" target="_blank">Support ₹150</Link>
+                                                        </Button>
+                                                    </CardFooter>
+                                                </Card>
+                                            </motion.div>
+
+                                            {/* Tier 2 (Highlighted) */}
+                                            <motion.div variants={itemVariants}>
+                                                <Card className="h-full border-primary shadow-md hover:shadow-xl transition-all relative overflow-hidden scale-105 z-10 bg-background">
+                                                    <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">POPULAR</div>
+                                                    <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
+                                                    <CardHeader>
+                                                        <CardTitle className="flex items-center gap-2 text-lg">
+                                                            <Server className="h-5 w-5 text-primary" /> 
+                                                            Server Sponsor
+                                                        </CardTitle>
+                                                        <CardDescription>Keeps the API running</CardDescription>
+                                                    </CardHeader>
+                                                    <CardContent>
+                                                        <div className="text-3xl font-bold mb-4">₹1,000 <span className="text-sm font-normal text-muted-foreground">/ month</span></div>
+                                                        <ul className="space-y-2 text-sm text-muted-foreground">
+                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Covers 10k Tokens</li>
+                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Priority Support</li>
+                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Name in GitHub Readme</li>
+                                                        </ul>
+                                                    </CardContent>
+                                                    <CardFooter>
+                                                        <Button className="w-full bg-primary hover:bg-primary/90" asChild>
+                                                            <Link href="https://buymeacoffee.com/adityachoudhary" target="_blank">Become a Sponsor</Link>
+                                                        </Button>
+                                                    </CardFooter>
+                                                </Card>
+                                            </motion.div>
+
+                                            {/* Tier 3 */}
+                                            <motion.div variants={itemVariants}>
+                                                <Card className="h-full hover:border-purple-500/50 transition-all hover:shadow-lg relative overflow-hidden">
+                                                    <div className="absolute top-0 left-0 w-full h-1 bg-purple-500" />
+                                                    <CardHeader>
+                                                        <CardTitle className="flex items-center gap-2 text-lg">
+                                                            <Zap className="h-5 w-5 text-purple-500" /> 
+                                                            Power User
+                                                        </CardTitle>
+                                                        <CardDescription>Accelerate Development</CardDescription>
+                                                    </CardHeader>
+                                                    <CardContent>
+                                                        <div className="text-3xl font-bold mb-4">₹4,000+ <span className="text-sm font-normal text-muted-foreground">/ one-time</span></div>
+                                                        <ul className="space-y-2 text-sm text-muted-foreground">
+                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Feature Request Priority</li>
+                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Early Access to Beta</li>
+                                                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Personal Thank You</li>
+                                                        </ul>
+                                                    </CardContent>
+                                                    <CardFooter>
+                                                        <Button className="w-full" variant="outline" asChild>
+                                                            <Link href="https://buymeacoffee.com/adityachoudhary" target="_blank">Support on BMC</Link>
+                                                        </Button>
+                                                    </CardFooter>
+                                                </Card>
+                                            </motion.div>
+                                        </div>
                                     </TabsContent>
                                 </Tabs>
                             </motion.div>
@@ -291,6 +315,14 @@ export function DonatePageContent() {
                                     </div>
                                 </div>
                             </motion.div>
+
+                            {/* --- CONTENT PAGE FOOTER LINKS --- */}
+                            <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-sm text-muted-foreground border-t border-border/50 pt-10 mt-10 pb-10">
+                                <Link href="/about" className="hover:text-primary hover:underline transition-all">About Shivlox</Link>
+                                <Link href="/contact" className="hover:text-primary hover:underline transition-all">Contact Support</Link>
+                                <Link href="/privacy" className="hover:text-primary hover:underline transition-all">Privacy Policy</Link>
+                                <Link href="/terms" className="hover:text-primary hover:underline transition-all">Terms of Service</Link>
+                            </div>
 
                         </div>
                     </ScrollArea>
