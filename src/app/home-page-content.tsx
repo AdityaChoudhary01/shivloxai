@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-// Added ChevronRight and Cpu to imports
-import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2, BookText, Sparkles, Zap, Shield, Brain, Code, PenTool, Globe, ChevronRight, Cpu } from 'lucide-react';
+// ADDED: ExternalLink, Layers, GraduationCap, BookOpen for project icons
+import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2, BookText, Sparkles, Zap, Shield, Brain, Code, PenTool, Globe, ChevronRight, Cpu, ExternalLink, Layers, GraduationCap, BookOpen } from 'lucide-react';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarFooter } from '@/components/ui/sidebar';
@@ -59,7 +59,6 @@ export function HomePageContent() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
 
-    // Static prompts to avoid API Quota usage on page load
     useEffect(() => {
         const staticPrompts = [
             "Explain the theory of relativity like I'm 5",
@@ -72,7 +71,6 @@ export function HomePageContent() {
             "Generate a Python script to scrape a website"
         ];
         setAllPrompts(staticPrompts);
-        // Randomly select 4 prompts for variety
         const shuffled = [...staticPrompts].sort(() => 0.5 - Math.random());
         setInitialPrompts(shuffled.slice(0, 4));
     }, []);
@@ -593,6 +591,65 @@ export function HomePageContent() {
                                                         </div>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+
+                                        {/* --- NEW SECTION: ECOSYSTEM & BACKLINKS --- */}
+                                        <div className="pt-8 border-t border-border/50">
+                                            <h2 className="text-2xl font-bold text-center mb-8">Explore Our Ecosystem</h2>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                
+                                                {/* Project 1: PeerNotez */}
+                                                <Link 
+                                                    href="https://peernotez.com" 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 transition-all hover:shadow-lg"
+                                                >
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <div className="p-3 bg-blue-500/10 rounded-lg text-blue-500">
+                                                            <Layers className="h-6 w-6" />
+                                                        </div>
+                                                        <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                                    </div>
+                                                    <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">PeerNotez</h3>
+                                                    <p className="text-sm text-muted-foreground">The ultimate note-sharing platform for students. Upload, share, and organize your study materials seamlessly.</p>
+                                                </Link>
+
+                                                {/* Project 2: ParikshaNode */}
+                                                <Link 
+                                                    href="https://parikshanode.com" 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 transition-all hover:shadow-lg"
+                                                >
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <div className="p-3 bg-orange-500/10 rounded-lg text-orange-500">
+                                                            <GraduationCap className="h-6 w-6" />
+                                                        </div>
+                                                        <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                                    </div>
+                                                    <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">ParikshaNode</h3>
+                                                    <p className="text-sm text-muted-foreground">Ace your exams with our intelligent quiz application. Test your knowledge across various subjects in real-time.</p>
+                                                </Link>
+
+                                                {/* Project 3: JatPedia */}
+                                                <Link 
+                                                    href="https://jatpedia.org" 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 transition-all hover:shadow-lg"
+                                                >
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <div className="p-3 bg-green-500/10 rounded-lg text-green-500">
+                                                            <BookOpen className="h-6 w-6" />
+                                                        </div>
+                                                        <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                                    </div>
+                                                    <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">JatPedia</h3>
+                                                    <p className="text-sm text-muted-foreground">Dive deep into history and culture. A comprehensive resource for heritage and community knowledge.</p>
+                                                </Link>
+
                                             </div>
                                         </div>
 
