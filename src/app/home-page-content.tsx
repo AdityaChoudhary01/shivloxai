@@ -640,7 +640,7 @@ export function HomePageContent() {
                                                 
                                                 {/* Project 1: PeerNotez */}
                                                 <Link 
-                                                    href="https://peernotez.com" 
+                                                    href="https://peernotez.netlify.app" 
                                                     target="_blank" 
                                                     rel="noopener noreferrer"
                                                     className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 transition-all hover:shadow-lg"
@@ -657,7 +657,7 @@ export function HomePageContent() {
 
                                                 {/* Project 2: ParikshaNode */}
                                                 <Link 
-                                                    href="https://parikshanode.com" 
+                                                    href="https://parikshanode.netlify.app" 
                                                     target="_blank" 
                                                     rel="noopener noreferrer"
                                                     className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 transition-all hover:shadow-lg"
@@ -674,7 +674,7 @@ export function HomePageContent() {
 
                                                 {/* Project 3: JatPedia */}
                                                 <Link 
-                                                    href="https://jatpedia.org" 
+                                                    href="https://jatpedia.netlify.app" 
                                                     target="_blank" 
                                                     rel="noopener noreferrer"
                                                     className="group block p-6 rounded-xl border border-border/50 bg-background hover:border-primary/50 transition-all hover:shadow-lg"
