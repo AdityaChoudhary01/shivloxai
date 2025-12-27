@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-// ADDED: ExternalLink, Layers, GraduationCap, BookOpen for project icons
-import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2, BookText, Sparkles, Zap, Shield, Brain, Code, PenTool, Globe, ChevronRight, Cpu, ExternalLink, Layers, GraduationCap, BookOpen } from 'lucide-react';
+// ADDED: Heart icon to imports
+import { ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, Trash2, BookText, Sparkles, Zap, Shield, Brain, Code, PenTool, Globe, ChevronRight, Cpu, ExternalLink, Layers, GraduationCap, BookOpen, Heart } from 'lucide-react';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarFooter } from '@/components/ui/sidebar';
@@ -432,13 +432,7 @@ export function HomePageContent() {
                         </SidebarContent>
                     </ScrollArea>
                     <SidebarFooter className="p-4 border-t border-border">
-                        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-                            <Link href="/about" className="hover:text-primary">About</Link>
-                            <Link href="/contact" className="hover:text-primary">Contact</Link>
-                            <Link href="/privacy" className="hover:text-primary">Privacy</Link>
-                            <Link href="/terms" className="hover:text-primary">Terms</Link>
-                        </div>
-                        <p className="mt-4 text-center text-xs text-muted-foreground">
+                        <p className="text-center text-xs text-muted-foreground">
                             &copy; {new Date().getFullYear()} Shivlox AI. All rights reserved.
                         </p>
                     </SidebarFooter>
@@ -594,10 +588,12 @@ export function HomePageContent() {
                                             </div>
                                         </div>
 
-                                        {/* --- NEW SECTION: ECOSYSTEM & BACKLINKS --- */}
+                                        {/* --- NEW SECTION: ECOSYSTEM & BACKLINKS (Updated with footer) --- */}
                                         <div className="pt-8 border-t border-border/50">
                                             <h2 className="text-2xl font-bold text-center mb-8">Explore Our Ecosystem</h2>
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            
+                                            {/* Project Cards Grid */}
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                                                 
                                                 {/* Project 1: PeerNotez */}
                                                 <Link 
@@ -649,7 +645,17 @@ export function HomePageContent() {
                                                     <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">JatPedia</h3>
                                                     <p className="text-sm text-muted-foreground">Dive deep into history and culture. A comprehensive resource for heritage and community knowledge.</p>
                                                 </Link>
+                                            </div>
 
+                                            {/* Internal Footer Links - Added Here */}
+                                            <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-sm text-muted-foreground border-t border-border/50 pt-8">
+                                                <Link href="/about" className="hover:text-primary hover:underline transition-all">About Shivlox</Link>
+                                                <Link href="/contact" className="hover:text-primary hover:underline transition-all">Contact Support</Link>
+                                                <Link href="/privacy" className="hover:text-primary hover:underline transition-all">Privacy Policy</Link>
+                                                <Link href="/terms" className="hover:text-primary hover:underline transition-all">Terms of Service</Link>
+                                                <Link href="/donate" className="flex items-center gap-2 hover:text-red-500 font-medium transition-colors">
+                                                    <Heart className="h-4 w-4 fill-current" /> Donate
+                                                </Link>
                                             </div>
                                         </div>
 
