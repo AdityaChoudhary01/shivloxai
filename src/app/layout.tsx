@@ -1,7 +1,24 @@
-import type {Metadata} from 'next';
+import type { Metadata, Viewport } from 'next';
+import { Poppins } from 'next/font/google';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/components/auth-provider';
+
+// 1. Optimize Fonts with next/font
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-poppins',
+  display: 'swap',
+});
+
+// 2. Viewport Settings (Theme Color goes here in Next.js 14+)
+export const viewport: Viewport = {
+  themeColor: '#09011E',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   title: {
@@ -22,7 +39,7 @@ export const metadata: Metadata = {
     siteName: 'Shivlox AI',
     images: [
         {
-            url: '/og-image.png', // Must be an absolute URL
+            url: '/og-image.png',
             width: 1200,
             height: 630,
             alt: 'Shivlox AI in action',
@@ -36,7 +53,7 @@ export const metadata: Metadata = {
     title: 'Shivlox AI - Your Intelligent Chat Assistant',
     description: 'Engage in intelligent conversations, generate images, and get instant answers with Shivlox AI.',
     creator: '@adityacodes',
-    images: ['/twitter-image.png'], // Must be an absolute URL
+    images: ['/twitter-image.png'],
   },
   robots: {
     index: true,
@@ -57,7 +74,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://shivloxai.netlify.app',
   },
-  // Added Google Site Verification here
   verification: {
     google: 'ftdUSQ0-7RzVhdMCxpKJOqlfjqOVyCy_ee4WIEwSjG0',
   },
@@ -83,17 +99,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="google-site-verification" content="ftdUSQ0-7RzVhdMCxpKJOqlfjqOVyCy_ee4WIEwSjG0" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <meta name="theme-color" content="#09011E" />
+        {/* JSON-LD for SEO */}
         <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="font-body antialiased flex flex-col min-h-screen dark">
+      {/* Applied font class and background colors */}
+      <body className={`${poppins.className} font-sans antialiased flex flex-col min-h-screen dark bg-background text-foreground selection:bg-primary/20`}>
         <AuthProvider>
           <div className="flex-1 flex flex-col">
             {children}
