@@ -189,11 +189,11 @@ export function DonatePageContent() {
                                 animate="visible"
                                 className="max-w-4xl mx-auto"
                             >
-                                <Tabs defaultValue="upi" className="w-full">
+                                <Tabs defaultValue="international" className="w-full">
                                     <div className="flex justify-center mb-8">
                                         <TabsList className="grid w-full max-w-[400px] grid-cols-2">
-                                            <TabsTrigger value="upi">UPI (India)</TabsTrigger>
                                             <TabsTrigger value="international">Cards / International</TabsTrigger>
+                                          <TabsTrigger value="upi">UPI (India)</TabsTrigger>
                                         </TabsList>
                                     </div>
 
