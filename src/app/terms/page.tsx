@@ -4,7 +4,12 @@ import { TermsPageContent } from './terms-page-content';
 export const metadata: Metadata = {
     title: 'Terms of Service - Shivlox AI',
     description: 'Review the Terms of Service for using the Shivlox AI application. Understand your rights and responsibilities when interacting with our platform.',
-    // Add the canonical link using the alternates property
+    openGraph: {
+        title: 'Terms of Service - Shivlox AI',
+        description: 'Understand the rules of engagement for Shivlox AI.',
+        url: 'https://shivloxai.netlify.app/terms',
+        type: 'website',
+    },
     alternates: {
         canonical: 'https://shivloxai.netlify.app/terms',
     },
