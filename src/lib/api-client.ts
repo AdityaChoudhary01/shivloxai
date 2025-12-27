@@ -14,7 +14,7 @@ import type { ChatInput } from '@/ai/flows/chat';
 
 // Define the base URL of your deployed Next.js backend.
 // In a real React Native app, this should come from environment variables.
-const API_BASE_URL = 'https://your-vercel-deployment-url.vercel.app'; // IMPORTANT: Replace with your actual Vercel URL
+const API_BASE_URL = 'https://shivloxai.netlify.app'; // IMPORTANT: Replace with your actual Vercel URL
 
 /**
  * An example function that calls the 'chatFlow' on the backend.
