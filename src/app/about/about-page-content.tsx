@@ -121,7 +121,7 @@ export function AboutPageContent() {
                 </Sidebar>
 
                 {/* --- MAIN CONTENT (With Gradient) --- */}
-                <main className="flex flex-1 flex-col overflow-hidden w-full relative">
+                <main className="flex flex-1 flex-col overflow-hidden w-full relative bg-gradient-to-br from-background via-secondary/5 to-secondary/10">
                     <header className="shrink-0 flex h-16 items-center justify-between border-b border-border/40 bg-background/50 px-4 backdrop-blur-lg z-10 sticky top-0">
                         <div className="flex items-center gap-2">
                             <SidebarTrigger />
