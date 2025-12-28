@@ -126,20 +126,27 @@ export function HomePageContent() {
 
     const currentMessages = conversations.find(c => c.id === currentConversationId)?.messages || [];
     
-    const triggerAiResponse = useCallback(async (convId: string, messageContent: string) => {
+    // --- FIX: Pass messageHistory explicitly to avoid stale state issues ---
+    const triggerAiResponse = useCallback(async (convId: string, messageHistory: Message[]) => {
         try {
             if (!user) {
                 setSessionMessageCount(prev => prev + 1);
             }
 
-            const currentConv = conversations.find(c => c.id === convId);
-            const historyForApi = (currentConv?.messages || []).filter(m => m.role !== 'user' || m.content !== messageContent);
-            const fullHistoryForApi = [...historyForApi, { role: 'user' as const, content: messageContent }];
+            // Extract the last message as the prompt
+            const prompt = messageHistory[messageHistory.length - 1].content;
+            
+            // The rest is the history
+            const history = messageHistory.slice(0, -1).map(m => ({
+                role: m.role,
+                content: m.content
+            }));
 
             const chatInput: ChatInput = { 
-                history: fullHistoryForApi.slice(0, -1).map(m => ({ role: m.role as 'user' | 'model', content: m.content })),
-                prompt: messageContent 
+                history,
+                prompt 
             };
+            
             const result = await chat(chatInput);
             const aiMessage: Message = { role: 'model', content: result.response };
 
@@ -166,7 +173,7 @@ export function HomePageContent() {
         } finally {
             setIsLoading(false);
         }
-    }, [user, conversations]);
+    }, [user]); // Removed 'conversations' dependency
     
     const handleSendMessage = useCallback(async (prompt?: string) => {
         if (!user && sessionMessageCount >= 15) {
@@ -184,39 +191,48 @@ export function HomePageContent() {
         shouldAnimateRef.current = true;
 
         let effectiveConvId = currentConversationId;
-        const isCurrentChatEmpty = (conversations.find(c => c.id === effectiveConvId)?.messages.length || 0) === 0;
+        const currentConv = conversations.find(c => c.id === effectiveConvId);
+        // Get existing messages (or empty if new)
+        let existingMessages = currentConv ? currentConv.messages : [];
 
-        if (!effectiveConvId || isCurrentChatEmpty) {
+        // Logic to create new chat if needed
+        if (!effectiveConvId || !currentConv || existingMessages.length === 0) {
             const newId = `chat-${Date.now()}`;
+            effectiveConvId = newId;
             const newTitle = userMessageContent.split(' ').slice(0, 5).join(' ');
+            
             const newConversation: Conversation = {
                 id: newId,
                 title: newTitle,
                 messages: [],
             };
-             
-            if (isCurrentChatEmpty && effectiveConvId) {
-                setConversations(prev => prev.map(c => c.id === effectiveConvId ? { ...newConversation, messages: c.messages } : c));
+            
+            if (currentConversationId && existingMessages.length === 0) {
+                 setConversations(prev => prev.map(c => c.id === currentConversationId ? newConversation : c));
             } else {
-                setConversations(prev => [newConversation, ...prev.filter(c => c.messages.length > 0)]);
+                 setConversations(prev => [newConversation, ...prev]);
             }
-
             setCurrentConversationId(newId);
-            effectiveConvId = newId;
+            // Reset existing messages for the new chat
+            existingMessages = [];
         }
         
         const newUserMessage: Message = { role: 'user', content: userMessageContent };
         
+        // Construct the FULL updated history to pass to the AI
+        const updatedMessages = [...existingMessages, newUserMessage];
+        
         setConversations(prev => {
             return prev.map(c =>
                 c.id === effectiveConvId
-                    ? { ...c, messages: [...c.messages, newUserMessage] }
+                    ? { ...c, messages: updatedMessages }
                     : c
             );
         });
 
         setIsLoading(true);
-        setTimeout(() => triggerAiResponse(effectiveConvId!, userMessageContent), 0);
+        // Pass 'updatedMessages' explicitly. This fixes the "AI forgetting" bug.
+        setTimeout(() => triggerAiResponse(effectiveConvId!, updatedMessages), 0);
 
     }, [input, user, sessionMessageCount, currentConversationId, conversations, triggerAiResponse]);
 
@@ -245,31 +261,22 @@ export function HomePageContent() {
     };
 
     // --- ENHANCED AUDIO RECORDING LOGIC ---
-
     const stopRecording = useCallback(() => {
-        // 1. Stop MediaRecorder
         if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
             mediaRecorderRef.current.stop();
         }
-        
-        // 2. Stop Animation Loop
         if (animationFrameRef.current) {
             cancelAnimationFrame(animationFrameRef.current);
             animationFrameRef.current = null;
         }
-
-        // 3. Close Audio Context
         if (audioContextRef.current) {
             audioContextRef.current.close();
             audioContextRef.current = null;
         }
-
-        // 4. Stop all tracks in the stream to turn off the mic light
         if (streamRef.current) {
             streamRef.current.getTracks().forEach(track => track.stop());
             streamRef.current = null;
         }
-
         setIsRecording(false);
     }, []);
 
@@ -280,28 +287,22 @@ export function HomePageContent() {
         const dataArray = new Uint8Array(bufferLength);
         analyserRef.current.getByteFrequencyData(dataArray);
 
-        // Calculate average volume
         let sum = 0;
         for (let i = 0; i < bufferLength; i++) {
             sum += dataArray[i];
         }
         const average = sum / bufferLength;
-
-        // Threshold for silence (adjustable, 10 is usually good for identifying speech vs room tone)
         const silenceThreshold = 10; 
 
         if (average > silenceThreshold) {
-            // Sound detected, reset timer
             silenceStartRef.current = Date.now();
         } else {
-            // Silence detected, check duration
             const silenceDuration = Date.now() - silenceStartRef.current;
-            if (silenceDuration > 2000) { // 2 seconds of silence
+            if (silenceDuration > 2000) { 
                 stopRecording();
-                return; // Stop loop
+                return;
             }
         }
-
         animationFrameRef.current = requestAnimationFrame(detectSilence);
     };
 
@@ -310,7 +311,6 @@ export function HomePageContent() {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             streamRef.current = stream;
 
-            // --- 1. Setup MediaRecorder ---
             mediaRecorderRef.current = new MediaRecorder(stream);
             audioChunksRef.current = [];
 
@@ -320,7 +320,6 @@ export function HomePageContent() {
 
             mediaRecorderRef.current.onstop = async () => {
                 const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-                // Check if blob is empty (short click)
                 if (audioBlob.size === 0) return;
 
                 const reader = new FileReader();
@@ -330,8 +329,7 @@ export function HomePageContent() {
                     try {
                         setIsLoading(true);
                         const { transcript } = await processAudio({ audioDataUri: base64Audio });
-                        
-                        // AUTO-SEND LOGIC:
+                        // Auto-send logic
                         if (transcript && transcript.trim().length > 0) {
                             handleSendMessage(transcript);
                         }
@@ -351,17 +349,14 @@ export function HomePageContent() {
             mediaRecorderRef.current.start();
             setIsRecording(true);
 
-            // --- 2. Setup Silence Detection ---
             const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
             audioContextRef.current = new AudioContextClass();
             analyserRef.current = audioContextRef.current.createAnalyser();
             analyserRef.current.fftSize = 256;
-            
             const source = audioContextRef.current.createMediaStreamSource(stream);
             source.connect(analyserRef.current);
-            
             silenceStartRef.current = Date.now();
-            detectSilence(); // Start loop
+            detectSilence(); 
 
         } catch (error) {
             console.error('Error starting recording:', error);
@@ -577,7 +572,7 @@ export function HomePageContent() {
                 </Sidebar>
 
                 <main className="flex flex-1 flex-col overflow-hidden w-full relative bg-transparent">
-                    <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/5 bg-background/20 backdrop-blur-xl px-4 shadow-sm z-10 sticky top-0">
+                    <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/5 bg-background/20 backdrop-blur-xl px-4 shadow-sm z-30 sticky top-0">
                         <div className="flex items-center gap-2">
                             <SidebarTrigger />
                         </div>
@@ -600,9 +595,9 @@ export function HomePageContent() {
                         </div>
                     </header>
 
-                    <div className="flex-1 overflow-y-auto flex flex-col relative w-full scroll-smooth">
+                    <div className="flex-1 overflow-y-auto flex flex-col w-full scroll-smooth">
                         {currentMessages.length === 0 && !isLoading ? (
-                                <div className="flex flex-1 flex-col items-center justify-start pt-20 pb-32 text-center px-4">
+                                <div className="flex flex-1 flex-col items-center justify-start pt-20 pb-10 text-center px-4">
                                     <motion.div
                                         initial={{ scale: 0, rotate: -45 }}
                                         animate={{ scale: 1, rotate: 0 }}
@@ -803,7 +798,7 @@ export function HomePageContent() {
                                     </motion.div>
                                 </div>
                             ) : (
-                                <div className="mx-auto w-full max-w-4xl flex-1 space-y-6 p-4 md:p-6 flex flex-col pb-32">
+                                <div className="mx-auto w-full max-w-4xl flex-1 space-y-6 p-4 md:p-6 flex flex-col pb-8">
                                     {currentMessages.map((msg, index) => (
                                         <ChatMessage 
                                             key={index} 
@@ -813,18 +808,18 @@ export function HomePageContent() {
                                         />
                                     ))}
                                     {isLoading && <ChatMessage isLoading message={{ role: 'model', content: '' }} />}
-                                    <div ref={messagesEndRef} />
+                                    <div ref={messagesEndRef} className="h-px w-full" />
                                 </div>
                             )}
                     </div>
                     
-                    <motion.div
-                        initial={{ y: 100, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 0.5, ease: 'easeOut' }}
-                        className="absolute bottom-0 left-0 right-0 p-4 z-20"
-                    >
-                        <div className="mx-auto w-full max-w-3xl">
+                    <div className="shrink-0 z-20 w-full p-4 bg-transparent">
+                        <motion.div
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ duration: 0.5, ease: 'easeOut' }}
+                            className="mx-auto w-full max-w-3xl"
+                        >
                             <form
                                 onSubmit={handleFormSubmit}
                                 id="chat-input" 
@@ -885,8 +880,8 @@ export function HomePageContent() {
                                     )}
                                 </Button>
                             </form>
-                        </div>
-                    </motion.div>
+                        </motion.div>
+                    </div>
                 </main>
             </div>
         </SidebarProvider>
