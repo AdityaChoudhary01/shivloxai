@@ -33,6 +33,8 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import Link from 'next/link';
+import { db } from '@/lib/firebase';
+import { collection, query, orderBy, onSnapshot, doc, setDoc, deleteDoc, writeBatch, getDocs } from 'firebase/firestore';
 
 // Use strict type for local message
 type Message = {
@@ -44,6 +46,7 @@ type Conversation = {
     id: string;
     title: string;
     messages: Message[];
+    updatedAt?: number;
 };
 
 export function HomePageContent() {
@@ -92,33 +95,70 @@ export function HomePageContent() {
         setInitialPrompts(shuffled.slice(0, 4));
     }, []);
 
+    // --- SYNC & LOAD CONVERSATIONS ---
     useEffect(() => {
-        const savedConversations = localStorage.getItem('chatHistory');
-        if (savedConversations) {
-            try {
-                const parsedConversations = JSON.parse(savedConversations);
-                setConversations(parsedConversations);
-                if (parsedConversations.length > 0) {
-                    setCurrentConversationId(parsedConversations[0].id);
-                } else {
-                    startNewChat(false);
+        if (!user) {
+            // Unauthenticated: Load from LocalStorage
+            const savedConversations = localStorage.getItem('chatHistory');
+            if (savedConversations) {
+                try {
+                    const parsedConversations = JSON.parse(savedConversations);
+                    setConversations(parsedConversations);
+                    if (parsedConversations.length > 0 && !currentConversationId) {
+                        setCurrentConversationId(parsedConversations[0].id);
+                    }
+                } catch (e) {
+                    console.error("Failed to parse history", e);
                 }
-            } catch (e) {
-                console.error("Failed to parse history", e);
-                startNewChat(false);
             }
         } else {
-            startNewChat(false);
-        }
-    }, []);
+            // Authenticated: Sync & Load from Firestore
+            
+            // 1. Merge LocalStorage to Firestore if exists
+            const localHistory = localStorage.getItem('chatHistory');
+            if (localHistory) {
+                try {
+                    const localChats = JSON.parse(localHistory) as Conversation[];
+                    const batch = writeBatch(db);
+                    localChats.forEach(chat => {
+                        const docRef = doc(db, 'users', user.uid, 'chats', chat.id);
+                        batch.set(docRef, { ...chat, updatedAt: Date.now() });
+                    });
+                    batch.commit().then(() => {
+                        localStorage.removeItem('chatHistory');
+                        toast({ title: "Sync Complete", description: "Your local chats have been saved to your account." });
+                    });
+                } catch (e) {
+                    console.error("Failed to sync local chats", e);
+                }
+            }
 
+            // 2. Subscribe to Firestore updates
+            const q = query(collection(db, 'users', user.uid, 'chats'), orderBy('updatedAt', 'desc'));
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const chats = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Conversation));
+                setConversations(chats);
+                
+                // Set initial conversation if none selected
+                if (chats.length > 0 && !currentConversationId) {
+                    setCurrentConversationId(chats[0].id);
+                }
+            }, (error) => {
+                console.error("Firestore sync error:", error);
+            });
+
+            return () => unsubscribe();
+        }
+    }, [user, currentConversationId, toast]);
+
+    // Save to LocalStorage ONLY if not logged in
     useEffect(() => {
-        if (conversations.length > 0) {
+        if (!user && conversations.length > 0) {
             localStorage.setItem('chatHistory', JSON.stringify(conversations));
-        } else {
+        } else if (!user) {
             localStorage.removeItem('chatHistory');
         }
-    }, [conversations]);
+    }, [conversations, user]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -126,7 +166,20 @@ export function HomePageContent() {
 
     const currentMessages = conversations.find(c => c.id === currentConversationId)?.messages || [];
     
-    // --- FIX: Pass messageHistory explicitly to avoid stale state issues ---
+    // Helper to save to Firestore
+    const saveToFirestore = async (conversation: Conversation) => {
+        if (user) {
+            try {
+                await setDoc(doc(db, 'users', user.uid, 'chats', conversation.id), {
+                    ...conversation,
+                    updatedAt: Date.now()
+                }, { merge: true });
+            } catch (e) {
+                console.error("Failed to save chat to Firestore", e);
+            }
+        }
+    };
+
     const triggerAiResponse = useCallback(async (convId: string, messageHistory: Message[]) => {
         try {
             if (!user) {
@@ -150,13 +203,22 @@ export function HomePageContent() {
             const result = await chat(chatInput);
             const aiMessage: Message = { role: 'model', content: result.response };
 
-            setConversations(prev =>
-                prev.map(c =>
-                    c.id === convId
-                        ? { ...c, messages: [...c.messages, aiMessage] }
-                        : c
-                )
-            );
+            // Update State & DB
+            setConversations(prev => {
+                const targetConv = prev.find(c => c.id === convId);
+                if (targetConv) {
+                    const updatedConv = { ...targetConv, messages: [...targetConv.messages, aiMessage], updatedAt: Date.now() };
+                    
+                    // Trigger background save
+                    if (user) {
+                        saveToFirestore(updatedConv);
+                    }
+                    
+                    return prev.map(c => c.id === convId ? updatedConv : c);
+                }
+                return prev;
+            });
+
         } catch (error) {
             console.error('Error calling chat AI:', error);
             const errorMessage: Message = {
@@ -173,7 +235,7 @@ export function HomePageContent() {
         } finally {
             setIsLoading(false);
         }
-    }, [user]); // Removed 'conversations' dependency
+    }, [user]); 
     
     const handleSendMessage = useCallback(async (prompt?: string) => {
         if (!user && sessionMessageCount >= 15) {
@@ -195,25 +257,28 @@ export function HomePageContent() {
         // Get existing messages (or empty if new)
         let existingMessages = currentConv ? currentConv.messages : [];
 
+        let newConversationObj: Conversation | null = null;
+
         // Logic to create new chat if needed
         if (!effectiveConvId || !currentConv || existingMessages.length === 0) {
             const newId = `chat-${Date.now()}`;
             effectiveConvId = newId;
             const newTitle = userMessageContent.split(' ').slice(0, 5).join(' ');
             
-            const newConversation: Conversation = {
+            newConversationObj = {
                 id: newId,
                 title: newTitle,
                 messages: [],
+                updatedAt: Date.now()
             };
             
             if (currentConversationId && existingMessages.length === 0) {
-                 setConversations(prev => prev.map(c => c.id === currentConversationId ? newConversation : c));
+                 // Replace empty current conversation
+                 setConversations(prev => prev.map(c => c.id === currentConversationId ? newConversationObj! : c));
             } else {
-                 setConversations(prev => [newConversation, ...prev]);
+                 setConversations(prev => [newConversationObj!, ...prev]);
             }
             setCurrentConversationId(newId);
-            // Reset existing messages for the new chat
             existingMessages = [];
         }
         
@@ -222,17 +287,32 @@ export function HomePageContent() {
         // Construct the FULL updated history to pass to the AI
         const updatedMessages = [...existingMessages, newUserMessage];
         
+        // Update State & DB for User Message
+        const convToSaveId = effectiveConvId!;
+        const convTitle = newConversationObj ? newConversationObj.title : (currentConv?.title || 'New Chat');
+        
+        const updatedConvForSave: Conversation = {
+            id: convToSaveId,
+            title: convTitle,
+            messages: updatedMessages,
+            updatedAt: Date.now()
+        };
+
         setConversations(prev => {
             return prev.map(c =>
-                c.id === effectiveConvId
-                    ? { ...c, messages: updatedMessages }
+                c.id === convToSaveId
+                    ? updatedConvForSave
                     : c
             );
         });
 
+        if (user) {
+            saveToFirestore(updatedConvForSave);
+        }
+
         setIsLoading(true);
-        // Pass 'updatedMessages' explicitly. This fixes the "AI forgetting" bug.
-        setTimeout(() => triggerAiResponse(effectiveConvId!, updatedMessages), 0);
+        // Pass 'updatedMessages' explicitly
+        setTimeout(() => triggerAiResponse(convToSaveId, updatedMessages), 0);
 
     }, [input, user, sessionMessageCount, currentConversationId, conversations, triggerAiResponse]);
 
@@ -387,8 +467,14 @@ export function HomePageContent() {
             id: newId,
             title: 'New Chat',
             messages: [],
+            updatedAt: Date.now()
         };
         setConversations(prev => [newConversation, ...prev]);
+        
+        if (user) {
+            saveToFirestore(newConversation);
+        }
+
         if (setActive) {
             setCurrentConversationId(newId);
         }
@@ -406,8 +492,17 @@ export function HomePageContent() {
         setIsDeleteDialogOpen(true);
     };
 
-    const confirmDelete = () => {
+    const confirmDelete = async () => {
         if (!conversationToDelete) return;
+
+        // Delete from DB if user logged in
+        if (user) {
+            try {
+                await deleteDoc(doc(db, 'users', user.uid, 'chats', conversationToDelete));
+            } catch (e) {
+                console.error("Failed to delete chat from DB", e);
+            }
+        }
 
         const newConversations = conversations.filter(c => c.id !== conversationToDelete);
         setConversations(newConversations);
