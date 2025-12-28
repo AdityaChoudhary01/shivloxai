@@ -1,4 +1,4 @@
-import type {Config} from 'tailwindcss';
+import type { Config } from 'tailwindcss';
 
 export default {
   darkMode: ['class'],
@@ -10,9 +10,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Poppins', 'sans-serif'],
-        headline: ['Poppins', 'sans-serif'],
-        code: ['monospace'],
+        // Updated to use the new CSS variables from layout.tsx
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-mono)', 'monospace'],
+        // Aliases if you used them in specific places
+        body: ['var(--font-sans)', 'sans-serif'],
+        headline: ['var(--font-sans)', 'sans-serif'],
+        code: ['var(--font-mono)', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',
