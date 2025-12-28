@@ -1,16 +1,19 @@
-
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import { Check, Copy, LoaderCircle } from 'lucide-react';
-import Markdown from 'react-markdown';
-import Image from 'next/image';
-import { Button } from './ui/button';
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { Check, Copy, User } from 'lucide-react';
+import Markdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+
+// --- Types ---
 export type ChatMessageProps = {
   message: {
     role: 'user' | 'model';
@@ -19,106 +22,182 @@ export type ChatMessageProps = {
   isLoading?: boolean;
 };
 
-export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
+// --- Sub-components ---
+
+// 1. Loading Animation (Bouncing Dots)
+const TypingIndicator = () => (
+  <div className="flex space-x-1 p-2">
+    {[0, 1, 2].map((dot) => (
+      <motion.div
+        key={dot}
+        className="h-1.5 w-1.5 rounded-full bg-primary/60"
+        animate={{ y: [0, -4, 0] }}
+        transition={{
+          duration: 0.6,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: dot * 0.15,
+        }}
+      />
+    ))}
+  </div>
+);
+
+// 2. Code Block with Syntax Highlighting & Copy
+const CodeBlock = ({ language, children }: { language: string; children: string }) => {
   const { toast } = useToast();
   const [isCopied, setIsCopied] = useState(false);
-  const messageVariants = {
-    hidden: { opacity: 0, y: 10, scale: 0.95 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.3, ease: 'easeOut' } },
-  };
-
-  const aiAvatarUrl = "https://res.cloudinary.com/dygtsoclj/image/upload/v1760107864/Gemini_Generated_Image_tdm06stdm06stdm0_ymfdnp.png";
 
   const onCopy = () => {
     if (isCopied) return;
-
-    navigator.clipboard.writeText(message.content).then(() => {
-      setIsCopied(true);
-      toast({
-        title: "Copied to clipboard",
-      });
-      setTimeout(() => {
-        setIsCopied(false);
-      }, 2000);
-    });
+    navigator.clipboard.writeText(children);
+    setIsCopied(true);
+    toast({ description: "Code copied to clipboard" });
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
-  if (isLoading) {
-    return (
-      <motion.div
-        variants={messageVariants}
-        initial="hidden"
-        animate="visible"
-        className="flex items-start justify-start gap-3 group"
-      >
-        <Avatar className="h-8 w-8 border-2 border-primary/50">
-            <AvatarImage src={aiAvatarUrl} alt="Shivlox AI" />
-            <AvatarFallback>SA</AvatarFallback>
-        </Avatar>
-        <div className="flex items-center justify-center rounded-lg bg-secondary p-3 text-sm shadow-md">
-          <LoaderCircle className="h-5 w-5 animate-spin text-primary" />
-        </div>
-      </motion.div>
-    );
-  }
+  return (
+    <div className="relative my-4 overflow-hidden rounded-lg border border-border bg-zinc-950">
+      <div className="flex items-center justify-between bg-zinc-900 px-4 py-1.5">
+        <span className="text-xs text-zinc-400 lowercase font-mono">{language || 'code'}</span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 text-zinc-400 hover:text-white hover:bg-zinc-800"
+          onClick={onCopy}
+        >
+          {isCopied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+        </Button>
+      </div>
+      <div className="overflow-x-auto">
+        <SyntaxHighlighter
+            language={language}
+            style={oneDark}
+            customStyle={{ margin: 0, padding: '1rem', fontSize: '0.875rem', background: 'transparent' }}
+            wrapLongLines={true}
+        >
+            {children}
+        </SyntaxHighlighter>
+      </div>
+    </div>
+  );
+};
 
+// --- Main Component ---
+export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
+  const { toast } = useToast();
+  const [isCopied, setIsCopied] = useState(false);
+  
   const isUser = message.role === 'user';
-  const isImage = message.content.startsWith('data:image');
+  // Enhanced image detection (Base64 or URL ending in image ext)
+  const isImage = message.content.startsWith('data:image') || /\.(jpg|jpeg|png|gif|webp)$/i.test(message.content);
+  
+  const aiAvatarUrl = "https://res.cloudinary.com/dygtsoclj/image/upload/v1760107864/Gemini_Generated_Image_tdm06stdm06stdm0_ymfdnp.png";
+
+  const onCopyMessage = () => {
+    if (isCopied) return;
+    navigator.clipboard.writeText(message.content);
+    setIsCopied(true);
+    toast({ description: "Message copied" });
+    setTimeout(() => setIsCopied(false), 2000);
+  };
 
   return (
     <motion.div
-      variants={messageVariants}
-      initial="hidden"
-      animate="visible"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
       className={cn(
-        'flex items-start gap-3 group/message',
-        isUser ? 'justify-end' : 'justify-start'
+        'flex w-full items-start gap-3 py-2',
+        isUser ? 'flex-row-reverse' : 'flex-row'
       )}
     >
-      {!isUser && (
-         <Avatar className="h-8 w-8 border-2 border-primary/50">
-            <AvatarImage src={aiAvatarUrl} alt="Shivlox AI" />
-            <AvatarFallback>SA</AvatarFallback>
-        </Avatar>
-      )}
-      <div
-        className={cn(
-          'max-w-[90%] rounded-xl p-0.5 text-sm sm:max-w-[80%]',
-           isUser 
-            ? 'bg-gradient-to-br from-secondary to-muted' 
-            : 'bg-gradient-to-br from-primary/30 to-accent/30',
+      {/* Avatar */}
+      <Avatar className={cn("h-8 w-8 border shadow-sm", isUser ? "bg-muted" : "bg-primary/5")}>
+        {!isUser ? (
+          <AvatarImage src={aiAvatarUrl} alt="Shivlox AI" className="object-cover" />
+        ) : (
+          <AvatarFallback className="bg-primary/10 text-primary">
+            <User className="h-4 w-4" />
+          </AvatarFallback>
         )}
-      >
-        <div className={cn(
-            'relative rounded-[10px] w-full h-full',
-            isUser ? 'bg-secondary' : 'bg-background',
-            isImage ? 'p-0 overflow-hidden' : 'p-3'
-        )}>
-          {!isImage && (
-             <Button
-                size="icon"
-                variant="ghost"
-                onClick={onCopy}
-                className="absolute top-1 right-1 h-7 w-7 text-muted-foreground opacity-0 transition-opacity group-hover/message:opacity-100"
-              >
-                {isCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-            </Button>
-          )}
+        <AvatarFallback>SA</AvatarFallback>
+      </Avatar>
 
-          {isImage ? (
+      {/* Message Bubble */}
+      <div className={cn(
+        "group/bubble relative max-w-[85%] lg:max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow-sm",
+        isUser 
+          ? "bg-primary text-primary-foreground rounded-tr-sm" 
+          : "bg-background border border-border/60 rounded-tl-sm shadow-sm"
+      )}>
+        
+        {/* Content Area */}
+        {isLoading ? (
+          <TypingIndicator />
+        ) : isImage ? (
+          <div className="relative mt-1 aspect-square max-w-[300px] overflow-hidden rounded-lg border bg-muted">
             <Image
               src={message.content}
-              alt="Generated image"
+              alt="Generated content"
               width={512}
               height={512}
-              className="rounded-lg"
+              className="object-cover"
             />
-          ) : (
-            <article className="prose prose-invert max-w-none">
-              <Markdown>{message.content}</Markdown>
-            </article>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className={cn(
+            "prose prose-sm max-w-none break-words leading-relaxed",
+            // Dark mode and text color adjustments based on role
+            "dark:prose-invert",
+            isUser ? "prose-headings:text-primary-foreground prose-p:text-primary-foreground prose-strong:text-primary-foreground prose-li:text-primary-foreground text-primary-foreground" : "text-foreground"
+          )}>
+            <Markdown
+              components={{
+                // Override code blocks
+                code({ node, inline, className, children, ...props }: any) {
+                  const match = /language-(\w+)/.exec(className || '');
+                  return !inline && match ? (
+                    <CodeBlock language={match[1]}>
+                      {String(children).replace(/\n$/, '')}
+                    </CodeBlock>
+                  ) : (
+                    <code 
+                      className={cn(
+                        "rounded px-1.5 py-0.5 font-mono text-xs font-semibold", 
+                        isUser ? "bg-white/20 text-inherit" : "bg-muted text-foreground"
+                      )} 
+                      {...props}
+                    >
+                      {children}
+                    </code>
+                  );
+                },
+                // Force links to open in new tab
+                a: ({ node, ...props }) => (
+                   <a {...props} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 opacity-90 hover:opacity-100 transition-opacity" />
+                ),
+              }}
+            >
+              {message.content}
+            </Markdown>
+          </div>
+        )}
+
+        {/* Copy Button (Only shows on hover for text messages) */}
+        {!isLoading && !isImage && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onCopyMessage}
+              className={cn(
+                "absolute -bottom-6 h-6 w-6 text-muted-foreground opacity-0 transition-opacity group-hover/bubble:opacity-100",
+                isUser ? "right-0" : "left-0"
+              )}
+            >
+              {isCopied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+            </Button>
+        )}
       </div>
     </motion.div>
   );
