@@ -3,7 +3,7 @@
 import { chat, type ChatInput } from '@/ai/flows/chat';
 import { processAudio } from '@/ai/flows/process-audio';
 import { summarizeConversation } from '@/ai/flows/summarize-conversation';
-import { ChatMessage, type ChatMessageProps } from '@/components/chat-message';
+import { ChatMessage } from '@/components/chat-message';
 import { ShivloxIcon } from '@/components/shivlox-icon';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -11,9 +11,9 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { 
     ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, 
-    Trash2, BookText, Sparkles, Zap, Shield, Brain, Code, PenTool, Globe, 
+    Trash2, BookText, Sparkles, Brain, Code, PenTool, Globe, 
     ExternalLink, Layers, GraduationCap, BookOpen, Heart,
-    Info, FileText, Lock, Mail, ChevronRight, Cpu
+    Cpu, Shield, Mail
 } from 'lucide-react';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import Link from 'next/link';
 
-// Use strict type for local message
+// Strict types
 type Message = {
     role: 'user' | 'model';
     content: string;
@@ -55,9 +55,6 @@ export function HomePageContent() {
     const [initialPrompts, setInitialPrompts] = useState<string[]>([]);
     const [allPrompts, setAllPrompts] = useState<string[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-
-    // FIX: Ref to track if we should animate the latest message.
-    // Starts false so history doesn't animate on refresh.
     const shouldAnimateRef = useRef(false);
 
     const [isRecording, setIsRecording] = useState(false);
@@ -71,8 +68,9 @@ export function HomePageContent() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
 
+    // --- STATIC PROMPT POOL LOGIC ---
     useEffect(() => {
-        const staticPrompts = [
+        const promptPool = [
             "Explain the theory of relativity like I'm 5",
             "Debug this React useEffect code snippet",
             "Write a creative blog post about AI trends in 2025",
@@ -80,22 +78,42 @@ export function HomePageContent() {
             "Suggest 5 unique dinner recipes with chicken",
             "How do I center a div using Tailwind CSS?",
             "Analyze the pros and cons of remote work",
-            "Generate a Python script to scrape a website"
+            "Generate a Python script to scrape a website",
+            "Explain the difference between SQL and NoSQL",
+            "Write a regex to validate an email address",
+            "Design a database schema for an e-commerce app",
+            "Explain concept of 'closure' in JavaScript",
+            "Write a professional email rescheduling a meeting",
+            "Generate a Dockerfile for a Next.js application",
+            "Suggest 3 underrated travel destinations in Asia",
+            "Explain Quantum Computing in simple terms",
+            "Write a short story about a time-traveling developer",
+            "How to optimize a React app for performance?",
+            "Create a study schedule for learning Python",
+            "Explain the SOLID principles in software design"
         ];
-        setAllPrompts(staticPrompts);
-        const shuffled = [...staticPrompts].sort(() => 0.5 - Math.random());
+        
+        setAllPrompts(promptPool);
+        
+        // Randomly shuffle and pick 4
+        const shuffled = [...promptPool].sort(() => 0.5 - Math.random());
         setInitialPrompts(shuffled.slice(0, 4));
     }, []);
 
     useEffect(() => {
         const savedConversations = localStorage.getItem('chatHistory');
         if (savedConversations) {
-            const parsedConversations = JSON.parse(savedConversations);
-            setConversations(parsedConversations);
-            if (parsedConversations.length > 0) {
-                setCurrentConversationId(parsedConversations[0].id);
-            } else {
-                startNewChat(false); // Don't animate creation on load
+            try {
+                const parsedConversations = JSON.parse(savedConversations);
+                setConversations(parsedConversations);
+                if (parsedConversations.length > 0) {
+                    setCurrentConversationId(parsedConversations[0].id);
+                } else {
+                    startNewChat(false);
+                }
+            } catch (e) {
+                console.error("Failed to parse history", e);
+                startNewChat(false);
             }
         } else {
             startNewChat(false);
@@ -116,20 +134,25 @@ export function HomePageContent() {
 
     const currentMessages = conversations.find(c => c.id === currentConversationId)?.messages || [];
     
-    const triggerAiResponse = useCallback(async (convId: string, messageContent: string) => {
+    // REFACTORED: Now accepts the message history explicitly to avoid stale state
+    const triggerAiResponse = useCallback(async (convId: string, messageHistory: Message[]) => {
         try {
             if (!user) {
                 setSessionMessageCount(prev => prev + 1);
             }
 
-            const currentConv = conversations.find(c => c.id === convId);
-            const historyForApi = (currentConv?.messages || []).filter(m => m.role !== 'user' || m.content !== messageContent);
-            const fullHistoryForApi = [...historyForApi, { role: 'user' as const, content: messageContent }];
+            // Prepare history for API (excluding the very last message which is the prompt)
+            const prompt = messageHistory[messageHistory.length - 1].content;
+            const history = messageHistory.slice(0, -1).map(m => ({
+                role: m.role,
+                content: m.content
+            }));
 
             const chatInput: ChatInput = { 
-                history: fullHistoryForApi.slice(0, -1).map(m => ({ role: m.role as 'user' | 'model', content: m.content })),
-                prompt: messageContent 
+                history,
+                prompt 
             };
+            
             const result = await chat(chatInput);
             const aiMessage: Message = { role: 'model', content: result.response };
 
@@ -156,7 +179,7 @@ export function HomePageContent() {
         } finally {
             setIsLoading(false);
         }
-    }, [user, conversations]);
+    }, [user]); 
     
     const handleSendMessage = useCallback(async (prompt?: string) => {
         if (!user && sessionMessageCount >= 15) {
@@ -171,43 +194,52 @@ export function HomePageContent() {
             setInput('');
         }
 
-        // FIX: Enable animation for this interaction
         shouldAnimateRef.current = true;
 
         let effectiveConvId = currentConversationId;
-        const isCurrentChatEmpty = (conversations.find(c => c.id === effectiveConvId)?.messages.length || 0) === 0;
+        const currentConv = conversations.find(c => c.id === effectiveConvId);
+        
+        // Safety check: ensure messages array exists
+        let existingMessages = currentConv ? currentConv.messages : [];
 
-        if (!effectiveConvId || isCurrentChatEmpty) {
+        // Logic to create new chat if needed
+        if (!effectiveConvId || !currentConv || existingMessages.length === 0) {
             const newId = `chat-${Date.now()}`;
+            effectiveConvId = newId;
             const newTitle = userMessageContent.split(' ').slice(0, 5).join(' ');
+            
             const newConversation: Conversation = {
                 id: newId,
                 title: newTitle,
                 messages: [],
             };
-             
-            if (isCurrentChatEmpty && effectiveConvId) {
-                setConversations(prev => prev.map(c => c.id === effectiveConvId ? { ...newConversation, messages: c.messages } : c));
+            
+            // If we are "replacing" an empty current chat
+            if (currentConversationId && existingMessages.length === 0) {
+                 setConversations(prev => prev.map(c => c.id === currentConversationId ? newConversation : c));
             } else {
-                setConversations(prev => [newConversation, ...prev.filter(c => c.messages.length > 0)]);
+                 setConversations(prev => [newConversation, ...prev]);
             }
-
             setCurrentConversationId(newId);
-            effectiveConvId = newId;
+            existingMessages = []; // It's a new chat, so history is empty
         }
         
         const newUserMessage: Message = { role: 'user', content: userMessageContent };
+        const updatedMessages = [...existingMessages, newUserMessage];
         
+        // Optimistic Update
         setConversations(prev => {
             return prev.map(c =>
                 c.id === effectiveConvId
-                    ? { ...c, messages: [...c.messages, newUserMessage] }
+                    ? { ...c, messages: updatedMessages }
                     : c
             );
         });
 
         setIsLoading(true);
-        setTimeout(() => triggerAiResponse(effectiveConvId!, userMessageContent), 0);
+        
+        // Pass the calculated 'updatedMessages' directly to avoid undefined role errors
+        setTimeout(() => triggerAiResponse(effectiveConvId!, updatedMessages), 0);
 
     }, [input, user, sessionMessageCount, currentConversationId, conversations, triggerAiResponse]);
 
@@ -311,14 +343,12 @@ export function HomePageContent() {
         if (setActive) {
             setCurrentConversationId(newId);
         }
-        // FIX: Reset animation flag when starting new chat
         shouldAnimateRef.current = false;
         return newId;
     }
 
     const switchChat = (id: string) => {
         setCurrentConversationId(id);
-        // FIX: Reset animation flag when switching chats so old messages don't type
         shouldAnimateRef.current = false;
     }
 
@@ -343,7 +373,6 @@ export function HomePageContent() {
         
         setConversationToDelete(null);
         setIsDeleteDialogOpen(false);
-        // FIX: Reset animation flag after delete action
         shouldAnimateRef.current = false; 
         toast({
             title: "Chat Deleted",
@@ -425,7 +454,7 @@ export function HomePageContent() {
                              {conversations.map((conv) => (
                                 <SidebarMenuItem key={conv.id} className="group">
                                     <div
-                                    onClick={() => switchChat(conv.id)} // FIX: Use wrapper to reset animation
+                                    onClick={() => switchChat(conv.id)}
                                     className={cn(
                                         "flex items-center w-full rounded-md px-2 py-1.5 cursor-pointer transition-colors justify-between",
                                         currentConversationId === conv.id
@@ -725,11 +754,10 @@ export function HomePageContent() {
                                         <ChatMessage 
                                             key={index} 
                                             message={msg} 
-                                            // FIX: Only animate if it's the last message AND the user has just interacted
                                             isLatest={index === currentMessages.length - 1 && shouldAnimateRef.current} 
                                         />
                                     ))}
-                                    {isLoading && <ChatMessage isLoading />}
+                                    {isLoading && <ChatMessage isLoading message={{ role: 'model', content: '' }} />}
                                     <div ref={messagesEndRef} />
                                 </div>
                             )}
