@@ -3,18 +3,17 @@
 import { chat, type ChatInput } from '@/ai/flows/chat';
 import { processAudio } from '@/ai/flows/process-audio';
 import { summarizeConversation } from '@/ai/flows/summarize-conversation';
-import { ChatMessage } from '@/components/chat-message';
+import { ChatMessage, type ChatMessageProps } from '@/components/chat-message';
 import { ShivloxIcon } from '@/components/shivlox-icon';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-// FIX: Added 'Zap' to the imports below
 import { 
     ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, 
-    Trash2, BookText, Sparkles, Brain, Code, PenTool, Globe, 
+    Trash2, BookText, Sparkles, Zap, Shield, Brain, Code, PenTool, Globe, 
     ExternalLink, Layers, GraduationCap, BookOpen, Heart,
-    Cpu, Shield, Mail, Zap
+    Info, FileText, Lock, Mail, ChevronRight, Cpu
 } from 'lucide-react';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -35,7 +34,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import Link from 'next/link';
 
-// Strict types
+// Use strict type for local message
 type Message = {
     role: 'user' | 'model';
     content: string;
@@ -59,8 +58,16 @@ export function HomePageContent() {
     const shouldAnimateRef = useRef(false);
 
     const [isRecording, setIsRecording] = useState(false);
+    
+    // --- AUDIO & SILENCE DETECTION REFS ---
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
+    const audioContextRef = useRef<AudioContext | null>(null);
+    const analyserRef = useRef<AnalyserNode | null>(null);
+    const silenceStartRef = useRef<number>(Date.now());
+    const animationFrameRef = useRef<number | null>(null);
+    const streamRef = useRef<MediaStream | null>(null);
+
     const { toast } = useToast();
     const { user } = useAuth();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -69,9 +76,8 @@ export function HomePageContent() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
 
-    // --- STATIC PROMPT POOL LOGIC ---
     useEffect(() => {
-        const promptPool = [
+        const staticPrompts = [
             "Explain the theory of relativity like I'm 5",
             "Debug this React useEffect code snippet",
             "Write a creative blog post about AI trends in 2025",
@@ -79,24 +85,10 @@ export function HomePageContent() {
             "Suggest 5 unique dinner recipes with chicken",
             "How do I center a div using Tailwind CSS?",
             "Analyze the pros and cons of remote work",
-            "Generate a Python script to scrape a website",
-            "Explain the difference between SQL and NoSQL",
-            "Write a regex to validate an email address",
-            "Design a database schema for an e-commerce app",
-            "Explain concept of 'closure' in JavaScript",
-            "Write a professional email rescheduling a meeting",
-            "Generate a Dockerfile for a Next.js application",
-            "Suggest 3 underrated travel destinations in Asia",
-            "Explain Quantum Computing in simple terms",
-            "Write a short story about a time-traveling developer",
-            "How to optimize a React app for performance?",
-            "Create a study schedule for learning Python",
-            "Explain the SOLID principles in software design"
+            "Generate a Python script to scrape a website"
         ];
-        
-        setAllPrompts(promptPool);
-        
-        const shuffled = [...promptPool].sort(() => 0.5 - Math.random());
+        setAllPrompts(staticPrompts);
+        const shuffled = [...staticPrompts].sort(() => 0.5 - Math.random());
         setInitialPrompts(shuffled.slice(0, 4));
     }, []);
 
@@ -134,23 +126,20 @@ export function HomePageContent() {
 
     const currentMessages = conversations.find(c => c.id === currentConversationId)?.messages || [];
     
-    const triggerAiResponse = useCallback(async (convId: string, messageHistory: Message[]) => {
+    const triggerAiResponse = useCallback(async (convId: string, messageContent: string) => {
         try {
             if (!user) {
                 setSessionMessageCount(prev => prev + 1);
             }
 
-            const prompt = messageHistory[messageHistory.length - 1].content;
-            const history = messageHistory.slice(0, -1).map(m => ({
-                role: m.role,
-                content: m.content
-            }));
+            const currentConv = conversations.find(c => c.id === convId);
+            const historyForApi = (currentConv?.messages || []).filter(m => m.role !== 'user' || m.content !== messageContent);
+            const fullHistoryForApi = [...historyForApi, { role: 'user' as const, content: messageContent }];
 
             const chatInput: ChatInput = { 
-                history,
-                prompt 
+                history: fullHistoryForApi.slice(0, -1).map(m => ({ role: m.role as 'user' | 'model', content: m.content })),
+                prompt: messageContent 
             };
-            
             const result = await chat(chatInput);
             const aiMessage: Message = { role: 'model', content: result.response };
 
@@ -177,7 +166,7 @@ export function HomePageContent() {
         } finally {
             setIsLoading(false);
         }
-    }, [user]); 
+    }, [user, conversations]);
     
     const handleSendMessage = useCallback(async (prompt?: string) => {
         if (!user && sessionMessageCount >= 15) {
@@ -195,42 +184,39 @@ export function HomePageContent() {
         shouldAnimateRef.current = true;
 
         let effectiveConvId = currentConversationId;
-        const currentConv = conversations.find(c => c.id === effectiveConvId);
-        let existingMessages = currentConv ? currentConv.messages : [];
+        const isCurrentChatEmpty = (conversations.find(c => c.id === effectiveConvId)?.messages.length || 0) === 0;
 
-        if (!effectiveConvId || !currentConv || existingMessages.length === 0) {
+        if (!effectiveConvId || isCurrentChatEmpty) {
             const newId = `chat-${Date.now()}`;
-            effectiveConvId = newId;
             const newTitle = userMessageContent.split(' ').slice(0, 5).join(' ');
-            
             const newConversation: Conversation = {
                 id: newId,
                 title: newTitle,
                 messages: [],
             };
-            
-            if (currentConversationId && existingMessages.length === 0) {
-                 setConversations(prev => prev.map(c => c.id === currentConversationId ? newConversation : c));
+             
+            if (isCurrentChatEmpty && effectiveConvId) {
+                setConversations(prev => prev.map(c => c.id === effectiveConvId ? { ...newConversation, messages: c.messages } : c));
             } else {
-                 setConversations(prev => [newConversation, ...prev]);
+                setConversations(prev => [newConversation, ...prev.filter(c => c.messages.length > 0)]);
             }
+
             setCurrentConversationId(newId);
-            existingMessages = [];
+            effectiveConvId = newId;
         }
         
         const newUserMessage: Message = { role: 'user', content: userMessageContent };
-        const updatedMessages = [...existingMessages, newUserMessage];
         
         setConversations(prev => {
             return prev.map(c =>
                 c.id === effectiveConvId
-                    ? { ...c, messages: updatedMessages }
+                    ? { ...c, messages: [...c.messages, newUserMessage] }
                     : c
             );
         });
 
         setIsLoading(true);
-        setTimeout(() => triggerAiResponse(effectiveConvId!, updatedMessages), 0);
+        setTimeout(() => triggerAiResponse(effectiveConvId!, userMessageContent), 0);
 
     }, [input, user, sessionMessageCount, currentConversationId, conversations, triggerAiResponse]);
 
@@ -258,9 +244,73 @@ export function HomePageContent() {
         }),
     };
 
+    // --- ENHANCED AUDIO RECORDING LOGIC ---
+
+    const stopRecording = useCallback(() => {
+        // 1. Stop MediaRecorder
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+            mediaRecorderRef.current.stop();
+        }
+        
+        // 2. Stop Animation Loop
+        if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = null;
+        }
+
+        // 3. Close Audio Context
+        if (audioContextRef.current) {
+            audioContextRef.current.close();
+            audioContextRef.current = null;
+        }
+
+        // 4. Stop all tracks in the stream to turn off the mic light
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+
+        setIsRecording(false);
+    }, []);
+
+    const detectSilence = () => {
+        if (!analyserRef.current) return;
+
+        const bufferLength = analyserRef.current.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        analyserRef.current.getByteFrequencyData(dataArray);
+
+        // Calculate average volume
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+            sum += dataArray[i];
+        }
+        const average = sum / bufferLength;
+
+        // Threshold for silence (adjustable, 10 is usually good for identifying speech vs room tone)
+        const silenceThreshold = 10; 
+
+        if (average > silenceThreshold) {
+            // Sound detected, reset timer
+            silenceStartRef.current = Date.now();
+        } else {
+            // Silence detected, check duration
+            const silenceDuration = Date.now() - silenceStartRef.current;
+            if (silenceDuration > 2000) { // 2 seconds of silence
+                stopRecording();
+                return; // Stop loop
+            }
+        }
+
+        animationFrameRef.current = requestAnimationFrame(detectSilence);
+    };
+
     const startRecording = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            streamRef.current = stream;
+
+            // --- 1. Setup MediaRecorder ---
             mediaRecorderRef.current = new MediaRecorder(stream);
             audioChunksRef.current = [];
 
@@ -270,6 +320,9 @@ export function HomePageContent() {
 
             mediaRecorderRef.current.onstop = async () => {
                 const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                // Check if blob is empty (short click)
+                if (audioBlob.size === 0) return;
+
                 const reader = new FileReader();
                 reader.readAsDataURL(audioBlob);
                 reader.onloadend = async () => {
@@ -277,7 +330,11 @@ export function HomePageContent() {
                     try {
                         setIsLoading(true);
                         const { transcript } = await processAudio({ audioDataUri: base64Audio });
-                        setInput(transcript);
+                        
+                        // AUTO-SEND LOGIC:
+                        if (transcript && transcript.trim().length > 0) {
+                            handleSendMessage(transcript);
+                        }
                     } catch (error) {
                         console.error('Error processing audio:', error);
                         toast({
@@ -293,6 +350,19 @@ export function HomePageContent() {
 
             mediaRecorderRef.current.start();
             setIsRecording(true);
+
+            // --- 2. Setup Silence Detection ---
+            const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+            audioContextRef.current = new AudioContextClass();
+            analyserRef.current = audioContextRef.current.createAnalyser();
+            analyserRef.current.fftSize = 256;
+            
+            const source = audioContextRef.current.createMediaStreamSource(stream);
+            source.connect(analyserRef.current);
+            
+            silenceStartRef.current = Date.now();
+            detectSilence(); // Start loop
+
         } catch (error) {
             console.error('Error starting recording:', error);
             toast({
@@ -300,13 +370,6 @@ export function HomePageContent() {
                 description: 'Could not access the microphone. Please check your permissions.',
                 variant: 'destructive',
             });
-        }
-    };
-
-    const stopRecording = () => {
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-            mediaRecorderRef.current.stop();
-            setIsRecording(false);
         }
     };
 
@@ -445,7 +508,7 @@ export function HomePageContent() {
                              {conversations.map((conv) => (
                                 <SidebarMenuItem key={conv.id} className="group">
                                     <div
-                                    onClick={() => switchChat(conv.id)}
+                                    onClick={() => switchChat(conv.id)} 
                                     className={cn(
                                         "flex items-center w-full rounded-md px-2 py-1.5 cursor-pointer transition-colors justify-between",
                                         currentConversationId === conv.id
@@ -514,7 +577,7 @@ export function HomePageContent() {
                 </Sidebar>
 
                 <main className="flex flex-1 flex-col overflow-hidden w-full relative bg-transparent">
-                    <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/5 bg-background/20 backdrop-blur-xl px-4 shadow-sm z-30 sticky top-0">
+                    <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/5 bg-background/20 backdrop-blur-xl px-4 shadow-sm z-10 sticky top-0">
                         <div className="flex items-center gap-2">
                             <SidebarTrigger />
                         </div>
@@ -537,9 +600,9 @@ export function HomePageContent() {
                         </div>
                     </header>
 
-                    <div className="flex-1 overflow-y-auto flex flex-col w-full scroll-smooth">
+                    <div className="flex-1 overflow-y-auto flex flex-col relative w-full scroll-smooth">
                         {currentMessages.length === 0 && !isLoading ? (
-                                <div className="flex flex-1 flex-col items-center justify-start pt-20 pb-10 text-center px-4">
+                                <div className="flex flex-1 flex-col items-center justify-start pt-20 pb-32 text-center px-4">
                                     <motion.div
                                         initial={{ scale: 0, rotate: -45 }}
                                         animate={{ scale: 1, rotate: 0 }}
@@ -740,7 +803,7 @@ export function HomePageContent() {
                                     </motion.div>
                                 </div>
                             ) : (
-                                <div className="mx-auto w-full max-w-4xl flex-1 space-y-6 p-4 md:p-6 flex flex-col pb-4">
+                                <div className="mx-auto w-full max-w-4xl flex-1 space-y-6 p-4 md:p-6 flex flex-col pb-32">
                                     {currentMessages.map((msg, index) => (
                                         <ChatMessage 
                                             key={index} 
@@ -750,18 +813,18 @@ export function HomePageContent() {
                                         />
                                     ))}
                                     {isLoading && <ChatMessage isLoading message={{ role: 'model', content: '' }} />}
-                                    <div ref={messagesEndRef} className="h-px w-full" />
+                                    <div ref={messagesEndRef} />
                                 </div>
                             )}
                     </div>
                     
-                    <div className="shrink-0 z-20 w-full p-4 bg-transparent">
-                        <motion.div
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ duration: 0.5, ease: 'easeOut' }}
-                            className="mx-auto w-full max-w-3xl"
-                        >
+                    <motion.div
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ duration: 0.5, ease: 'easeOut' }}
+                        className="absolute bottom-0 left-0 right-0 p-4 z-20"
+                    >
+                        <div className="mx-auto w-full max-w-3xl">
                             <form
                                 onSubmit={handleFormSubmit}
                                 id="chat-input" 
@@ -801,7 +864,7 @@ export function HomePageContent() {
                                 <TextareaAutosize
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
-                                    placeholder={isRecording ? 'Recording...' : 'Ask Shivlox AI anything...'}
+                                    placeholder={isRecording ? 'Listening...' : 'Ask Shivlox AI anything...'}
                                     className="flex-1 resize-none border-none bg-transparent py-2.5 text-base shadow-none focus-visible:ring-0 focus:outline-none text-white placeholder:text-muted-foreground/50"
                                     onKeyDown={handleKeyDown}
                                     disabled={isLoading || isRecording}
@@ -822,8 +885,8 @@ export function HomePageContent() {
                                     )}
                                 </Button>
                             </form>
-                        </motion.div>
-                    </div>
+                        </div>
+                    </motion.div>
                 </main>
             </div>
         </SidebarProvider>
