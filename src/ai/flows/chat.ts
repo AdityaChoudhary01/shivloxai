@@ -41,41 +41,33 @@ const chatFlow = ai.defineFlow(
         return { response: imageUrl };
       }
 
-      /* -------- SYSTEM PROMPT -------- */
+      /* -------- SYSTEM PROMPT (UPDATED) -------- */
       const systemPrompt = `
 You are Shivlox AI, a helpful and modern AI assistant.
 
 RULES:
 - Be helpful, accurate, and engaging.
 - Use markdown and emojis (✨, 🚀).
-- You have FULL access to the conversation history.
+- MEMORY & CONTEXT: You have access to the conversation history. 
+- CRITICAL: If the user asks "Who am I?" or "What is my name?", check the chat history. If they told you their name previously, YOU MUST answer with it. Do not give a generic privacy refusal if the info is right there in the chat.
 - Use previous messages to answer follow-up questions.
       `.trim();
 
       /* -------- DEBUG -------- */
-      // This helps you see in the terminal exactly what the AI is receiving
-      console.log('[Chat] New Prompt:', input.prompt);
-      console.log('[Chat] History Count:', input.history.length);
+      console.log('[Chat] Prompt:', input.prompt);
+      console.log('[Chat] History received:', input.history.length);
 
-      /* -------- ✅ CORRECT HISTORY TRANSFORM -------- */
-      // We map the input history to the format Genkit expects.
-      // We do NOT slice it here. We trust the client sent us the right context.
+      /* -------- HISTORY TRANSFORM -------- */
       const history = input.history.map((msg) => ({
-        role: msg.role === 'user' ? 'user' : 'model', // Explicitly cast for safety
+        role: msg.role === 'user' ? 'user' : 'model',
         content: [{ text: msg.content }],
       }));
-
-      // Log the last message in history to verify continuity (optional debug)
-      if (history.length > 0) {
-        const lastMsg = history[history.length - 1];
-        console.log(`[Chat] Last History Item: [${lastMsg.role}] ${lastMsg.content[0].text.substring(0, 30)}...`);
-      }
 
       /* -------- GENERATE -------- */
       const resp = await ai.generate({
         system: systemPrompt,
         prompt: input.prompt,
-        history: history as any, // Cast to any to bypass strict version mismatches
+        history: history as any,
         config: {
           temperature: 0.7,
         },
