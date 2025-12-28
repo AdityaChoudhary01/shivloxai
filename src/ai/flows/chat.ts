@@ -26,6 +26,7 @@ const chatFlow = ai.defineFlow(
   },
   async (input) => {
     try {
+      // 1. Image Generation Handler
       if (input.prompt.startsWith('/imagine ')) {
         const imagePrompt = input.prompt.replace('/imagine ', '');
         const { imageUrl } = await generateImage({ prompt: imagePrompt });
@@ -40,13 +41,17 @@ RULES:
 - Use emojis to make the conversation more lively and visually appealing. For example: ✨, 🚀, 👍.
 - Structure longer answers with clear headings and paragraphs to improve readability.`;
 
+      // 2. Safe History Construction (Limit to last 40 messages)
+      // This prevents context window overflow on long chats.
+      const safeHistory = input.history.slice(-40).map(msg => ({
+          role: msg.role as 'user' | 'model',
+          content: [{ text: msg.content || '' }] // Handle potential empty content
+      }));
+
       const history = [
         { role: 'user' as const, content: [{ text: systemPrompt }] },
         { role: 'model' as const, content: [{ text: "Okay, I'm ready to chat! How can I help you today? ✨" }] },
-        ...input.history.map(msg => ({
-          role: msg.role as 'user' | 'model',
-          content: [{ text: msg.content }]
-        })),
+        ...safeHistory
       ];
 
       const resp = await ai.generate({
@@ -54,14 +59,12 @@ RULES:
         history,
       });
 
-      // FIX: Safely handle the response text
-      const textResponse = resp.text || "I'm sorry, I couldn't generate a response. (Safety block or empty output)";
+      const textResponse = resp.text || "I'm sorry, I couldn't generate a response.";
 
       return { response: textResponse };
 
     } catch (error: any) {
       console.error("Server Action Error in chatFlow:", error);
-      // Return a safe error message to the client instead of crashing
       return { response: `Error: ${error.message || 'Something went wrong on the server.'}` };
     }
   }
