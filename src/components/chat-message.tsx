@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { Check, Copy, User, Sparkles } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'; // Classic VS Code Dark theme
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -21,10 +21,11 @@ export type ChatMessageProps = {
   };
   isLoading?: boolean;
   isLatest?: boolean; 
+  userAvatar?: string | null;
 };
 
 // --- Configuration ---
-const TYPING_SPEED = 2; // Slightly smoother speed
+const TYPING_SPEED = 5; 
 
 // --- Sub-components ---
 
@@ -89,7 +90,7 @@ const CodeBlock = ({ language, children }: { language: string; children: string 
 };
 
 // --- Main Component ---
-export function ChatMessage({ message, isLoading = false, isLatest = false }: ChatMessageProps) {
+export function ChatMessage({ message, isLoading = false, isLatest = false, userAvatar }: ChatMessageProps) {
   const { toast } = useToast();
   const [isCopied, setIsCopied] = useState(false);
   const [displayedContent, setDisplayedContent] = useState('');
@@ -101,18 +102,21 @@ export function ChatMessage({ message, isLoading = false, isLatest = false }: Ch
 
   // --- Typing Effect Logic ---
   useEffect(() => {
+    // If it's the user, an image, loading, or NOT the latest message -> show full text immediately
     if (isUser || isImage || isLoading || !isLatest) {
       setDisplayedContent(message.content);
       return;
     }
 
+    // Reset if content changed (e.g. new streaming token arrived)
     if (!message.content.startsWith(displayedContent) && displayedContent !== '') {
         setDisplayedContent('');
     }
 
+    // If finished typing, stop
     if (displayedContent.length === message.content.length) return;
 
-    // Use a slightly more organic random variation if desired, but fixed speed is smoother for reading
+    // Type writer speed
     const timeoutId = setTimeout(() => {
       setDisplayedContent((prev) => message.content.slice(0, prev.length + 3)); 
     }, TYPING_SPEED);
@@ -146,9 +150,12 @@ export function ChatMessage({ message, isLoading = false, isLatest = false }: Ch
         {!isUser ? (
           <AvatarImage src={aiAvatarUrl} alt="AI" className="object-cover" />
         ) : (
-          <AvatarFallback className="bg-primary/10 text-primary">
-            <User className="h-4 w-4" />
-          </AvatarFallback>
+          <>
+            {userAvatar && <AvatarImage src={userAvatar} alt="User" className="object-cover" />}
+            <AvatarFallback className="bg-primary/10 text-primary">
+                <User className="h-4 w-4" />
+            </AvatarFallback>
+          </>
         )}
         <AvatarFallback>AI</AvatarFallback>
       </Avatar>
@@ -176,15 +183,15 @@ export function ChatMessage({ message, isLoading = false, isLatest = false }: Ch
         ) : (
           <div className={cn(
             "prose prose-sm max-w-none break-words leading-7 tracking-wide",
-            "font-sans", // Explicitly use the new font-sans
+            "font-sans", 
             "dark:prose-invert",
             isUser 
                 ? "prose-headings:text-primary-foreground prose-p:text-primary-foreground prose-strong:text-primary-foreground prose-li:text-primary-foreground text-primary-foreground" 
-                : "text-foreground prose-headings:font-semibold prose-h1:text-xl prose-h2:text-lg prose-p:text-muted-foreground prose-strong:text-foreground"
+                // UPDATED: Added prose-headings:text-foreground to force visibility
+                : "text-foreground prose-headings:text-foreground prose-headings:font-semibold prose-h1:text-xl prose-h2:text-lg prose-p:text-muted-foreground prose-strong:text-foreground"
           )}>
             <Markdown
               components={{
-                // Enhanced Code Block
                 code({ node, inline, className, children, ...props }: any) {
                   const match = /language-(\w+)/.exec(className || '');
                   return !inline && match ? (
@@ -205,7 +212,6 @@ export function ChatMessage({ message, isLoading = false, isLatest = false }: Ch
                     </code>
                   );
                 },
-                // Styled Links
                 a: ({ node, ...props }) => (
                    <a 
                      {...props} 
@@ -214,7 +220,6 @@ export function ChatMessage({ message, isLoading = false, isLatest = false }: Ch
                      className="font-medium underline underline-offset-4 decoration-primary/50 hover:decoration-primary transition-colors" 
                    />
                 ),
-                // Styled blockquotes
                 blockquote: ({ node, ...props }) => (
                     <blockquote className="border-l-4 border-primary/30 pl-4 italic text-muted-foreground" {...props} />
                 )
@@ -225,7 +230,7 @@ export function ChatMessage({ message, isLoading = false, isLatest = false }: Ch
           </div>
         )}
 
-        {/* Copy Button (Subtle & Modern) */}
+        {/* Copy Button */}
         {!isLoading && !isImage && (
             <div className={cn(
                 "absolute -bottom-5 opacity-0 transition-opacity duration-300 group-hover/bubble:opacity-100",
