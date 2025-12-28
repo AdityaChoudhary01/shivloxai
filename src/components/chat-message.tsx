@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Check, Copy, User, RefreshCw } from 'lucide-react';
+import { Check, Copy, User } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -20,16 +20,15 @@ export type ChatMessageProps = {
     content: string;
   };
   isLoading?: boolean;
+  // This prop is crucial to stop old messages from re-animating
+  isLatest?: boolean; 
 };
 
 // --- Configuration ---
-// Speed in ms. Lower is faster. 
-// 10ms is standard typewriter, 3ms is "fast AI" feel.
-const TYPING_SPEED = 3; 
+const TYPING_SPEED = 2; 
 
 // --- Sub-components ---
 
-// 1. Loading Animation (Bouncing Dots)
 const TypingIndicator = () => (
   <div className="flex space-x-1 p-2">
     {[0, 1, 2].map((dot) => (
@@ -48,7 +47,6 @@ const TypingIndicator = () => (
   </div>
 );
 
-// 2. Code Block with Syntax Highlighting & Copy
 const CodeBlock = ({ language, children }: { language: string; children: string }) => {
   const { toast } = useToast();
   const [isCopied, setIsCopied] = useState(false);
@@ -89,41 +87,37 @@ const CodeBlock = ({ language, children }: { language: string; children: string 
 };
 
 // --- Main Component ---
-export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
+export function ChatMessage({ message, isLoading = false, isLatest = false }: ChatMessageProps) {
   const { toast } = useToast();
   const [isCopied, setIsCopied] = useState(false);
   const [displayedContent, setDisplayedContent] = useState('');
   
   const isUser = message.role === 'user';
-  // Enhanced image detection
   const isImage = message.content.startsWith('data:image') || /\.(jpg|jpeg|png|gif|webp)$/i.test(message.content);
   
   const aiAvatarUrl = "https://res.cloudinary.com/dygtsoclj/image/upload/v1760107864/Gemini_Generated_Image_tdm06stdm06stdm0_ymfdnp.png";
 
   // --- Typing Effect Logic ---
   useEffect(() => {
-    // If it's the user, an image, or loading, show immediately/nothing
-    if (isUser || isImage || isLoading) {
+    // STOP RE-TYPING: If it's not the latest message, show full content immediately
+    if (isUser || isImage || isLoading || !isLatest) {
       setDisplayedContent(message.content);
       return;
     }
 
-    // Reset if content changes dramatically (new message)
+    // Reset logic for strictly new, streaming messages
     if (!message.content.startsWith(displayedContent) && displayedContent !== '') {
         setDisplayedContent('');
     }
 
-    // If we have finished typing, stop
     if (displayedContent.length === message.content.length) return;
 
-    // Fast Forward logic: if the user switches tabs or it lags, catch up slightly
-    // but for smooth typing, we use a simple interval
     const timeoutId = setTimeout(() => {
-      setDisplayedContent((prev) => message.content.slice(0, prev.length + 2)); // +2 chars for extra speed
+      setDisplayedContent((prev) => message.content.slice(0, prev.length + 2)); 
     }, TYPING_SPEED);
 
     return () => clearTimeout(timeoutId);
-  }, [message.content, displayedContent, isUser, isImage, isLoading]);
+  }, [message.content, displayedContent, isUser, isImage, isLoading, isLatest]);
 
   const onCopyMessage = () => {
     if (isCopied) return;
@@ -135,7 +129,8 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      // STOP ANIMATION ON REFRESH: Only animate if it is the latest message
+      initial={isLatest ? { opacity: 0, y: 10 } : { opacity: 1, y: 0 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       className={cn(
@@ -143,17 +138,22 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
         isUser ? 'flex-row-reverse' : 'flex-row'
       )}
     >
-      {/* Avatar */}
-      <Avatar className={cn("h-8 w-8 border shadow-sm", isUser ? "bg-muted" : "bg-primary/5")}>
-        {!isUser ? (
-          <AvatarImage src={aiAvatarUrl} alt="Shivlox AI" className="object-cover" />
-        ) : (
-          <AvatarFallback className="bg-primary/10 text-primary">
-            <User className="h-4 w-4" />
-          </AvatarFallback>
-        )}
-        <AvatarFallback>SA</AvatarFallback>
-      </Avatar>
+      {/* AI Avatar (Left Side) */}
+      {!isUser && (
+        <Avatar className="h-8 w-8 border shadow-sm bg-primary/5">
+            <AvatarImage src={aiAvatarUrl} alt="Shivlox AI" className="object-cover" />
+            <AvatarFallback>SA</AvatarFallback>
+        </Avatar>
+      )}
+
+      {/* User Avatar (Right Side) - ADDED THIS BLOCK */}
+      {isUser && (
+        <Avatar className="h-8 w-8 border shadow-sm bg-muted">
+            <AvatarFallback className="bg-primary/10 text-primary">
+                <User className="h-4 w-4" />
+            </AvatarFallback>
+        </Avatar>
+      )}
 
       {/* Message Bubble */}
       <div className={cn(
@@ -163,7 +163,6 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
           : "bg-background border border-border/60 rounded-tl-sm shadow-sm"
       )}>
         
-        {/* Content Area */}
         {isLoading ? (
           <TypingIndicator />
         ) : isImage ? (
@@ -184,7 +183,6 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
           )}>
             <Markdown
               components={{
-                // Code handling
                 code({ node, inline, className, children, ...props }: any) {
                   const match = /language-(\w+)/.exec(className || '');
                   return !inline && match ? (
@@ -203,14 +201,13 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
                     </code>
                   );
                 },
-                // Link handling
                 a: ({ node, ...props }) => (
                    <a {...props} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 opacity-90 hover:opacity-100 transition-opacity" />
                 ),
               }}
             >
-              {/* NOTE: We pass the progressively typed content here */}
-              {isUser ? message.content : displayedContent}
+              {/* Use full content if it's the user or history, otherwise use typing state */}
+              {isUser || !isLatest ? message.content : displayedContent}
             </Markdown>
           </div>
         )}
