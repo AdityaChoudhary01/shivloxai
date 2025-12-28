@@ -1,20 +1,27 @@
 import type { Metadata, Viewport } from 'next';
-import { Poppins } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/components/auth-provider';
+import { cn } from '@/lib/utils';
 
-// 1. Optimize Fonts with next/font
-const poppins = Poppins({
+// 1. Primary UI Font (Clean, Modern, Legible)
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-poppins',
+  variable: '--font-sans',
   display: 'swap',
 });
 
-// 2. Viewport Settings (Theme Color goes here in Next.js 14+)
+// 2. Code Font (Professional, Ligatures support)
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+});
+
+// 3. Viewport Settings
 export const viewport: Viewport = {
-  themeColor: '#09011E',
+  themeColor: '#09090b', // Modern rich black
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -105,8 +112,14 @@ export default function RootLayout({
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      {/* Applied font class and background colors */}
-      <body className={`${poppins.className} font-sans antialiased flex flex-col min-h-screen dark bg-background text-foreground selection:bg-primary/20`}>
+      {/* Applied font variables and base styles */}
+      <body 
+        className={cn(
+          "min-h-screen bg-background font-sans antialiased flex flex-col selection:bg-primary/20",
+          inter.variable,
+          jetbrainsMono.variable
+        )}
+      >
         <AuthProvider>
           <div className="flex-1 flex flex-col">
             {children}
