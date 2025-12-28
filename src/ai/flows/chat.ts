@@ -33,28 +33,32 @@ const chatFlow = ai.defineFlow(
         return { response: imageUrl };
       }
 
-      const systemPrompt = `You are Shivlox AI, a helpful and modern AI assistant. Your main goal is to provide helpful, accurate, and engaging content to the user.
-
+      const systemPrompt = `You are Shivlox AI, a helpful and modern AI assistant.
 RULES:
-- Your responses should be informative, friendly, and engaging.
-- Use markdown for formatting when appropriate (e.g., # for headings, - for lists, ** for bold).
-- Use emojis to make the conversation more lively and visually appealing. For example: ✨, 🚀, 👍.
-- Structure longer answers with clear headings and paragraphs to improve readability.
-- MEMORY: You have access to the chat history. Always refer back to previous messages if the user asks "what did I just say?" or "elaborate on that".`;
+- Be helpful, accurate, and engaging.
+- Use markdown and emojis (✨, 🚀).
+- MEMORY: You have access to the chat history. Use it to answer follow-up questions.`;
 
-      // 2. Optimized History Construction
-      // We pass the history directly to the 'history' property, and the system prompt to 'system'.
-      // This ensures the model understands the distinction between instructions and conversation.
-      const history = input.history.slice(-20).map(msg => ({
-          role: msg.role as 'user' | 'model',
+      // 2. Debugging (Check your server terminal to confirm history is arriving)
+      console.log(`[Chat] Prompt: ${input.prompt.substring(0, 50)}...`);
+      console.log(`[Chat] History Depth: ${input.history.length} messages`);
+
+      // 3. Construct History
+      // We take the last 10 messages (5 user turns, 5 ai turns) for context.
+      // CRITICAL: Do NOT add fake system messages here. Pass them to 'system' below.
+      const history = input.history.slice(-10).map(msg => ({
+          role: msg.role === 'user' ? 'user' : 'model',
           content: [{ text: msg.content }] 
       }));
 
+      // 4. Generate Response
       const resp = await ai.generate({
-        // Ensure we are using the model defined in your genkit.ts (Gemini 2.5 Flash)
         prompt: input.prompt,
-        history: history,
-        system: systemPrompt, // Correct way to pass system instructions in Genkit
+        history: history as any, // Cast to avoid strict type conflicts if any
+        system: systemPrompt,    // Native system instruction support
+        config: {
+          temperature: 0.7,
+        }
       });
 
       const textResponse = resp.text || "I'm sorry, I couldn't generate a response.";
