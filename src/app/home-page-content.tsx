@@ -9,11 +9,12 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+// FIX: Added 'Zap' to the imports below
 import { 
     ImageIcon, LoaderCircle, MessageSquare, Mic, Plus, SendHorizontal, X, 
     Trash2, BookText, Sparkles, Brain, Code, PenTool, Globe, 
     ExternalLink, Layers, GraduationCap, BookOpen, Heart,
-    Cpu, Shield, Mail
+    Cpu, Shield, Mail, Zap
 } from 'lucide-react';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -95,7 +96,6 @@ export function HomePageContent() {
         
         setAllPrompts(promptPool);
         
-        // Randomly shuffle and pick 4
         const shuffled = [...promptPool].sort(() => 0.5 - Math.random());
         setInitialPrompts(shuffled.slice(0, 4));
     }, []);
@@ -134,14 +134,12 @@ export function HomePageContent() {
 
     const currentMessages = conversations.find(c => c.id === currentConversationId)?.messages || [];
     
-    // REFACTORED: Now accepts the message history explicitly to avoid stale state
     const triggerAiResponse = useCallback(async (convId: string, messageHistory: Message[]) => {
         try {
             if (!user) {
                 setSessionMessageCount(prev => prev + 1);
             }
 
-            // Prepare history for API (excluding the very last message which is the prompt)
             const prompt = messageHistory[messageHistory.length - 1].content;
             const history = messageHistory.slice(0, -1).map(m => ({
                 role: m.role,
@@ -198,11 +196,8 @@ export function HomePageContent() {
 
         let effectiveConvId = currentConversationId;
         const currentConv = conversations.find(c => c.id === effectiveConvId);
-        
-        // Safety check: ensure messages array exists
         let existingMessages = currentConv ? currentConv.messages : [];
 
-        // Logic to create new chat if needed
         if (!effectiveConvId || !currentConv || existingMessages.length === 0) {
             const newId = `chat-${Date.now()}`;
             effectiveConvId = newId;
@@ -214,20 +209,18 @@ export function HomePageContent() {
                 messages: [],
             };
             
-            // If we are "replacing" an empty current chat
             if (currentConversationId && existingMessages.length === 0) {
                  setConversations(prev => prev.map(c => c.id === currentConversationId ? newConversation : c));
             } else {
                  setConversations(prev => [newConversation, ...prev]);
             }
             setCurrentConversationId(newId);
-            existingMessages = []; // It's a new chat, so history is empty
+            existingMessages = [];
         }
         
         const newUserMessage: Message = { role: 'user', content: userMessageContent };
         const updatedMessages = [...existingMessages, newUserMessage];
         
-        // Optimistic Update
         setConversations(prev => {
             return prev.map(c =>
                 c.id === effectiveConvId
@@ -237,8 +230,6 @@ export function HomePageContent() {
         });
 
         setIsLoading(true);
-        
-        // Pass the calculated 'updatedMessages' directly to avoid undefined role errors
         setTimeout(() => triggerAiResponse(effectiveConvId!, updatedMessages), 0);
 
     }, [input, user, sessionMessageCount, currentConversationId, conversations, triggerAiResponse]);
@@ -523,7 +514,7 @@ export function HomePageContent() {
                 </Sidebar>
 
                 <main className="flex flex-1 flex-col overflow-hidden w-full relative bg-transparent">
-                    <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/5 bg-background/20 backdrop-blur-xl px-4 shadow-sm z-10 sticky top-0">
+                    <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/5 bg-background/20 backdrop-blur-xl px-4 shadow-sm z-30 sticky top-0">
                         <div className="flex items-center gap-2">
                             <SidebarTrigger />
                         </div>
@@ -546,9 +537,9 @@ export function HomePageContent() {
                         </div>
                     </header>
 
-                    <div className="flex-1 overflow-y-auto flex flex-col relative w-full scroll-smooth">
+                    <div className="flex-1 overflow-y-auto flex flex-col w-full scroll-smooth">
                         {currentMessages.length === 0 && !isLoading ? (
-                                <div className="flex flex-1 flex-col items-center justify-start pt-20 pb-32 text-center px-4">
+                                <div className="flex flex-1 flex-col items-center justify-start pt-20 pb-10 text-center px-4">
                                     <motion.div
                                         initial={{ scale: 0, rotate: -45 }}
                                         animate={{ scale: 1, rotate: 0 }}
@@ -749,27 +740,28 @@ export function HomePageContent() {
                                     </motion.div>
                                 </div>
                             ) : (
-                                <div className="mx-auto w-full max-w-4xl flex-1 space-y-6 p-4 md:p-6 flex flex-col pb-32">
+                                <div className="mx-auto w-full max-w-4xl flex-1 space-y-6 p-4 md:p-6 flex flex-col pb-4">
                                     {currentMessages.map((msg, index) => (
                                         <ChatMessage 
                                             key={index} 
                                             message={msg} 
                                             isLatest={index === currentMessages.length - 1 && shouldAnimateRef.current} 
+                                            userAvatar={user?.photoURL}
                                         />
                                     ))}
                                     {isLoading && <ChatMessage isLoading message={{ role: 'model', content: '' }} />}
-                                    <div ref={messagesEndRef} />
+                                    <div ref={messagesEndRef} className="h-px w-full" />
                                 </div>
                             )}
                     </div>
                     
-                    <motion.div
-                        initial={{ y: 100, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 0.5, ease: 'easeOut' }}
-                        className="absolute bottom-0 left-0 right-0 p-4 z-20"
-                    >
-                        <div className="mx-auto w-full max-w-3xl">
+                    <div className="shrink-0 z-20 w-full p-4 bg-transparent">
+                        <motion.div
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ duration: 0.5, ease: 'easeOut' }}
+                            className="mx-auto w-full max-w-3xl"
+                        >
                             <form
                                 onSubmit={handleFormSubmit}
                                 id="chat-input" 
@@ -830,8 +822,8 @@ export function HomePageContent() {
                                     )}
                                 </Button>
                             </form>
-                        </div>
-                    </motion.div>
+                        </motion.div>
+                    </div>
                 </main>
             </div>
         </SidebarProvider>
