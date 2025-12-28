@@ -39,11 +39,15 @@ RULES:
 - Your responses should be informative, friendly, and engaging.
 - Use markdown for formatting when appropriate (e.g., # for headings, - for lists, ** for bold).
 - Use emojis to make the conversation more lively and visually appealing. For example: ✨, 🚀, 👍.
-- Structure longer answers with clear headings and paragraphs to improve readability.`;
+- Structure longer answers with clear headings and paragraphs to improve readability.
+- MEMORY: You have access to the chat history. Always refer back to previous messages if the user asks "what did I just say?" or "elaborate on that".`;
 
-      // 2. Safe History Construction (Limit to last 40 messages)
-      // This prevents context window overflow on long chats.
-      const safeHistory = input.history.slice(-40).map(msg => ({
+      // 2. Smart Memory Construction (Remember Last 4 Exchanges)
+      // We slice the last 10 messages. This covers:
+      // - The previous 4 User Queries
+      // - The previous 4 AI Responses
+      // - Plus a buffer of 2 extra messages for context continuity.
+      const safeHistory = input.history.slice(-10).map(msg => ({
           role: msg.role as 'user' | 'model',
           content: [{ text: msg.content || '' }] // Handle potential empty content
       }));
