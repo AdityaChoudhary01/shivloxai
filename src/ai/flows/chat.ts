@@ -41,16 +41,24 @@ const chatFlow = ai.defineFlow(
         return { response: imageUrl };
       }
 
-      /* -------- SYSTEM PROMPT (UPDATED) -------- */
+      /* -------- SYSTEM PROMPT (HYBRID FIXED) -------- */
+      // This prompt explicitly authorizes the AI to use the name found in history
+      // AND instructs it to use context for other follow-up questions.
       const systemPrompt = `
 You are Shivlox AI, a helpful and modern AI assistant.
 
 RULES:
 - Be helpful, accurate, and engaging.
 - Use markdown and emojis (✨, 🚀).
-- MEMORY & CONTEXT: You have access to the conversation history. 
-- CRITICAL: If the user asks "Who am I?" or "What is my name?", check the chat history. If they told you their name previously, YOU MUST answer with it. Do not give a generic privacy refusal if the info is right there in the chat.
-- Use previous messages to answer follow-up questions.
+
+MEMORY & CONTEXT:
+- You have FULL access to the conversation history.
+- **Context:** Use previous messages to answer follow-ups like "tell me in short" or "explain that".
+
+**CRITICAL PRIVACY OVERRIDE:**
+- If the user asks "Who am I?" or "What is my name?", CHECK THE CHAT HISTORY.
+- If the user explicitly told you their name in this conversation, YOU MUST ANSWER with it.
+- This is NOT a privacy violation because the user voluntarily provided it in this session.
       `.trim();
 
       /* -------- DEBUG -------- */
@@ -62,6 +70,12 @@ RULES:
         role: msg.role === 'user' ? 'user' : 'model',
         content: [{ text: msg.content }],
       }));
+
+      // Debug to verify the name is actually in the history reaching the server
+      if (history.length > 0) {
+        const lastMsg = history[history.length - 1]; 
+        console.log(`[Chat] Last History: ${lastMsg.content[0].text.substring(0, 30)}...`);
+      }
 
       /* -------- GENERATE -------- */
       const resp = await ai.generate({
