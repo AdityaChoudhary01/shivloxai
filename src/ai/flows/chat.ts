@@ -4,19 +4,27 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { generateImage } from './generate-image';
 
+/* ---------------- SCHEMAS ---------------- */
+
 const ChatInputSchema = z.object({
-  history: z.array(z.object({
-    role: z.enum(['user', 'model']),
-    content: z.string()
-  })),
+  history: z.array(
+    z.object({
+      role: z.enum(['user', 'model']),
+      content: z.string(),
+    })
+  ),
   prompt: z.string(),
 });
+
 export type ChatInput = z.infer<typeof ChatInputSchema>;
 
 const ChatOutputSchema = z.object({
   response: z.string(),
 });
+
 export type ChatOutput = z.infer<typeof ChatOutputSchema>;
+
+/* ---------------- FLOW ---------------- */
 
 const chatFlow = ai.defineFlow(
   {
@@ -26,51 +34,64 @@ const chatFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      // 1. Image Generation Handler
+      /* -------- IMAGE COMMAND -------- */
       if (input.prompt.startsWith('/imagine ')) {
-        const imagePrompt = input.prompt.replace('/imagine ', '');
+        const imagePrompt = input.prompt.replace('/imagine ', '').trim();
         const { imageUrl } = await generateImage({ prompt: imagePrompt });
         return { response: imageUrl };
       }
 
-      const systemPrompt = `You are Shivlox AI, a helpful and modern AI assistant.
+      /* -------- SYSTEM PROMPT -------- */
+      const systemPrompt = `
+You are Shivlox AI, a helpful and modern AI assistant.
+
 RULES:
 - Be helpful, accurate, and engaging.
 - Use markdown and emojis (✨, 🚀).
-- MEMORY: You have access to the chat history. Use it to answer follow-up questions.`;
+- You have FULL access to the conversation history.
+- Use previous messages to answer follow-up questions.
+      `.trim();
 
-      // 2. Debugging (Check your server terminal to confirm history is arriving)
-      console.log(`[Chat] Prompt: ${input.prompt.substring(0, 50)}...`);
-      console.log(`[Chat] History Depth: ${input.history.length} messages`);
+      /* -------- DEBUG (KEEP THIS) -------- */
+      console.log('[Chat] Prompt:', input.prompt);
+      console.log('[Chat] History received:', input.history.length);
 
-      // 3. Construct History
-      // We take the last 10 messages (5 user turns, 5 ai turns) for context.
-      // CRITICAL: Do NOT add fake system messages here. Pass them to 'system' below.
-      const history = input.history.slice(-10).map(msg => ({
-          role: msg.role === 'user' ? 'user' : 'model',
-          content: [{ text: msg.content }] 
+      /* -------- ✅ CORRECT HISTORY TRANSFORM -------- */
+      // 🚨 DO NOT slice, filter, or modify history here
+      const history = input.history.map((msg) => ({
+        role: msg.role, // must be EXACTLY 'user' | 'model'
+        content: [{ text: msg.content }],
       }));
 
-      // 4. Generate Response
+      // Optional but HIGHLY recommended debug
+      console.log(
+        '[Chat] History sent to Gemini:',
+        history.map((h) => `${h.role}: ${h.content[0].text}`)
+      );
+
+      /* -------- GENERATE -------- */
       const resp = await ai.generate({
+        system: systemPrompt,
         prompt: input.prompt,
-        history: history as any, // Cast to avoid strict type conflicts if any
-        system: systemPrompt,    // Native system instruction support
+        history, // ✅ full, untouched conversation
         config: {
           temperature: 0.7,
-        }
+        },
       });
 
-      const textResponse = resp.text || "I'm sorry, I couldn't generate a response.";
-
-      return { response: textResponse };
-
+      return {
+        response: resp.text ?? "I'm sorry, I couldn't generate a response.",
+      };
     } catch (error: any) {
-      console.error("Server Action Error in chatFlow:", error);
-      return { response: `Error: ${error.message || 'Something went wrong on the server.'}` };
+      console.error('Server Action Error in chatFlow:', error);
+      return {
+        response: `Error: ${error?.message ?? 'Something went wrong on the server.'}`,
+      };
     }
   }
 );
+
+/* ---------------- EXPORT ---------------- */
 
 export async function chat(input: ChatInput): Promise<ChatOutput> {
   return chatFlow(input);
