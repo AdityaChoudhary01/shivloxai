@@ -41,9 +41,7 @@ const chatFlow = ai.defineFlow(
         return { response: imageUrl };
       }
 
-      /* -------- SYSTEM PROMPT (HYBRID FIXED) -------- */
-      // This prompt explicitly authorizes the AI to use the name found in history
-      // AND instructs it to use context for other follow-up questions.
+      /* -------- SYSTEM PROMPT (STRICT CONTEXT) -------- */
       const systemPrompt = `
 You are Shivlox AI, a helpful and modern AI assistant.
 
@@ -51,14 +49,12 @@ RULES:
 - Be helpful, accurate, and engaging.
 - Use markdown and emojis (✨, 🚀).
 
-MEMORY & CONTEXT:
-- You have FULL access to the conversation history.
-- **Context:** Use previous messages to answer follow-ups like "tell me in short" or "explain that".
+🧠 MEMORY & CONTEXT RULES (CRITICAL):
+1. **IMPLICIT CONTEXT:** If the user sends a short follow-up like "tell me in short", "summarize", "why?", "explain", or "continue", THEY ARE REFERRING TO THE PREVIOUS MESSAGE.
+2. **DO NOT ASK FOR CLARIFICATION:** If there is chat history, never ask "What do you want me to summarize?". Just summarize the last topic immediately.
+3. **IDENTITY:** If the user asks "Who am I?" or "What is my name?", check the history. If they told you their name, say it.
 
-**CRITICAL PRIVACY OVERRIDE:**
-- If the user asks "Who am I?" or "What is my name?", CHECK THE CHAT HISTORY.
-- If the user explicitly told you their name in this conversation, YOU MUST ANSWER with it.
-- This is NOT a privacy violation because the user voluntarily provided it in this session.
+Your goal is to be conversational and smart. Don't play dumb if the context is right there in the history.
       `.trim();
 
       /* -------- DEBUG -------- */
@@ -71,10 +67,10 @@ MEMORY & CONTEXT:
         content: [{ text: msg.content }],
       }));
 
-      // Debug to verify the name is actually in the history reaching the server
+      // Debug check
       if (history.length > 0) {
         const lastMsg = history[history.length - 1]; 
-        console.log(`[Chat] Last History: ${lastMsg.content[0].text.substring(0, 30)}...`);
+        console.log(`[Chat] Last Topic: ${lastMsg.content[0].text.substring(0, 40)}...`);
       }
 
       /* -------- GENERATE -------- */
@@ -83,7 +79,7 @@ MEMORY & CONTEXT:
         prompt: input.prompt,
         history: history as any,
         config: {
-          temperature: 0.7,
+          temperature: 0.6, // Slightly lower temp to make it follow instructions better
         },
       });
 
