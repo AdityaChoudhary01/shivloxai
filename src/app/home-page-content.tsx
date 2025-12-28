@@ -729,7 +729,11 @@ export function HomePageContent() {
                             ) : (
                                 <div className="mx-auto w-full max-w-4xl flex-1 space-y-6 p-4 md:p-6 flex flex-col pb-32">
                                     {currentMessages.map((msg, index) => (
-                                        <ChatMessage key={index} message={msg} />
+                                        <ChatMessage 
+                                            key={index} 
+                                            message={msg} 
+                                            isLatest={index === currentMessages.length - 1} // Enables typing on the last message
+                                        />
                                     ))}
                                     {isLoading && <ChatMessage isLoading />}
                                     <div ref={messagesEndRef} />
