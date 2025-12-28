@@ -25,13 +25,14 @@ const chatFlow = ai.defineFlow(
     outputSchema: ChatOutputSchema,
   },
   async (input) => {
-    if (input.prompt.startsWith('/imagine ')) {
-      const imagePrompt = input.prompt.replace('/imagine ', '');
-      const { imageUrl } = await generateImage({ prompt: imagePrompt });
-      return { response: imageUrl };
-    }
+    try {
+      if (input.prompt.startsWith('/imagine ')) {
+        const imagePrompt = input.prompt.replace('/imagine ', '');
+        const { imageUrl } = await generateImage({ prompt: imagePrompt });
+        return { response: imageUrl };
+      }
 
-    const systemPrompt = `You are Shivlox AI, a helpful and modern AI assistant. Your main goal is to provide helpful, accurate, and engaging content to the user.
+      const systemPrompt = `You are Shivlox AI, a helpful and modern AI assistant. Your main goal is to provide helpful, accurate, and engaging content to the user.
 
 RULES:
 - Your responses should be informative, friendly, and engaging.
@@ -39,21 +40,30 @@ RULES:
 - Use emojis to make the conversation more lively and visually appealing. For example: ✨, 🚀, 👍.
 - Structure longer answers with clear headings and paragraphs to improve readability.`;
 
-    const history = [
-      { role: 'user' as const, content: [{ text: systemPrompt }] },
-      { role: 'model' as const, content: [{ text: "Okay, I'm ready to chat! How can I help you today? ✨" }] },
-      ...input.history.map(msg => ({
-        role: msg.role as 'user' | 'model',
-        content: [{ text: msg.content }]
-      })),
-    ];
+      const history = [
+        { role: 'user' as const, content: [{ text: systemPrompt }] },
+        { role: 'model' as const, content: [{ text: "Okay, I'm ready to chat! How can I help you today? ✨" }] },
+        ...input.history.map(msg => ({
+          role: msg.role as 'user' | 'model',
+          content: [{ text: msg.content }]
+        })),
+      ];
 
-    const resp = await ai.generate({
-      prompt: input.prompt,
-      history,
-    });
+      const resp = await ai.generate({
+        prompt: input.prompt,
+        history,
+      });
 
-    return { response: resp.text };
+      // FIX: Safely handle the response text
+      const textResponse = resp.text || "I'm sorry, I couldn't generate a response. (Safety block or empty output)";
+
+      return { response: textResponse };
+
+    } catch (error: any) {
+      console.error("Server Action Error in chatFlow:", error);
+      // Return a safe error message to the client instead of crashing
+      return { response: `Error: ${error.message || 'Something went wrong on the server.'}` };
+    }
   }
 );
 
