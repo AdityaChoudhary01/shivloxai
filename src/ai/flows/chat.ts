@@ -41,25 +41,42 @@ const chatFlow = ai.defineFlow(
         return { response: imageUrl };
       }
 
-      /* -------- SYSTEM PROMPT (STRICT CONTEXT) -------- */
+      /* -------- SYSTEM PROMPT -------- */
       const systemPrompt = `
-You are Shivlox AI, a helpful and modern AI assistant.
+You are Shivlox AI, a smart and modern AI assistant.
 
 RULES:
 - Be helpful, accurate, and engaging.
 - Use markdown and emojis (✨, 🚀).
-
-🧠 MEMORY & CONTEXT RULES (CRITICAL):
-1. **IMPLICIT CONTEXT:** If the user sends a short follow-up like "tell me in short", "summarize", "why?", "explain", or "continue", THEY ARE REFERRING TO THE PREVIOUS MESSAGE.
-2. **DO NOT ASK FOR CLARIFICATION:** If there is chat history, never ask "What do you want me to summarize?". Just summarize the last topic immediately.
-3. **IDENTITY:** If the user asks "Who am I?" or "What is my name?", check the history. If they told you their name, say it.
-
-Your goal is to be conversational and smart. Don't play dumb if the context is right there in the history.
+- If the prompt contains "Context from previous message", use that text to answer the user's request.
+- PRIVACY: If asked "Who am I?" or "What is my name?", use the chat history to answer.
       `.trim();
 
+      /* -------- CONTEXT INJECTION (THE FIX) -------- */
+      // Problem: Model ignores history for short commands.
+      // Fix: If prompt is short, grab the last AI message and STUFF it into the prompt.
+      let finalPrompt = input.prompt;
+      
+      const lastMessage = input.history.length > 0 ? input.history[input.history.length - 1] : null;
+      
+      // Keywords that indicate the user refers to previous context
+      const contextKeywords = ['summarize', 'short', 'explain', 'elaborate', 'tell me more', 'continue', 'yes', 'what', 'why'];
+      const lowerPrompt = input.prompt.toLowerCase();
+
+      // Logic: If prompt is short (< 100 chars) AND has a keyword AND we have history
+      if (
+        input.prompt.length < 100 && 
+        contextKeywords.some(kw => lowerPrompt.includes(kw)) &&
+        lastMessage && 
+        lastMessage.role === 'model'
+      ) {
+         console.log('[Chat] 💉 Injecting Context into Prompt...');
+         finalPrompt = `${input.prompt}\n\n---\nContext from previous message to use:\n"${lastMessage.content}"\n---`;
+      }
+
       /* -------- DEBUG -------- */
-      console.log('[Chat] Prompt:', input.prompt);
-      console.log('[Chat] History received:', input.history.length);
+      console.log('[Chat] Original Prompt:', input.prompt);
+      console.log('[Chat] Final Sent Prompt:', finalPrompt.substring(0, 100)); // Log what we actually send
 
       /* -------- HISTORY TRANSFORM -------- */
       const history = input.history.map((msg) => ({
@@ -67,19 +84,13 @@ Your goal is to be conversational and smart. Don't play dumb if the context is r
         content: [{ text: msg.content }],
       }));
 
-      // Debug check
-      if (history.length > 0) {
-        const lastMsg = history[history.length - 1]; 
-        console.log(`[Chat] Last Topic: ${lastMsg.content[0].text.substring(0, 40)}...`);
-      }
-
       /* -------- GENERATE -------- */
       const resp = await ai.generate({
         system: systemPrompt,
-        prompt: input.prompt,
+        prompt: finalPrompt, // Send the modified prompt
         history: history as any,
         config: {
-          temperature: 0.6, // Slightly lower temp to make it follow instructions better
+          temperature: 0.6,
         },
       });
 
