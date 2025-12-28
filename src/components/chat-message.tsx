@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Check, Copy, User } from 'lucide-react';
+import { Check, Copy, User, RefreshCw } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -21,6 +21,11 @@ export type ChatMessageProps = {
   };
   isLoading?: boolean;
 };
+
+// --- Configuration ---
+// Speed in ms. Lower is faster. 
+// 10ms is standard typewriter, 3ms is "fast AI" feel.
+const TYPING_SPEED = 3; 
 
 // --- Sub-components ---
 
@@ -87,12 +92,38 @@ const CodeBlock = ({ language, children }: { language: string; children: string 
 export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
   const { toast } = useToast();
   const [isCopied, setIsCopied] = useState(false);
+  const [displayedContent, setDisplayedContent] = useState('');
   
   const isUser = message.role === 'user';
-  // Enhanced image detection (Base64 or URL ending in image ext)
+  // Enhanced image detection
   const isImage = message.content.startsWith('data:image') || /\.(jpg|jpeg|png|gif|webp)$/i.test(message.content);
   
   const aiAvatarUrl = "https://res.cloudinary.com/dygtsoclj/image/upload/v1760107864/Gemini_Generated_Image_tdm06stdm06stdm0_ymfdnp.png";
+
+  // --- Typing Effect Logic ---
+  useEffect(() => {
+    // If it's the user, an image, or loading, show immediately/nothing
+    if (isUser || isImage || isLoading) {
+      setDisplayedContent(message.content);
+      return;
+    }
+
+    // Reset if content changes dramatically (new message)
+    if (!message.content.startsWith(displayedContent) && displayedContent !== '') {
+        setDisplayedContent('');
+    }
+
+    // If we have finished typing, stop
+    if (displayedContent.length === message.content.length) return;
+
+    // Fast Forward logic: if the user switches tabs or it lags, catch up slightly
+    // but for smooth typing, we use a simple interval
+    const timeoutId = setTimeout(() => {
+      setDisplayedContent((prev) => message.content.slice(0, prev.length + 2)); // +2 chars for extra speed
+    }, TYPING_SPEED);
+
+    return () => clearTimeout(timeoutId);
+  }, [message.content, displayedContent, isUser, isImage, isLoading]);
 
   const onCopyMessage = () => {
     if (isCopied) return;
@@ -148,13 +179,12 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
         ) : (
           <div className={cn(
             "prose prose-sm max-w-none break-words leading-relaxed",
-            // Dark mode and text color adjustments based on role
             "dark:prose-invert",
             isUser ? "prose-headings:text-primary-foreground prose-p:text-primary-foreground prose-strong:text-primary-foreground prose-li:text-primary-foreground text-primary-foreground" : "text-foreground"
           )}>
             <Markdown
               components={{
-                // Override code blocks
+                // Code handling
                 code({ node, inline, className, children, ...props }: any) {
                   const match = /language-(\w+)/.exec(className || '');
                   return !inline && match ? (
@@ -173,18 +203,19 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
                     </code>
                   );
                 },
-                // Force links to open in new tab
+                // Link handling
                 a: ({ node, ...props }) => (
                    <a {...props} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 opacity-90 hover:opacity-100 transition-opacity" />
                 ),
               }}
             >
-              {message.content}
+              {/* NOTE: We pass the progressively typed content here */}
+              {isUser ? message.content : displayedContent}
             </Markdown>
           </div>
         )}
 
-        {/* Copy Button (Only shows on hover for text messages) */}
+        {/* Copy Button */}
         {!isLoading && !isImage && (
             <Button
               variant="ghost"
