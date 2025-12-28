@@ -34,7 +34,11 @@ import {
 } from "@/components/ui/alert-dialog"
 import Link from 'next/link';
 
-type Message = ChatMessageProps['message'];
+// Use strict type for local message
+type Message = {
+    role: 'user' | 'model';
+    content: string;
+};
 
 type Conversation = {
     id: string;
@@ -51,6 +55,10 @@ export function HomePageContent() {
     const [initialPrompts, setInitialPrompts] = useState<string[]>([]);
     const [allPrompts, setAllPrompts] = useState<string[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // FIX: Ref to track if we should animate the latest message.
+    // Starts false so history doesn't animate on refresh.
+    const shouldAnimateRef = useRef(false);
 
     const [isRecording, setIsRecording] = useState(false);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -87,10 +95,10 @@ export function HomePageContent() {
             if (parsedConversations.length > 0) {
                 setCurrentConversationId(parsedConversations[0].id);
             } else {
-                startNewChat();
+                startNewChat(false); // Don't animate creation on load
             }
         } else {
-            startNewChat();
+            startNewChat(false);
         }
     }, []);
 
@@ -104,7 +112,7 @@ export function HomePageContent() {
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [currentConversationId, isLoading]);
+    }, [currentConversationId, isLoading, conversations]);
 
     const currentMessages = conversations.find(c => c.id === currentConversationId)?.messages || [];
     
@@ -162,6 +170,9 @@ export function HomePageContent() {
         if (!prompt) {
             setInput('');
         }
+
+        // FIX: Enable animation for this interaction
+        shouldAnimateRef.current = true;
 
         let effectiveConvId = currentConversationId;
         const isCurrentChatEmpty = (conversations.find(c => c.id === effectiveConvId)?.messages.length || 0) === 0;
@@ -300,7 +311,15 @@ export function HomePageContent() {
         if (setActive) {
             setCurrentConversationId(newId);
         }
+        // FIX: Reset animation flag when starting new chat
+        shouldAnimateRef.current = false;
         return newId;
+    }
+
+    const switchChat = (id: string) => {
+        setCurrentConversationId(id);
+        // FIX: Reset animation flag when switching chats so old messages don't type
+        shouldAnimateRef.current = false;
     }
 
     const handleDeleteConversation = (id: string) => {
@@ -318,12 +337,14 @@ export function HomePageContent() {
             if (newConversations.length > 0) {
                 setCurrentConversationId(newConversations[0].id);
             } else {
-                startNewChat();
+                startNewChat(true);
             }
         }
         
         setConversationToDelete(null);
         setIsDeleteDialogOpen(false);
+        // FIX: Reset animation flag after delete action
+        shouldAnimateRef.current = false; 
         toast({
             title: "Chat Deleted",
             description: "The conversation has been removed.",
@@ -380,10 +401,8 @@ export function HomePageContent() {
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* MAIN LAYOUT WRAPPER - Transparent to show global gradient */}
             <div className="flex h-dvh bg-transparent text-foreground w-full">
                 
-                {/* SIDEBAR - Glass Effect */}
                 <Sidebar className="bg-background/40 backdrop-blur-md border-r border-white/5">
                     <SidebarHeader className="p-2">
                         <div className="flex items-center justify-between p-2">
@@ -406,7 +425,7 @@ export function HomePageContent() {
                              {conversations.map((conv) => (
                                 <SidebarMenuItem key={conv.id} className="group">
                                     <div
-                                    onClick={() => setCurrentConversationId(conv.id)}
+                                    onClick={() => switchChat(conv.id)} // FIX: Use wrapper to reset animation
                                     className={cn(
                                         "flex items-center w-full rounded-md px-2 py-1.5 cursor-pointer transition-colors justify-between",
                                         currentConversationId === conv.id
@@ -439,7 +458,6 @@ export function HomePageContent() {
                         </SidebarContent>
                     </ScrollArea>
                     
-                    {/* SIDEBAR FOOTER */}
                     <SidebarFooter className="p-2 border-t border-white/10">
                         <SidebarMenu>
                             <SidebarMenuItem>
@@ -451,7 +469,6 @@ export function HomePageContent() {
                                     <span>Donate</span>
                                 </Link>
                             </SidebarMenuItem>
-                            
                             <SidebarMenuItem>
                                 <Link 
                                     href="/contact" 
@@ -461,9 +478,7 @@ export function HomePageContent() {
                                     <span>Contact & Support</span>
                                 </Link>
                             </SidebarMenuItem>
-
                             <div className="my-1 border-t border-white/10" />
-                            
                             <div className="flex flex-wrap gap-2 px-2 py-1 text-xs text-muted-foreground/60">
                                 <Link href="/about" className="hover:text-white transition-colors">About</Link>
                                 <span>•</span>
@@ -471,7 +486,6 @@ export function HomePageContent() {
                                 <span>•</span>
                                 <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
                             </div>
-
                             <p className="mt-2 text-center text-[10px] text-muted-foreground/40">
                                 &copy; {new Date().getFullYear()} Shivlox AI.
                             </p>
@@ -479,9 +493,7 @@ export function HomePageContent() {
                     </SidebarFooter>
                 </Sidebar>
 
-                {/* MAIN CONTENT AREA - Transparent for Global Gradient */}
                 <main className="flex flex-1 flex-col overflow-hidden w-full relative bg-transparent">
-                    {/* HEADER - Glass Effect */}
                     <header className="shrink-0 flex h-16 items-center justify-between border-b border-white/5 bg-background/20 backdrop-blur-xl px-4 shadow-sm z-10 sticky top-0">
                         <div className="flex items-center gap-2">
                             <SidebarTrigger />
@@ -557,15 +569,12 @@ export function HomePageContent() {
                                             </motion.div>
                                         ))}
                                     </div>
-
-                                    {/* --- SEO CONTENT SECTION (Glass Cards) --- */}
                                     <motion.div 
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         transition={{ delay: 0.8, duration: 0.8 }}
                                         className="mt-20 w-full max-w-5xl text-left space-y-16 pb-10"
                                     >
-                                        {/* FEATURES GRID */}
                                         <div>
                                             <h2 className="text-2xl font-bold text-center mb-8 text-white">Why Developers Choose Shivlox</h2>
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -592,8 +601,6 @@ export function HomePageContent() {
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {/* USE CASES */}
                                         <div className="bg-white/5 rounded-2xl p-8 border border-white/10 backdrop-blur-sm">
                                             <div className="flex flex-col md:flex-row gap-8 items-center">
                                                 <div className="flex-1 space-y-4">
@@ -630,15 +637,9 @@ export function HomePageContent() {
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {/* --- NEW SECTION: ECOSYSTEM & BACKLINKS (Updated with footer) --- */}
                                         <div className="pt-8 border-t border-white/10">
                                             <h2 className="text-2xl font-bold text-center mb-8 text-white">Explore Our Ecosystem</h2>
-                                            
-                                            {/* Project Cards Grid */}
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                                                
-                                                {/* Project 1: PeerNotez */}
                                                 <Link 
                                                     href="https://peernotez.netlify.app" 
                                                     target="_blank" 
@@ -654,8 +655,6 @@ export function HomePageContent() {
                                                     <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">PeerNotez</h3>
                                                     <p className="text-sm text-muted-foreground">The ultimate note-sharing platform for students. Upload, share, and organize your study materials seamlessly.</p>
                                                 </Link>
-
-                                                {/* Project 2: ParikshaNode */}
                                                 <Link 
                                                     href="https://parikshanode.netlify.app" 
                                                     target="_blank" 
@@ -671,8 +670,6 @@ export function HomePageContent() {
                                                     <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">ParikshaNode</h3>
                                                     <p className="text-sm text-muted-foreground">Ace your exams with our intelligent quiz application. Test your knowledge across various subjects in real-time.</p>
                                                 </Link>
-
-                                                {/* Project 3: JatPedia */}
                                                 <Link 
                                                     href="https://jatpedia.netlify.app" 
                                                     target="_blank" 
@@ -689,8 +686,6 @@ export function HomePageContent() {
                                                     <p className="text-sm text-muted-foreground">Dive deep into history and culture. A comprehensive resource for heritage and community knowledge.</p>
                                                 </Link>
                                             </div>
-
-                                            {/* Internal Footer Links - Added Here */}
                                             <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-sm text-muted-foreground border-t border-white/10 pt-8">
                                                 <Link href="/about" className="hover:text-primary hover:underline transition-all">About Shivlox</Link>
                                                 <Link href="/contact" className="hover:text-primary hover:underline transition-all">Contact Support</Link>
@@ -701,8 +696,6 @@ export function HomePageContent() {
                                                 </Link>
                                             </div>
                                         </div>
-
-                                        {/* FAQ SECTION */}
                                         <div>
                                             <h2 className="text-2xl font-bold text-center mb-8 text-white">Frequently Asked Questions</h2>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -732,7 +725,8 @@ export function HomePageContent() {
                                         <ChatMessage 
                                             key={index} 
                                             message={msg} 
-                                            isLatest={index === currentMessages.length - 1} // Enables typing on the last message
+                                            // FIX: Only animate if it's the last message AND the user has just interacted
+                                            isLatest={index === currentMessages.length - 1 && shouldAnimateRef.current} 
                                         />
                                     ))}
                                     {isLoading && <ChatMessage isLoading />}
@@ -741,7 +735,6 @@ export function HomePageContent() {
                             )}
                     </div>
                     
-                    {/* INPUT AREA: Floating Glass */}
                     <motion.div
                         initial={{ y: 100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
