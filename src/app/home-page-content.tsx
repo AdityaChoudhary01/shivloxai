@@ -51,6 +51,13 @@ type Conversation = {
 
 export function HomePageContent() {
     const [conversations, setConversations] = useState<Conversation[]>([]);
+    
+    // 🔴 MEMORY FIX: Ref to track latest state for async callbacks
+    const conversationsRef = useRef(conversations);
+    useEffect(() => {
+        conversationsRef.current = conversations;
+    }, [conversations]);
+
     const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -180,17 +187,24 @@ export function HomePageContent() {
         }
     };
 
-    const triggerAiResponse = useCallback(async (convId: string, messageHistory: Message[]) => {
+    // 🔴 FIXED TRIGGER AI RESPONSE: Uses Ref to get latest state + Correct History Slicing
+    const triggerAiResponse = useCallback(async (convId: string) => {
         try {
+            // Use REF to get the absolute latest state (bypassing stale closures)
+            const conversation = conversationsRef.current.find(c => c.id === convId);
+            if (!conversation) return;
+
+            const messages = conversation.messages;
+            if (messages.length === 0) return;
+
             if (!user) {
                 setSessionMessageCount(prev => prev + 1);
             }
 
-            // Extract the last message as the prompt
-            const prompt = messageHistory[messageHistory.length - 1].content;
+            // ✅ Logic fixed: Prompt is last message, History is everything before it (User AND Model)
+            const prompt = messages[messages.length - 1].content;
             
-            // The rest is the history
-            const history = messageHistory.slice(0, -1).map(m => ({
+            const history = messages.slice(0, -1).map(m => ({
                 role: m.role,
                 content: m.content
             }));
@@ -253,8 +267,8 @@ export function HomePageContent() {
         shouldAnimateRef.current = true;
 
         let effectiveConvId = currentConversationId;
-        const currentConv = conversations.find(c => c.id === effectiveConvId);
-        // Get existing messages (or empty if new)
+        // Use REF for latest state in calculation
+        const currentConv = conversationsRef.current.find(c => c.id === effectiveConvId);
         let existingMessages = currentConv ? currentConv.messages : [];
 
         let newConversationObj: Conversation | null = null;
@@ -273,7 +287,6 @@ export function HomePageContent() {
             };
             
             if (currentConversationId && existingMessages.length === 0) {
-                 // Replace empty current conversation
                  setConversations(prev => prev.map(c => c.id === currentConversationId ? newConversationObj! : c));
             } else {
                  setConversations(prev => [newConversationObj!, ...prev]);
@@ -284,10 +297,8 @@ export function HomePageContent() {
         
         const newUserMessage: Message = { role: 'user', content: userMessageContent };
         
-        // Construct the FULL updated history to pass to the AI
         const updatedMessages = [...existingMessages, newUserMessage];
         
-        // Update State & DB for User Message
         const convToSaveId = effectiveConvId!;
         const convTitle = newConversationObj ? newConversationObj.title : (currentConv?.title || 'New Chat');
         
@@ -311,10 +322,11 @@ export function HomePageContent() {
         }
 
         setIsLoading(true);
-        // Pass 'updatedMessages' explicitly
-        setTimeout(() => triggerAiResponse(convToSaveId, updatedMessages), 0);
+        // 🔴 FIX: Call trigger with setTimeout(0) to allow state update to propagate
+        // triggerAiResponse will then read from conversationsRef to get the fresh data
+        setTimeout(() => triggerAiResponse(convToSaveId), 0);
 
-    }, [input, user, sessionMessageCount, currentConversationId, conversations, triggerAiResponse]);
+    }, [input, user, sessionMessageCount, currentConversationId, triggerAiResponse]);
 
     const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -327,6 +339,8 @@ export function HomePageContent() {
             handleSendMessage();
         }
     };
+    
+    // ... (rest of the file component logic remains unchanged)
     
     const promptVariants = {
         hidden: { opacity: 0, y: 20 },
