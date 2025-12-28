@@ -52,40 +52,43 @@ RULES:
 - Use previous messages to answer follow-up questions.
       `.trim();
 
-      /* -------- DEBUG (KEEP THIS) -------- */
-      console.log('[Chat] Prompt:', input.prompt);
-      console.log('[Chat] History received:', input.history.length);
+      /* -------- DEBUG -------- */
+      // This helps you see in the terminal exactly what the AI is receiving
+      console.log('[Chat] New Prompt:', input.prompt);
+      console.log('[Chat] History Count:', input.history.length);
 
       /* -------- ✅ CORRECT HISTORY TRANSFORM -------- */
-      // 🚨 DO NOT slice, filter, or modify history here
+      // We map the input history to the format Genkit expects.
+      // We do NOT slice it here. We trust the client sent us the right context.
       const history = input.history.map((msg) => ({
-        role: msg.role, // must be EXACTLY 'user' | 'model'
+        role: msg.role === 'user' ? 'user' : 'model', // Explicitly cast for safety
         content: [{ text: msg.content }],
       }));
 
-      // Optional but HIGHLY recommended debug
-      console.log(
-        '[Chat] History sent to Gemini:',
-        history.map((h) => `${h.role}: ${h.content[0].text}`)
-      );
+      // Log the last message in history to verify continuity (optional debug)
+      if (history.length > 0) {
+        const lastMsg = history[history.length - 1];
+        console.log(`[Chat] Last History Item: [${lastMsg.role}] ${lastMsg.content[0].text.substring(0, 30)}...`);
+      }
 
       /* -------- GENERATE -------- */
       const resp = await ai.generate({
         system: systemPrompt,
         prompt: input.prompt,
-        history, // ✅ full, untouched conversation
+        history: history as any, // Cast to any to bypass strict version mismatches
         config: {
           temperature: 0.7,
         },
       });
 
       return {
-        response: resp.text ?? "I'm sorry, I couldn't generate a response.",
+        response: resp.text || "I'm sorry, I couldn't generate a response.",
       };
+
     } catch (error: any) {
       console.error('Server Action Error in chatFlow:', error);
       return {
-        response: `Error: ${error?.message ?? 'Something went wrong on the server.'}`,
+        response: `Error: ${error?.message || 'Something went wrong on the server.'}`,
       };
     }
   }
