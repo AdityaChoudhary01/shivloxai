@@ -51,13 +51,6 @@ type Conversation = {
 
 export function HomePageContent() {
     const [conversations, setConversations] = useState<Conversation[]>([]);
-    
-    // 🔴 MEMORY FIX: Ref to track latest state for async callbacks
-    const conversationsRef = useRef(conversations);
-    useEffect(() => {
-        conversationsRef.current = conversations;
-    }, [conversations]);
-
     const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -187,23 +180,19 @@ export function HomePageContent() {
         }
     };
 
-    // 🔴 FIXED TRIGGER AI RESPONSE: Uses Ref to get latest state + Correct History Slicing
-    const triggerAiResponse = useCallback(async (convId: string) => {
+    // 🔴 REFACTOR: Accepts messages directly. No refs, no timeouts, no race conditions.
+    const triggerAiResponse = useCallback(async (convId: string, messages: Message[]) => {
         try {
-            // Use REF to get the absolute latest state (bypassing stale closures)
-            const conversation = conversationsRef.current.find(c => c.id === convId);
-            if (!conversation) return;
-
-            const messages = conversation.messages;
             if (messages.length === 0) return;
 
             if (!user) {
                 setSessionMessageCount(prev => prev + 1);
             }
 
-            // ✅ Logic fixed: Prompt is last message, History is everything before it (User AND Model)
+            // The last message is the User's new prompt
             const prompt = messages[messages.length - 1].content;
             
+            // Everything BEFORE the last message is history (User + Model interactions)
             const history = messages.slice(0, -1).map(m => ({
                 role: m.role,
                 content: m.content
@@ -217,13 +206,12 @@ export function HomePageContent() {
             const result = await chat(chatInput);
             const aiMessage: Message = { role: 'model', content: result.response };
 
-            // Update State & DB
+            // Update State & DB with the AI response
             setConversations(prev => {
                 const targetConv = prev.find(c => c.id === convId);
                 if (targetConv) {
                     const updatedConv = { ...targetConv, messages: [...targetConv.messages, aiMessage], updatedAt: Date.now() };
                     
-                    // Trigger background save
                     if (user) {
                         saveToFirestore(updatedConv);
                     }
@@ -267,8 +255,7 @@ export function HomePageContent() {
         shouldAnimateRef.current = true;
 
         let effectiveConvId = currentConversationId;
-        // Use REF for latest state in calculation
-        const currentConv = conversationsRef.current.find(c => c.id === effectiveConvId);
+        const currentConv = conversations.find(c => c.id === effectiveConvId);
         let existingMessages = currentConv ? currentConv.messages : [];
 
         let newConversationObj: Conversation | null = null;
@@ -297,6 +284,7 @@ export function HomePageContent() {
         
         const newUserMessage: Message = { role: 'user', content: userMessageContent };
         
+        // 1. Create the Updated Message Array immediately
         const updatedMessages = [...existingMessages, newUserMessage];
         
         const convToSaveId = effectiveConvId!;
@@ -309,6 +297,7 @@ export function HomePageContent() {
             updatedAt: Date.now()
         };
 
+        // 2. Update UI
         setConversations(prev => {
             return prev.map(c =>
                 c.id === convToSaveId
@@ -322,11 +311,12 @@ export function HomePageContent() {
         }
 
         setIsLoading(true);
-        // 🔴 FIX: Call trigger with setTimeout(0) to allow state update to propagate
-        // triggerAiResponse will then read from conversationsRef to get the fresh data
-        setTimeout(() => triggerAiResponse(convToSaveId), 0);
 
-    }, [input, user, sessionMessageCount, currentConversationId, triggerAiResponse]);
+        // 3. 🔴 FIX: Pass the 'updatedMessages' explicitly to the trigger function.
+        // We no longer rely on looking up state/refs inside triggerAiResponse.
+        triggerAiResponse(convToSaveId, updatedMessages);
+
+    }, [input, user, sessionMessageCount, currentConversationId, conversations, triggerAiResponse]);
 
     const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -340,7 +330,7 @@ export function HomePageContent() {
         }
     };
     
-    // ... (rest of the file component logic remains unchanged)
+    // ... (rest of component logic remains the same)
     
     const promptVariants = {
         hidden: { opacity: 0, y: 20 },
