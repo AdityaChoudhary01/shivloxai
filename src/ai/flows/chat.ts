@@ -42,25 +42,19 @@ RULES:
 - Structure longer answers with clear headings and paragraphs to improve readability.
 - MEMORY: You have access to the chat history. Always refer back to previous messages if the user asks "what did I just say?" or "elaborate on that".`;
 
-      // 2. Smart Memory Construction (Remember Last 4 Exchanges)
-      // We slice the last 10 messages. This covers:
-      // - The previous 4 User Queries
-      // - The previous 4 AI Responses
-      // - Plus a buffer of 2 extra messages for context continuity.
-      const safeHistory = input.history.slice(-10).map(msg => ({
+      // 2. Optimized History Construction
+      // We pass the history directly to the 'history' property, and the system prompt to 'system'.
+      // This ensures the model understands the distinction between instructions and conversation.
+      const history = input.history.slice(-20).map(msg => ({
           role: msg.role as 'user' | 'model',
-          content: [{ text: msg.content || '' }] // Handle potential empty content
+          content: [{ text: msg.content }] 
       }));
 
-      const history = [
-        { role: 'user' as const, content: [{ text: systemPrompt }] },
-        { role: 'model' as const, content: [{ text: "Okay, I'm ready to chat! How can I help you today? ✨" }] },
-        ...safeHistory
-      ];
-
       const resp = await ai.generate({
+        // Ensure we are using the model defined in your genkit.ts (Gemini 2.5 Flash)
         prompt: input.prompt,
-        history,
+        history: history,
+        system: systemPrompt, // Correct way to pass system instructions in Genkit
       });
 
       const textResponse = resp.text || "I'm sorry, I couldn't generate a response.";
