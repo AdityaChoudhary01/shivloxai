@@ -59,13 +59,70 @@ RULES:
       
       const lastMessage = input.history.length > 0 ? input.history[input.history.length - 1] : null;
       
-      // Keywords that indicate the user refers to previous context
-      const contextKeywords = ['summarize', 'short', 'explain', 'elaborate', 'tell me more', 'continue', 'yes', 'what', 'why'];
+      // Extensive list of keywords covering typos, slang, and grammar errors
+      const contextKeywords = [
+        // Summarization (Standard)
+        'summarize', 'summary', 'sum', 'recap', 'overview', 'abstract', 'digest',
+        // Summarization (Shortness)
+        'short', 'brief', 'condense', 'abbreviate', 'cut', 'shorten', 'nutshell', 'tldr', 'quick',
+        // Summarization (Typos/Slang)
+        'sumary', 'summery', 'sumarize', 'summerize', 'sumup', 'shrt', 'brif', 'breif', 'shot',
+        
+        // Explanation (Standard)
+        'explain', 'elaborate', 'expand', 'detail', 'clarify', 'describe', 'interpret', 'define', 'meaning', 'mean',
+        // Explanation (Typos/Slang)
+        'explian', 'explane', 'elaberate', 'elaborat', 'detial', 'clarif', 'clafiry', 'wats', 'wat',
+        
+        // Continuation (Standard)
+        'continue', 'next', 'more', 'proceed', 'further', 'go on', 'keep going',
+        // Continuation (Typos/Slang)
+        'cont', 'contine', 'moar', 'mor', 'gwan', 'nxt',
+        
+        // Questions (Standard)
+        'what', 'why', 'how', 'who', 'where', 'when', 'which',
+        // Questions (Typos/Slang)
+        'wat', 'wht', 'wy', 'y', 'hw', 'hows', 'hos', 'wer', 'wen', 'wich',
+        
+        // Affirmation/Reaction (Standard)
+        'yes', 'yeah', 'yep', 'okay', 'ok', 'sure', 'right', 'correct', 'true', 'exactly', 'agree', 'cool', 'nice', 'wow',
+        // Affirmation (Typos/Slang)
+        'ye', 'ya', 'yea', 'yah', 'k', 'oky', 'alright', 'alr', 'rite', 'tru',
+        
+        // References (Standard)
+        'that', 'this', 'it', 'previous', 'last', 'above', 'one',
+        // References (Typos)
+        'tht', 'ths', 'prev', 'lst', 'dat', 'dis',
+        
+        // Modification (Standard)
+        'change', 'fix', 'rewrite', 'rephrase', 'word', 'translate', 'modify', 'adjust', 'convert',
+        // Modification (Typos)
+        'chanhe', 'chage', 'fx', 'rewrit', 'translat',
+        
+        // Coding (Standard)
+        'code', 'script', 'function', 'syntax', 'implement', 'generate', 'write',
+        // Coding (Typos)
+        'cod', 'scrip', 'func', 'impl', 'gen',
+        
+        // Simplification
+        'simple', 'simplify', 'easier', 'easy', 'child', 'kid', '5', 'explain like i\'m 5', 'eli5',
+        // Simplification (Typos)
+        'simpl', 'ez', 'ezy',
+        
+        // Examples
+        'example', 'instance', 'sample', 'show', 'demo',
+        // Examples (Typos)
+        'eg', 'ex', 'exampl', 'sampl',
+        
+        // Connectors/Fillers implying continuation
+        'so', 'then', 'and', 'but', 'well', 'anyway', 'ok then'
+      ];
+      
       const lowerPrompt = input.prompt.toLowerCase();
 
-      // Logic: If prompt is short (< 100 chars) AND has a keyword AND we have history
+      // Logic: If prompt is short (< 150 chars) AND has a keyword AND we have history
+      // Increased length limit to 150 to catch slightly longer messy sentences
       if (
-        input.prompt.length < 100 && 
+        input.prompt.length < 150 && 
         contextKeywords.some(kw => lowerPrompt.includes(kw)) &&
         lastMessage && 
         lastMessage.role === 'model'
@@ -76,7 +133,7 @@ RULES:
 
       /* -------- DEBUG -------- */
       console.log('[Chat] Original Prompt:', input.prompt);
-      console.log('[Chat] Final Sent Prompt:', finalPrompt.substring(0, 100)); // Log what we actually send
+      console.log('[Chat] Final Sent Prompt:', finalPrompt.substring(0, 100));
 
       /* -------- HISTORY TRANSFORM -------- */
       const history = input.history.map((msg) => ({
@@ -87,7 +144,7 @@ RULES:
       /* -------- GENERATE -------- */
       const resp = await ai.generate({
         system: systemPrompt,
-        prompt: finalPrompt, // Send the modified prompt
+        prompt: finalPrompt,
         history: history as any,
         config: {
           temperature: 0.6,
