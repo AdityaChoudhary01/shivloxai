@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       replyTo: validatedData.email,
       subject: `App Contact: ${validatedData.name}`,
       html: `
-        <h1>New Message from Mobile App</h1>
+        <h1>New Message from Shivlox Ai Mobile App</h1>
         <p><strong>Name:</strong> ${validatedData.name}</p>
         <p><strong>Email:</strong> ${validatedData.email}</p>
         <hr />
