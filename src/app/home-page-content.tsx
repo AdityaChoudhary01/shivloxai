@@ -73,6 +73,11 @@ export function HomePageContent() {
 
     const { toast } = useToast();
     const { user } = useAuth();
+    
+    // [FIX START] Add ref to track previous user state for logout detection
+    const prevUserRef = useRef(user); 
+    // [FIX END]
+
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [sessionMessageCount, setSessionMessageCount] = useState(0);
 
@@ -151,14 +156,30 @@ export function HomePageContent() {
         }
     }, [user, currentConversationId, toast]);
 
-    // Save to LocalStorage ONLY if not logged in
+    // [FIX START] Enhanced LocalStorage handling to clear data on logout
     useEffect(() => {
-        if (!user && conversations.length > 0) {
+        const wasLoggedIn = !!prevUserRef.current;
+        const isLoggedIn = !!user;
+
+        if (wasLoggedIn && !isLoggedIn) {
+            // User just logged out: 
+            // 1. Clear state immediately to remove previous user's data from UI
+            setConversations([]);
+            setCurrentConversationId(null);
+            // 2. Clear localStorage to prevent merging with next login
+            localStorage.removeItem('chatHistory');
+        } else if (!isLoggedIn && conversations.length > 0) {
+            // Guest mode: Save to LS (only if we didn't just log out)
             localStorage.setItem('chatHistory', JSON.stringify(conversations));
-        } else if (!user) {
+        } else if (!isLoggedIn) {
+            // Guest mode empty or cleared
             localStorage.removeItem('chatHistory');
         }
+
+        // Update ref for next render
+        prevUserRef.current = user;
     }, [conversations, user]);
+    // [FIX END]
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
