@@ -228,7 +228,7 @@ export function DonatePageContent() {
                                                     </div>
                                                     
                                                     <div className="bg-white/10 border border-white/10 p-3 rounded-lg flex items-center justify-between group hover:border-primary/50 transition-colors">
-                                                        <code className="text-sm font-mono font-semibold truncate mr-2 select-all text-white">adityachoudhary@okhdfcbank</code>
+                                                        <code className="text-sm font-mono font-semibold truncate mr-2 select-all text-white">adityanain55@oksbi</code>
                                                         <Button 
                                                             size="icon" 
                                                             variant="ghost" 
