@@ -174,12 +174,12 @@ export function ContactPageContent() {
                                         <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm">
                                             <h3 className="font-semibold text-blue-500 mb-1">General Support</h3>
                                             <p className="text-sm text-muted-foreground mb-3">For account & technical issues</p>
-                                            <a href="mailto:support@shivlox.ai" className="text-sm font-medium hover:underline text-white">support@shivlox.ai</a>
+                                            <a href="mailto:aadiwrld01@gmail.com" className="text-sm font-medium hover:underline text-white">aadiwrld01@gmail.com</a>
                                         </div>
                                         <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 backdrop-blur-sm">
                                             <h3 className="font-semibold text-purple-500 mb-1">Partnerships</h3>
                                             <p className="text-sm text-muted-foreground mb-3">For business & API inquiries</p>
-                                            <a href="mailto:partners@shivlox.ai" className="text-sm font-medium hover:underline text-white">partners@shivlox.ai</a>
+                                            <a href="mailto:aadiwrld01@gmail.com" className="text-sm font-medium hover:underline text-white">aadiwrld01@gmail.com</a>
                                         </div>
                                     </motion.div>
 
@@ -214,10 +214,10 @@ export function ContactPageContent() {
                                     >
                                         <h3 className="text-lg font-semibold mb-4 text-white">Connect with the Developer</h3>
                                         <div className="flex gap-4">
-                                            <a href="https://github.com/adityachoudhary" target="_blank" className="p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/5 transition-colors text-white">
+                                            <a href="https://github.com/adityachoudhary01" target="_blank" className="p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/5 transition-colors text-white">
                                                 <Github className="h-5 w-5" />
                                             </a>
-                                            <a href="https://linkedin.com" target="_blank" className="p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/5 transition-colors text-white">
+                                            <a href="https://www.linkedin.com/in/aditya-kumar-38093a304/" target="_blank" className="p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/5 transition-colors text-white">
                                                 <Linkedin className="h-5 w-5" />
                                             </a>
                                             <a href="https://twitter.com" target="_blank" className="p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/5 transition-colors text-white">
